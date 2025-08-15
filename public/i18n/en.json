@@ -78,7 +78,8 @@
     "errorGeneric": "Error",
     "painted": "Painted.",
     "insufficientPixelPower": "Insufficient pixel power: {n} pixels could not be sent.",
-    "imageLoadFailed": "Image could not be loaded. Check the values."
+    "imageLoadFailed": "Image could not be loaded. Check the values.",
+    "tokenAlreadyExists": "An account with this token already exists."
   }
 }
 
