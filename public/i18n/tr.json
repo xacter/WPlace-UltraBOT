@@ -80,6 +80,8 @@
     "insufficientPixelPower": "Yetersiz piksel gücü: {n} piksel gönderilemedi.",
     "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin.",
     "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi."
+    ,
+    "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz."
   }
 }
 
