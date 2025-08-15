@@ -1324,20 +1324,39 @@
       swT.title = t('palette.transparentTitle');
       swT.setAttribute('role', 'button');
       swT.addEventListener('click', () => {
-        selectedOverrideColorId = null;
-        
-        readyGlobalMode = false;
         try {
           const rp = document.getElementById('ready-popup');
-          if (rp && !rp.hidden) {
-            readyShouldReset = true;
-            clearAllReadySelections();
-            resetReadyNow();
+          const wasReadyOpen = !!(rp && !rp.hidden);
+          const wasGlobal = !!readyGlobalMode;
+          const hadGlobalSelections = !!(readyGlobalSelected && readyGlobalSelected.size > 0);
+          selectedOverrideColorId = null;
+          
+          readyGlobalMode = false;
+          // Switch back to per-image mode without generic resets
+          updatePaletteSelectionUi();
+          try { updateReadyButtonEnabled(); } catch {}
+          try { updateReadySelectionLabel(); } catch {}
+          try { updatePixelMarkers(); } catch {}
+          // Special case: If Ready is open and user was in global color mode and had placed selections,
+          // clear ONLY global selections and close the Ready popup
+          if (wasReadyOpen && wasGlobal && hadGlobalSelections) {
+            try {
+              readyGlobalSelected.forEach(rec => {
+                try { if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
+                try { if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+              });
+              readyGlobalSelected.clear();
+            } catch {}
+            try { resetReadyNow(); } catch {}
           }
-        } catch {}
-        updatePaletteSelectionUi();
-        try { updateReadyButtonEnabled(); } catch {}
-        try { updatePixelMarkers(); } catch {}
+        } catch {
+          selectedOverrideColorId = null;
+          readyGlobalMode = false;
+          updatePaletteSelectionUi();
+          try { updateReadyButtonEnabled(); } catch {}
+          try { updateReadySelectionLabel(); } catch {}
+          try { updatePixelMarkers(); } catch {}
+        }
       });
       colorPaletteEl.appendChild(swT);
       
@@ -1356,10 +1375,8 @@
             const rp = document.getElementById('ready-popup');
             if (rp && !rp.hidden) {
               const hasSelectedSign = (selectedIndex >= 0 && selectedIndex < signItems.length);
+              // Enable global mode only if no image is selected; otherwise stay in per-image mode
               readyGlobalMode = !hasSelectedSign;
-              
-              try { clearAllReadySelections(); } catch {}
-              try { resetReadyNow(); } catch {}
             }
           } catch {}
           updatePaletteSelectionUi();
@@ -1960,12 +1977,10 @@
         } catch {}
         updateThumbSelection();
         updateCounter();
-        if (!isReadyOpen()) {
-          state.dragging = true;
-          state.lastX = e.clientX;
-          state.lastY = e.clientY;
-          document.body.classList.add('dragging');
-        }
+        state.dragging = true;
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
+        document.body.classList.add('dragging');
         render();
         updatePixelMarkers();
       }
@@ -1981,9 +1996,6 @@
         }
       }
       if (state.dragging) {
-        if (isReadyOpen()) {
-          return;
-        }
         const dx = e.clientX - state.lastX;
         const dy = e.clientY - state.lastY;
         state.lastX = e.clientX;
@@ -2035,7 +2047,10 @@
       } catch {}
       
       if (isReadyOpen() && readyMouseDownPt && readyMouseMoved && !state.dragging) {
-        
+        state.dragging = true;
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
+        document.body.classList.add('dragging');
       }
       if (!signDragging) return;
       if (isReadyOpen()) {
