@@ -318,6 +318,10 @@
     .modal-body { padding-bottom: 56px; min-height: 300px; max-height: 400px; overflow-y: auto; }
     .modal-footer.split { justify-content: space-between; }
     .accounts-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; margin-right: 10px; }
+    #btn-check-all { margin-left: 8px; }
+    .app-btn .spin-indicator { display: none; margin-left: 6px; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .app-btn.spinning .spin-indicator { display: inline-block; animation: spin 1s linear infinite; }
     .modal-card .form-grid {
       display: grid;
       grid-template-columns: 140px 1fr;
@@ -523,6 +527,7 @@
         <div id="accounts-section">
           <div class="accounts-actions">
             <button id="btn-account-add" class="app-btn" type="button" data-i18n="accounts.add">Hesap ekle</button>
+            <button id="btn-check-all" class="app-btn" type="button" data-i18n-title="accounts.checkAllTitle"><span class="label" data-i18n="accounts.checkAll">Check All Accounts</span> <span class="spin-indicator">⟳</span></button>
           </div>
           <div class="table-responsive">
             <table id="accounts-table" class="table table-dark table-striped table-hover table-sm align-middle mb-2">
@@ -756,6 +761,7 @@
     const settingsCfInput = document.getElementById('settings-cf-clearance-input');
     const accountsTbody = document.getElementById('accounts-tbody');
     const addAccountBtn = document.getElementById('btn-account-add');
+    const checkAllBtn = document.getElementById('btn-check-all');
     const accountNameInput = document.getElementById('account-name-input');
     const accountTokenInput = document.getElementById('account-token-input');
     const accountIdInput = document.getElementById('account-id-input');
@@ -803,6 +809,7 @@
     const readyGlobalSelected = new Map(); 
     let readyMouseDownPt = null; 
     let readyMouseMoved = false;
+    let autoSelectDeleteMode = false;
     const READY_CLICK_MOVE_TOLERANCE = 4;
     function getPaletteRgbById(id){
       for (let i = 0; i < PALETTE.length; i++) { if (PALETTE[i].id === id) return PALETTE[i].rgb; }
@@ -902,6 +909,9 @@
         }
       } catch {}
       updatePixelMarkers();
+      try { updateReadySelectionLabel(); } catch {}
+      try { updateStartEnabled(); } catch {}
+      try { updateAutoSelectButtonLabel(); } catch {}
     }
     function ensureRenderedSelectedForItem(item){
       if (!pixelSelectedList || !item) return;
@@ -2611,6 +2621,20 @@
         bulkRefreshInFlight = false;
       }
     }
+
+    if (checkAllBtn) {
+      checkAllBtn.addEventListener('click', async () => {
+        if (bulkRefreshInFlight) return;
+        try { checkAllBtn.classList.add('spinning'); } catch {}
+        try { checkAllBtn.disabled = true; } catch {}
+        try {
+          await refreshAllAccounts();
+        } finally {
+          try { checkAllBtn.classList.remove('spinning'); } catch {}
+          try { checkAllBtn.disabled = false; } catch {}
+        }
+      });
+    }
     if (accountSaveBtn && accountsTbody) {
       accountSaveBtn.addEventListener('click', async () => {
         const id = (accountIdInput.value || '').trim();
@@ -2776,6 +2800,20 @@
       const count = selected;
       try { readyPixelEl.setAttribute('data-count', String(count)); readyPixelEl.setAttribute('data-max', String(limit)); } catch {}
       readyPixelEl.textContent = t('pixel.powerLabel', { count, max: limit });
+      try { updateAutoSelectButtonLabel(); } catch {}
+    }
+
+    function updateAutoSelectButtonLabel(){
+      if (!autoSelectBtn) return;
+      const selected = readyGlobalMode ? readyGlobalSelected.size : getReadySelectedCount();
+      const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+      const shouldDelete = (limit > 0 && selected >= limit);
+      autoSelectDeleteMode = !!shouldDelete;
+      try {
+        autoSelectBtn.textContent = shouldDelete ? t('ready.deleteAllSelected') : t('ready.autoSelect');
+      } catch {
+        autoSelectBtn.textContent = shouldDelete ? 'Delete all selected' : 'Auto select';
+      }
     }
 
     function updateReadyPixelForSelectedAccounts() {
@@ -2816,6 +2854,7 @@
         });
         readyAccountList.appendChild(btn);
       });
+      try { updateAutoSelectButtonLabel(); } catch {}
     }
 
     if (readyAccountBtn) {
@@ -2834,11 +2873,19 @@
       readyShouldReset = false;
       readyHoverPixel = { x: null, y: null };
       
+      // Ensure no stale drag/ready state remains when resetting
+      try { readyMouseDownPt = null; } catch {}
+      try { readyMouseMoved = false; } catch {}
+      try { state.dragging = false; } catch {}
+      try { signDragging = false; } catch {}
+      try { document.body.classList.remove('dragging'); } catch {}
+      
       try {
         if (readyAccountBtn) readyAccountBtn.hidden = false;
         if (readyPixelEl) readyPixelEl.hidden = true;
         if (readyAccountList) readyAccountList.hidden = true;
       } catch {}
+      try { updateAutoSelectButtonLabel(); } catch {}
       try { updatePixelMarkers(); } catch {}
       render();
     }
@@ -2846,6 +2893,13 @@
       readyBtn.addEventListener('click', async () => {
         try {
           await loadAccounts();
+          
+          // Clear any leftover drag/ready state before toggling the popup
+          try { readyMouseDownPt = null; } catch {}
+          try { readyMouseMoved = false; } catch {}
+          try { state.dragging = false; } catch {}
+          try { signDragging = false; } catch {}
+          try { document.body.classList.remove('dragging'); } catch {}
           
           try {
             
@@ -2898,13 +2952,33 @@
               try { if (readyAccountList) readyAccountList.hidden = true; } catch {}
             }
           } catch {}
+          try { updateAutoSelectButtonLabel(); } catch {}
           render();
         } catch {}
       });
     }
     if (autoSelectBtn) {
       autoSelectBtn.addEventListener('click', () => {
-        
+        if (autoSelectDeleteMode) {
+          // Delete all selected pixels
+          if (readyGlobalMode) {
+            try {
+              readyGlobalSelected.forEach(rec => {
+                try { if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
+                try { if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+              });
+              readyGlobalSelected.clear();
+            } catch {}
+          } else {
+            const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+            if (selItem) {
+              try { clearSelectionsForItem(selItem); } catch {}
+            }
+          }
+          try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+          return;
+        }
+
       if (!Array.isArray(readySelectedAccountIds) || readySelectedAccountIds.length === 0) {
           showToast(t('messages.selectAccountFirst'), 'error', 2000);
           return;
