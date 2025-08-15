@@ -78,7 +78,8 @@
     "errorGeneric": "Hata",
     "painted": "Başarıyla boyandı.",
     "insufficientPixelPower": "Yetersiz piksel gücü: {n} piksel gönderilemedi.",
-    "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin."
+    "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin.",
+    "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi."
   }
 }
 
