@@ -1046,6 +1046,41 @@
       return (r0 === r1) && (g0 === g1) && (b0 === b1);
     }
 
+    function countPlacedPixelsForItem(item){
+      const itemId = ensureItemImageData(item);
+      const baseId = ensureBaseImageData();
+      if (!itemId || !baseId) return 0;
+      const wx0 = Math.round(item.worldX || 0);
+      const wy0 = Math.round(item.worldY || 0);
+      const nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      const cache = item._placedCountCache;
+      if (cache && cache.baseW === baseId.width && cache.baseH === baseId.height && cache.wx0 === wx0 && cache.wy0 === wy0 && (nowMs - cache.atMs) < 1000) {
+        return cache.count;
+      }
+      let count = 0;
+      const w = itemId.width|0, h = itemId.height|0;
+      const itemData = itemId.data, baseData = baseId.data;
+      for (let y = 0; y < h; y++){
+        const wy = wy0 + y;
+        if (wy < 0 || wy >= baseId.height) continue;
+        for (let x = 0; x < w; x++){
+          const wx = wx0 + x;
+          if (wx < 0 || wx >= baseId.width) continue;
+          const iItem = ((w * y + x) << 2);
+          const a1 = itemData[iItem + 3];
+          if (a1 === 0) continue;
+          const iBase = ((baseId.width * wy + wx) << 2);
+          const a0 = baseData[iBase + 3];
+          if (a0 === 0) continue;
+          if (itemData[iItem] === baseData[iBase] && itemData[iItem+1] === baseData[iBase+1] && itemData[iItem+2] === baseData[iBase+2]) {
+            count++;
+          }
+        }
+      }
+      item._placedCountCache = { count, wx0, wy0, baseW: baseId.width, baseH: baseId.height, atMs: nowMs };
+      return count;
+    }
+
     function snapItemToNearest(item, targetX, targetY){
       const baseId = ensureBaseImageData();
       const id = ensureItemImageData(item);
@@ -1553,6 +1588,18 @@
       ],
       ' ': [
         '00000','00000','00000','00000','00000','00000','00000'
+      ],
+      '/': [
+        '00001','00010','00100','01000','10000','00000','00000'
+      ],
+      '-': [
+        '00000','00000','00000','11111','00000','00000','00000'
+      ],
+      '.': [
+        '00000','00000','00000','00000','00000','00100','00100'
+      ],
+      '%': [
+        '10001','00010','00100','01000','10000','10001','00000'
       ]
     };
 
@@ -1698,7 +1745,14 @@
         if (it && it.image && it.image.complete) {
           const wx = (typeof it.worldX === 'number' ? it.worldX : 0);
           const wy = (typeof it.worldY === 'number' ? it.worldY : 0);
-          const label = String(it.pixelCount == null ? 0 : it.pixelCount) + ' pixel';
+          const totalCount = (it && it.pixelCount != null) ? Number(it.pixelCount) : 0;
+          let selectedCount = 0;
+          try {
+            const map = getSelectedMap(it);
+            selectedCount = map ? map.size : 0;
+          } catch {}
+          const placedCount = countPlacedPixelsForItem(it);
+          const label = String(placedCount) + '/' + String(totalCount) + ' PX - ' + String((totalCount > 0 ? (placedCount / totalCount * 100) : 0).toFixed(1)) + ' %';
           // Scale UI relative to image size: baseline = 100x100 → scale = 1 (capped at 5x)
           const uiScale = Math.min(5, Math.max(0.1, Math.max(it.image.naturalWidth, it.image.naturalHeight) / 100));
           const pixelSize = 0.2 * uiScale;
@@ -1786,6 +1840,7 @@
         image.onload = () => {
           img = image;
           baseImageData = null;
+          try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
           render();
           updatePixelMarkers();
         };
@@ -2937,6 +2992,7 @@
         (async () => {
           let offset = 0;
           const usedIds = [];
+          let hadRequestError = false;
           for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
             const acc = selectedAccounts[i];
             const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
@@ -2951,6 +3007,7 @@
                 try { await loadAccounts(); } catch {}
                 continue;
               } else {
+                hadRequestError = true;
                 showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
                 break;
               }
@@ -2967,7 +3024,7 @@
             try { readyGlobalMode = false; } catch {}
             try { updateStartEnabled(); } catch {}
           }
-          if (offset < total) {
+          if (offset < total && !hadRequestError) {
             showToast(t('messages.insufficientPixelPower', { n: (total - offset) }), 'error', 3000);
           }
           
@@ -3044,4 +3101,3 @@
   </script>
 </body>
 </html> 
-
