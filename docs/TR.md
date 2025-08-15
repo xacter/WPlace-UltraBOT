@@ -124,7 +124,7 @@ WPlace sayfasına geri dönün ve arama çubuğuna Dünya Y değerini girin. Bir
 
 ---
 
-![Bölüm 12](https://i.imgur.com/NEvGOnj.png)
+![Bölüm 12](https://i.imgur.com/ZICIlpJ.png)
 
 Sonra aynı noktada tekrar piksel doldurmayı deneyin. Bu kez hata vermelidir. Hata veren isteğe tıklayın, ardından 'Payload' sekmesine geçin. 'view source' (kaynağı görüntüle) derseniz benimkine benzer görünecektir. Sonrasında 't' değerini tamamen kopyalayın.
 
