@@ -2432,6 +2432,7 @@
         settingsSection.hidden = isAccounts;
         if (accountFormSection) accountFormSection.hidden = true;
       }
+      try { if (!isAccounts) { loadSettings(); } } catch {}
     }
     if (tabAccounts) {
       tabAccounts.addEventListener('click', () => setAccountsActiveTab('accounts'));
@@ -2439,9 +2440,10 @@
     if (tabSettings) {
       tabSettings.addEventListener('click', () => setAccountsActiveTab('settings'));
     }
-    accountsBtn.addEventListener('click', () => {
+    accountsBtn.addEventListener('click', async () => {
       accountsModal.hidden = false;
       setAccountsActiveTab('accounts');
+      try { await loadSettings(); } catch {}
     });
     function showAccountForm() {
       if (!accountsSection || !accountFormSection) return;
@@ -2730,6 +2732,13 @@
       settingsSaveBtn.addEventListener('click', async () => {
         const v = (settingsCfInput.value || '').trim();
         try {
+          // Prevent clearing cf_clearance while accounts exist
+          try { await loadAccounts(); } catch {}
+          const hasAnyAccount = Array.isArray(accountsData) && accountsData.length > 0;
+          if (hasAnyAccount && v.length === 0) {
+            showToast(t('messages.cfCannotBeClearedWithAccounts'), 'error', 2500);
+            return;
+          }
           await fetch('/api/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
