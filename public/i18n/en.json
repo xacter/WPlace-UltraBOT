@@ -9,6 +9,7 @@
     "prepare": "Ready",
     "selectAccount": "Select account",
     "autoSelect": "Auto select",
+    "deleteAllSelected": "Delete all selected",
     "start": "Start",
     "tokenPlaceholder": "Token",
     "accountLabelDefault": "Account"
@@ -21,7 +22,9 @@
     "settings": "Settings"
   },
   "accounts": {
-    "add": "Add account"
+    "add": "Add account",
+    "checkAll": "Check All Accounts",
+    "checkAllTitle": "Check pixel capacity of all accounts"
   },
   "table": {
     "accountName": "Account name",
