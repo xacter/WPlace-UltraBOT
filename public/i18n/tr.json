@@ -9,6 +9,7 @@
     "prepare": "Hazırlan",
     "selectAccount": "Hesap seç",
     "autoSelect": "Otomatik seç",
+    "deleteAllSelected": "Tüm seçilenleri sil",
     "start": "Başlat",
     "tokenPlaceholder": "Token",
     "accountLabelDefault": "Hesap"
@@ -21,7 +22,9 @@
     "settings": "Ayarlar"
   },
   "accounts": {
-    "add": "Hesap ekle"
+    "add": "Hesap ekle",
+    "checkAll": "Tüm Hesapları Kontrol Et",
+    "checkAllTitle": "Tüm hesapların piksel hakkını kontrol et"
   },
   "table": {
     "accountName": "Hesap ismi",
