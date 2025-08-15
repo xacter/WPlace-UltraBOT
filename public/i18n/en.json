@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "accounts": "Accounts"
+  },
+  "pixel": {
+    "powerLabel": "Pixel power: {count} / {max}"
+  },
+  "ready": {
+    "prepare": "Ready",
+    "selectAccount": "Select account",
+    "autoSelect": "Auto select",
+    "start": "Start",
+    "tokenPlaceholder": "Token",
+    "accountLabelDefault": "Account"
+  },
+  "modal": {
+    "closeTitle": "Close"
+  },
+  "tabs": {
+    "accounts": "Accounts",
+    "settings": "Settings"
+  },
+  "accounts": {
+    "add": "Add account"
+  },
+  "table": {
+    "accountName": "Account name",
+    "accountToken": "Account token",
+    "pixelRight": "Pixel limit",
+    "status": "Status",
+    "actions": "Action",
+    "statusActive": "Active",
+    "statusPassive": "Inactive"
+  },
+  "form": {
+    "accountNameLabel": "Account name",
+    "accountNamePlaceholder": "e.g., Main account",
+    "accountTokenLabel": "Account token",
+    "accountTokenPlaceholder": "e.g., eyJhbGciOi...",
+    "worldXLabel": "World X",
+    "worldYLabel": "World Y",
+    "fetchButton": "Fetch",
+    "uploadImage": "Upload image"
+  },
+  "settings": {
+    "cf_clearance": "cf_clearance"
+  },
+  "buttons": {
+    "back": "Back",
+    "save": "Save",
+    "add": "Add",
+    "saveSettings": "Save",
+    "edit": "Edit",
+    "checkPixels": "Check pixel",
+    "delete": "Delete"
+  },
+  "thumb": {
+    "imageAlt": "Image {n}",
+    "lock": "Lock"
+  },
+  "labels": {
+    "colorPalette": "Color palette"
+  },
+  "palette": {
+    "transparentTitle": "Transparent (image color)",
+    "colorTitle": "Color #{id}"
+  },
+  "messages": {
+    "selectAccountFirst": "Select an account first.",
+    "maxPixelsReached": "You have reached the maximum pixel count: {limit}/{limit}",
+    "addCfClearancePrompt": "First add the cf_clearance value in Settings (min 30 chars).",
+    "max12Accounts": "You can select up to 12 accounts.",
+    "startRequirementsMissing": "Enter token, select accounts and pick at least 1 pixel to start.",
+    "noSelectedImage": "No selected image.",
+    "errorGeneric": "Error",
+    "painted": "Painted.",
+    "insufficientPixelPower": "Insufficient pixel power: {n} pixels could not be sent.",
+    "imageLoadFailed": "Image could not be loaded. Check the values."
+  }
+}
+
+

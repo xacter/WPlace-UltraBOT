@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "accounts": "Hesaplar"
+  },
+  "pixel": {
+    "powerLabel": "Piksel gücü: {count} / {max}"
+  },
+  "ready": {
+    "prepare": "Hazırlan",
+    "selectAccount": "Hesap seç",
+    "autoSelect": "Otomatik seç",
+    "start": "Başlat",
+    "tokenPlaceholder": "Token",
+    "accountLabelDefault": "Hesap"
+  },
+  "modal": {
+    "closeTitle": "Kapat"
+  },
+  "tabs": {
+    "accounts": "Hesaplar",
+    "settings": "Ayarlar"
+  },
+  "accounts": {
+    "add": "Hesap ekle"
+  },
+  "table": {
+    "accountName": "Hesap ismi",
+    "accountToken": "Hesap Tokeni",
+    "pixelRight": "Piksel Hakkı",
+    "status": "Durum",
+    "actions": "İşlem",
+    "statusActive": "Aktif",
+    "statusPassive": "Pasif"
+  },
+  "form": {
+    "accountNameLabel": "Hesap adı",
+    "accountNamePlaceholder": "Örn: Ana hesap",
+    "accountTokenLabel": "Hesap tokeni",
+    "accountTokenPlaceholder": "Örn: eyJhbGciOi...",
+    "worldXLabel": "World X",
+    "worldYLabel": "World Y",
+    "fetchButton": "Getir",
+    "uploadImage": "Resim yükle"
+  },
+  "settings": {
+    "cf_clearance": "cf_clearance"
+  },
+  "buttons": {
+    "back": "Geri",
+    "save": "Kaydet",
+    "add": "Ekle",
+    "saveSettings": "Kaydet",
+    "edit": "Düzenle",
+    "checkPixels": "Piksel kontrol et",
+    "delete": "Sil"
+  },
+  "thumb": {
+    "imageAlt": "Resim {n}",
+    "lock": "Kilit"
+  },
+  "labels": {
+    "colorPalette": "Renk paleti"
+  },
+  "palette": {
+    "transparentTitle": "Transparan (resim rengi)",
+    "colorTitle": "Renk #{id}"
+  },
+  "messages": {
+    "selectAccountFirst": "Önce hesap seçin.",
+    "maxPixelsReached": "Maksimum piksel sayısına ulaştınız: {limit}/{limit}",
+    "addCfClearancePrompt": "Önce Ayarlar sekmesinden cf_clearance değerini ekleyin (en az 30 karakter).",
+    "max12Accounts": "En fazla 12 hesap seçebilirsiniz.",
+    "startRequirementsMissing": "Başlatmak için token girin, hesap seçin ve en az 1 piksel seçin.",
+    "noSelectedImage": "Seçili resim yok.",
+    "errorGeneric": "Hata",
+    "painted": "Başarıyla boyandı.",
+    "insufficientPixelPower": "Yetersiz piksel gücü: {n} piksel gönderilemedi.",
+    "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin."
+  }
+}
+
+

@@ -1,0 +1,29 @@
+{
+  "name": "wplace-ultrabot",
+  "version": "1.0.0",
+  "description": "WPlace UltraBOT — Node.js-based pixel automation and preview tool.",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node main.js",
+    "get:me": "node main.js --get-me",
+    "postinstall": "echo 'Ready to run: npm start'"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "wplace",
+    "pixel",
+    "automation",
+    "puppeteer",
+    "got-scraping"
+  ],
+  "dependencies": {
+    "axios": "^1.7.7",
+    "got-scraping": "^4.1.2",
+    "pngjs": "^7.0.0",
+    "puppeteer": "^22.15.0"
+  }
+}

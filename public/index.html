@@ -1,0 +1,3047 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WPlace UltraBOT</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    :root { color-scheme: dark light; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #ffffff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color: #e5e7eb;
+    }
+    #c {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      
+      display: block;
+      background: #ffffff;
+      cursor: grab;
+      z-index: 0;
+    }
+    body.dragging #c { cursor: grabbing; }
+    .panel {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 20, 24, 0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      z-index: 1000;
+    }
+    label { font-size: 14px; }
+    input {
+      width: 100px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.25);
+      color: #e5e7eb;
+      outline: none;
+    }
+    button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.35);
+      color: #e5e7eb;
+      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      font: inherit;
+      line-height: 1.2;
+      display: inline-flex;
+      align-items: center;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    button:hover { background: rgba(255,255,255,0.08); }
+    .app-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.35);
+      color: #e5e7eb;
+      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      font: inherit;
+      line-height: 1.2;
+      display: inline-flex;
+      align-items: center;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .app-btn:hover { background: rgba(255,255,255,0.08); }
+    .app-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #btn-account-cancel.app-btn, #btn-account-save.app-btn {
+      padding-left: 30px;
+      padding-right: 30px;
+    }
+    .url {
+      position: fixed;
+      bottom: 12px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.45);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      word-break: break-all;
+      z-index: 1000;
+    }
+    #sign {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 500;
+      user-select: none;
+      pointer-events: auto;
+      image-rendering: pixelated;
+      background: rgba(0,0,0,0.0);
+      transform-origin: top left;
+      will-change: transform;
+    }
+    #sign[hidden] { display: none; }
+    #sign-outline {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      border: 2px dashed #22d3ee;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.7);
+    }
+    #sign-outline[hidden] { display: none; }
+    #sign-layer { position: fixed; left: 0; top: 0; z-index: 600; pointer-events: none; }
+    .pixel-marker {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      image-rendering: pixelated;
+      pointer-events: none;
+      z-index: 1300;
+    }
+    .pixel-marker[hidden] { display: none; }
+    body.dragging-sign #sign { cursor: grabbing; }
+    
+    #sidebar {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      bottom: 12px;
+      width: 140px;
+      background: rgba(17, 20, 24, 0.85);
+      border-right: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      padding: 36px 8px 8px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 900;
+      overflow-y: auto;
+    }
+    #thumb-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .thumb-item {
+      position: relative;
+      width: 100%;
+      height: 84px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      pointer-events: none;
+      user-select: none;
+    }
+    .thumb-item.selected {
+      border-color: #22d3ee;
+      box-shadow: inset 0 0 0 1px rgba(34,211,238,0.35);
+    }
+    .thumb-item.selected::before {
+      content: '';
+      position: absolute;
+      left: -1px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #22d3ee;
+    }
+    .thumb-item.locked {
+      opacity: 0.95;
+    }
+    .thumb-actions {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      display: flex;
+      gap: 4px;
+      z-index: 2;
+    }
+    .thumb-action {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.5);
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+    .thumb-action:hover { background: rgba(0,0,0,0.65); }
+    
+    #sidebar .thumb-actions { display: none; }
+    .counter {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 1;
+      background: rgba(0,0,0,0.45);
+      color: #e5e7eb;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    #pixel-power {
+      position: static;
+      display: inline-block;
+      background: rgba(0,0,0,0.45);
+      color: #e5e7eb;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      white-space: nowrap;
+    }
+    
+    #btn-accounts {
+      background-color: rgba(0,0,0,0.75);
+      position: static;
+    }
+    #btn-accounts:hover {
+      background-color: rgba(0,0,0,0.60);
+    }
+    #accounts-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 1100;
+    }
+    #accounts-modal[hidden] { display: none; }
+    .modal-card {
+      background: rgba(17, 20, 24, 0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      width: min(800px, 95vw);
+      max-width: 95vw;
+      color: #e5e7eb;
+      padding: 16px 20px;
+      position: relative;
+    }
+    .modal-header {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+    }
+    .modal-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.5);
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+    .modal-close:hover { background: rgba(0,0,0,0.65); }
+    .modal-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 0 12px 0;
+    }
+    .tab-button.active {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(34,211,238,0.35);
+      box-shadow: inset 0 0 0 1px rgba(34,211,238,0.25);
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      position: absolute;
+      right: 20px;
+      bottom: 16px;
+      left: 20px;
+    }
+    .modal-body { padding-bottom: 56px; min-height: 300px; max-height: 400px; overflow-y: auto; }
+    .modal-footer.split { justify-content: space-between; }
+    .accounts-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; margin-right: 10px; }
+    .modal-card .form-grid {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 10px 12px;
+    }
+    .modal-card .form-grid label { font-size: 14px; align-self: center; }
+    .modal-card .form-grid input { width: 100%; }
+    .table-actions { display: flex; flex-direction: column; gap: 6px; }
+    .table-actions-row { display: flex; gap: 6px; }
+    
+    #app-toast-container { position: fixed; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; pointer-events: none; }
+    .app-toast { pointer-events: auto; min-width: 260px; max-width: 380px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); color: #fff; display: flex; align-items: center; gap: 10px; animation: toast-in 200ms ease-out; }
+    .app-toast.error { background: rgba(190, 24, 24, 0.9); }
+    .app-toast.success { background: rgba(22, 163, 74, 0.9); }
+    .app-toast .app-toast-message { flex: 1 1 auto; font-size: 14px; line-height: 1.35; }
+    .app-toast .app-toast-close { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.35); color: #e5e7eb; cursor: pointer; }
+    .app-toast.hide { animation: toast-out 250ms ease-in forwards; }
+    @keyframes toast-in { from { transform: translateY(-8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes toast-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-8px); opacity: 0; } }
+    
+    #control-panel {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: rgba(17, 20, 24, 0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      z-index: 1001;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+    #control-panel .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    #ready-popup {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: rgba(17, 20, 24, 0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      padding: 10px;
+      z-index: 1002;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 280px;
+    }
+      #ready-popup .ready-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+      }
+    #ready-account-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.35);
+    }
+    #ready-pixel {
+      display: inline-block;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #e5e7eb;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    #ready-popup .controls-row { justify-content: center; gap: 10px; }
+    #ready-token-input { width: 320px; }
+    
+    #color-palette {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 20, 24, 0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      padding: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      max-width: min(95vw, 720px);
+    }
+    .palette-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    .palette-swatch:hover { filter: brightness(1.1); }
+    .palette-swatch.selected {
+      outline: 2px solid #22d3ee;
+      outline-offset: 0;
+      border-color: #22d3ee;
+      box-shadow: 0 0 0 2px rgba(34,211,238,0.25);
+    }
+    .palette-swatch.transparent {
+      background-color: #bbb;
+      background-image:
+        linear-gradient(45deg, #888 25%, transparent 25%),
+        linear-gradient(-45deg, #888 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #888 75%),
+        linear-gradient(-45deg, transparent 75%, #888 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    }
+    
+    #lang-switch {
+      position: fixed;
+      top: 16px;
+      left: 180px; 
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(17, 20, 24, 0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      padding: 6px 8px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+    #lang-select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.25);
+      color: #e5e7eb;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <img id="sign" alt="sign" draggable="false" hidden />
+  <img id="pixel-hover" class="pixel-marker" alt="hover" hidden />
+  <div id="pixel-selected-list" hidden></div>
+    <div id="control-panel">
+      <div class="controls-row">
+        <button id="btn-accounts" class="app-btn" type="button" data-i18n="nav.accounts">Hesaplar</button>
+        <div id="pixel-power" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
+      </div>
+      <div>
+        <button id="btn-ready" class="app-btn" type="button" disabled data-i18n="ready.prepare">Hazırlan</button>
+        <div id="ready-popup" hidden>
+          <div class="ready-header">
+            <button id="btn-ready-account" class="app-btn" type="button" data-i18n="ready.selectAccount">Hesap seç</button>
+            <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
+          </div>
+          <div id="ready-account-list" hidden></div>
+          <div class="controls-row">
+            <input id="ready-token-input" type="text" placeholder="Token" data-i18n-placeholder="ready.tokenPlaceholder" />
+          </div>
+          <div class="controls-row">
+            <button id="btn-auto-select" class="app-btn" type="button" data-i18n="ready.autoSelect">Otomatik seç</button>
+            <button id="start" class="app-btn" type="button" data-i18n="ready.start">Başlat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <div id="sign-layer" hidden>
+    <div id="sign-outline"></div>
+  </div>
+  <input id="sign-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
+  <aside id="sidebar"><div id="counter" class="counter"></div><div id="thumb-list"></div></aside>
+  <div id="accounts-modal" hidden>
+    <div class="modal-card">
+      <button id="accounts-close" class="modal-close app-btn" title="Kapat" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-tabs">
+        <button id="tab-accounts" class="tab-button active" type="button" data-i18n="tabs.accounts">Hesaplar</button>
+        <button id="tab-settings" class="tab-button" type="button" data-i18n="tabs.settings">Ayarlar</button>
+      </div>
+      <div class="modal-body">
+        <div id="accounts-section">
+          <div class="accounts-actions">
+            <button id="btn-account-add" class="app-btn" type="button" data-i18n="accounts.add">Hesap ekle</button>
+          </div>
+          <div class="table-responsive">
+            <table id="accounts-table" class="table table-dark table-striped table-hover table-sm align-middle mb-2">
+              <thead>
+                <tr>
+                  <th data-i18n="table.accountName">Hesap ismi</th>
+                  <th data-i18n="table.accountToken">Hesap Tokeni</th>
+                  <th data-i18n="table.pixelRight">Piksel Hakkı</th>
+                  <th data-i18n="table.status">Durum</th>
+                  <th data-i18n="table.actions">İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="accounts-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="account-form-section" hidden>
+          <div class="form-grid">
+            <label for="account-name-input" data-i18n="form.accountNameLabel">Hesap adı</label>
+            <input id="account-name-input" type="text" placeholder="Örn: Ana hesap" data-i18n-placeholder="form.accountNamePlaceholder" />
+            <label for="account-token-input" data-i18n="form.accountTokenLabel">Hesap tokeni</label>
+            <input id="account-token-input" type="text" placeholder="Örn: eyJhbGciOi..." data-i18n-placeholder="form.accountTokenPlaceholder" />
+            <input id="account-id-input" type="hidden" />
+          </div>
+          <div class="modal-footer split">
+            <button id="btn-account-cancel" class="app-btn" type="button" data-i18n="buttons.back">Geri</button>
+            <button id="btn-account-save" class="app-btn" type="button" data-i18n="buttons.add">Ekle</button>
+          </div>
+        </div>
+        <div id="settings-section" hidden>
+          <div class="form-grid">
+            <label for="settings-cf-clearance-input" data-i18n="settings.cf_clearance">cf_clearance</label>
+            <input id="settings-cf-clearance-input" type="text" placeholder="cf_clearance" />
+          </div>
+          <div class="modal-footer">
+            <button id="btn-settings-save" class="app-btn" type="button" data-i18n="buttons.saveSettings">Kaydet</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form class="panel" id="form">
+    <label for="area-code" data-i18n="form.worldXLabel">World X</label>
+    <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
+
+    <label for="no" data-i18n="form.worldYLabel">World Y</label>
+    <input id="no" name="no" type="number" min="0" step="1" inputmode="numeric" />
+
+    <button class="app-btn" type="submit" data-i18n="form.fetchButton">Getir</button>
+    <button class="app-btn" type="button" id="btn-upload-sign" data-i18n="form.uploadImage">Resim yükle</button>
+  </form>
+ 
+  <div id="app-toast-container" aria-live="polite" aria-atomic="true"></div>
+  <div id="color-palette" aria-label="Renk paleti" role="group" data-i18n-aria-label="labels.colorPalette"></div>
+
+  <script>
+    
+    const I18N_DEFAULT_LANG = 'en';
+    let I18N_LANG = I18N_DEFAULT_LANG;
+    let I18N_STRINGS = {};
+    function getSavedLang(){ try { return localStorage.getItem('lang') || I18N_DEFAULT_LANG; } catch { return I18N_DEFAULT_LANG; } }
+    function saveLang(lang){ try { localStorage.setItem('lang', lang); } catch {} }
+    async function loadI18n(lang){
+      try {
+        const res = await fetch('/i18n/' + encodeURIComponent(lang) + '.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('i18n load failed');
+        I18N_STRINGS = await res.json();
+      } catch {
+        I18N_STRINGS = {};
+      }
+    }
+    function t(key, vars){
+      const parts = String(key || '').split('.');
+      let cur = I18N_STRINGS;
+      for (let i = 0; i < parts.length; i++) {
+        const k = parts[i];
+        if (cur && Object.prototype.hasOwnProperty.call(cur, k)) cur = cur[k]; else { cur = null; break; }
+      }
+      let s = (typeof cur === 'string') ? cur : String(key || '');
+      if (vars && typeof s === 'string') {
+        s = s.replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? String(vars[k]) : ''));
+      }
+      return s;
+    }
+    function applyTranslations(){
+      try { document.documentElement.lang = I18N_LANG; } catch {}
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        try { el.textContent = t(el.getAttribute('data-i18n')); } catch {}
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        try { el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))); } catch {}
+      });
+      document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        try { el.setAttribute('title', t(el.getAttribute('data-i18n-title'))); } catch {}
+      });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        try { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label'))); } catch {}
+      });
+      
+      try {
+        const p = document.getElementById('pixel-power');
+        if (p) {
+          const count = Number(p.getAttribute('data-count') || '0');
+          const max = Number(p.getAttribute('data-max') || '0');
+          p.textContent = t('pixel.powerLabel', { count, max });
+        }
+      } catch {}
+      try {
+        const rp = document.getElementById('ready-pixel');
+        if (rp) {
+          const count = Number(rp.getAttribute('data-count') || '0');
+          const max = Number(rp.getAttribute('data-max') || '0');
+          rp.textContent = t('pixel.powerLabel', { count, max });
+        }
+      } catch {}
+    }
+    async function setLanguage(lang){
+      I18N_LANG = lang || I18N_DEFAULT_LANG;
+      saveLang(I18N_LANG);
+      await loadI18n(I18N_LANG);
+      applyTranslations();
+      try { if (typeof loadAccounts === 'function') { await loadAccounts(); } } catch {}
+    }
+    async function initI18n(){
+      const initial = getSavedLang();
+      await setLanguage(initial);
+      const sel = document.getElementById('lang-select');
+      if (sel) {
+        try { sel.value = I18N_LANG; } catch {}
+        sel.addEventListener('change', async () => { await setLanguage(sel.value); });
+      }
+    }
+
+    
+    function ensureToastContainer() {
+      let el = document.getElementById('app-toast-container');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'app-toast-container';
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+    function showToast(message, variant = 'error', durationMs = 3000) {
+      const container = ensureToastContainer();
+      const toast = document.createElement('div');
+      toast.className = 'app-toast ' + variant;
+      const msg = document.createElement('div');
+      msg.className = 'app-toast-message';
+      msg.textContent = message;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'app-toast-close';
+      btn.textContent = '×';
+      btn.addEventListener('click', () => hideToast(toast));
+      toast.appendChild(msg);
+      toast.appendChild(btn);
+      container.appendChild(toast);
+      const t = setTimeout(() => hideToast(toast), durationMs);
+      toast._timer = t;
+    }
+    function hideToast(toast) {
+      if (!toast || toast.classList.contains('hide')) return;
+      try { clearTimeout(toast._timer); } catch {}
+      toast.classList.add('hide');
+      toast.addEventListener('animationend', () => {
+        try { toast.parentNode && toast.parentNode.removeChild(toast); } catch {}
+      }, { once: true });
+    }
+    
+    function ensureLangSwitch(){
+      let el = document.getElementById('lang-switch');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'lang-switch';
+        el.innerHTML = '<select id="lang-select"><option value="tr">Türkçe</option><option value="en">English</option></select>';
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+    function layoutLangSwitch(){
+      const ls = document.getElementById('lang-switch');
+      const sidebarEl = document.getElementById('sidebar');
+      const formEl = document.getElementById('form');
+      if (!ls || !sidebarEl || !formEl) return;
+      const sb = sidebarEl.getBoundingClientRect();
+      const fm = formEl.getBoundingClientRect();
+      const y = Math.min(sb.top, fm.top) + 4; 
+      const xLeft = sb.right + 12;
+      const xRight = fm.left - 12;
+      const center = (xLeft + xRight) / 2;
+      const width = Math.min(220, Math.max(140, xRight - xLeft));
+      try { ls.style.width = String(width) + 'px'; } catch {}
+      try { ls.style.top = String(y) + 'px'; } catch {}
+      try { ls.style.left = String(center - (width/2)) + 'px'; } catch {}
+    }
+    window.addEventListener('resize', layoutLangSwitch);
+    window.addEventListener('scroll', layoutLangSwitch, { passive: true });
+
+    
+    try { ensureLangSwitch(); initI18n(); layoutLangSwitch(); } catch {}
+
+    const areaInput = document.getElementById('area-code');
+    const noInput = document.getElementById('no');
+
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    const sign = document.getElementById('sign');
+    const pixelHoverEl = document.getElementById('pixel-hover');
+    const colorPaletteEl = document.getElementById('color-palette');
+    const pixelSelectedList = document.getElementById('pixel-selected-list');
+    const signLayer = document.getElementById('sign-layer');
+    const signOutline = document.getElementById('sign-outline');
+    const signFileInput = document.getElementById('sign-file');
+    const uploadBtn = document.getElementById('btn-upload-sign');
+    const sidebar = document.getElementById('sidebar');
+    const thumbList = document.getElementById('thumb-list');
+    const counter = document.getElementById('counter');
+    const accountsBtn = document.getElementById('btn-accounts');
+      const pixelPowerEl = document.getElementById('pixel-power');
+    const accountsModal = document.getElementById('accounts-modal');
+    const accountsClose = document.getElementById('accounts-close');
+    const accountsBody = document.querySelector('#accounts-modal .modal-body');
+    const tabAccounts = document.getElementById('tab-accounts');
+    const tabSettings = document.getElementById('tab-settings');
+    const accountsSection = document.getElementById('accounts-section');
+    const accountFormSection = document.getElementById('account-form-section');
+    const settingsSection = document.getElementById('settings-section');
+    const settingsCfInput = document.getElementById('settings-cf-clearance-input');
+    const accountsTbody = document.getElementById('accounts-tbody');
+    const addAccountBtn = document.getElementById('btn-account-add');
+    const accountNameInput = document.getElementById('account-name-input');
+    const accountTokenInput = document.getElementById('account-token-input');
+    const accountIdInput = document.getElementById('account-id-input');
+    const accountCancelBtn = document.getElementById('btn-account-cancel');
+    const accountSaveBtn = document.getElementById('btn-account-save');
+    const settingsSaveBtn = document.getElementById('btn-settings-save');
+    let signDragging = false;
+    let signWorldX = 0;
+    let signWorldY = 0;
+    let signWorldOffsetX = 0;
+    let signWorldOffsetY = 0;
+    let currentSignUrl = null;
+    let placingNewSign = false;
+    let signItems = [];
+    let selectedIndex = -1;
+    let pendingZoomToSelected = false;
+    let readyLockedItem = null;
+    let accountsData = [];
+    let readySelectedAccountIds = [];
+    const MAX_READY_ACCOUNTS = 12;
+    
+    let readyShouldReset = false;
+
+    
+    const HOVER_ICON_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAAAAACoWZBhAAAAAXNSR0IArs4c6QAAACpJREFUeNpj+AsEZ86ASIa/DAwMZ84ACRDzDBigMs/AARITq1oUwxBWAADaREUdDMswKwAAAABJRU5ErkJggg==';
+    const SELECTED_ICON_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAAXNSR0IArs4c6QAAACVJREFUeNpj+A8FDEAAZwMRBAIBmIYLIgHcgkQDIs3E6SRsjgcABYFLtfTgakEAAAAASUVORK5CYII=';
+    try { if (pixelHoverEl) pixelHoverEl.src = HOVER_ICON_SRC; } catch {}
+    
+    const pixelHoverFillEl = (() => {
+      const im = document.createElement('img');
+      im.className = 'pixel-marker';
+      im.alt = 'hover-fill';
+      im.hidden = true;
+      try { im.style.zIndex = '1299'; } catch {}
+      try { document.body.appendChild(im); } catch {}
+      return im;
+    })();
+
+    
+    let readyHoverPixel = { x: null, y: null };
+    
+    let selectedOverrideColorId = null;
+    
+    let readyGlobalMode = false;
+    const readyGlobalSelected = new Map(); 
+    let readyMouseDownPt = null; 
+    let readyMouseMoved = false;
+    const READY_CLICK_MOVE_TOLERANCE = 4;
+    function getPaletteRgbById(id){
+      for (let i = 0; i < PALETTE.length; i++) { if (PALETTE[i].id === id) return PALETTE[i].rgb; }
+      return [255,255,255];
+    }
+    const COLORED_MARKER_CACHE = new Map();
+    function getMarkerSrcForColorId(colorId){
+      if (colorId == null) return SELECTED_ICON_SRC;
+      const k = String(colorId);
+      if (COLORED_MARKER_CACHE.has(k)) return COLORED_MARKER_CACHE.get(k);
+      const rgb = getPaletteRgbById(colorId);
+      const off = document.createElement('canvas');
+      off.width = 8; off.height = 8;
+      const octx = off.getContext('2d');
+      octx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+      octx.fillRect(0, 0, off.width, off.height);
+      const url = off.toDataURL('image/png');
+      COLORED_MARKER_CACHE.set(k, url);
+      return url;
+    }
+    
+    function getSelectedMap(item){
+      if (!item) return null;
+      if (!item._selectedPixels) item._selectedPixels = new Map();
+      return item._selectedPixels;
+    }
+    function keyFor(x,y){ return String(x) + ',' + String(y); }
+    function isPixelSelected(item, x, y){
+      const map = getSelectedMap(item); if (!map) return false; return map.has(keyFor(x,y));
+    }
+    function addPixelSelection(item, x, y, colorIdOverride = null){
+      const map = getSelectedMap(item); if (!map) return false;
+      const k = keyFor(x,y); if (map.has(k)) return false;
+      const el = document.createElement('img');
+      el.className = 'pixel-marker';
+      el.alt = 'selected';
+      el.src = SELECTED_ICON_SRC;
+      let fillEl = null;
+      if (colorIdOverride != null) {
+        fillEl = document.createElement('img');
+        fillEl.className = 'pixel-marker';
+        fillEl.alt = 'fill';
+        try { fillEl.style.zIndex = '1299'; } catch {}
+        fillEl.src = getMarkerSrcForColorId(colorIdOverride);
+      }
+      map.set(k, { x, y, el, fillEl, colorId: colorIdOverride });
+      try { item._lastManualSelected = { x, y }; } catch {}
+      if (pixelSelectedList) {
+        if (fillEl) pixelSelectedList.appendChild(fillEl);
+        pixelSelectedList.appendChild(el);
+      }
+      if (fillEl) positionPixelMarker(fillEl, item, x, y);
+      positionPixelMarker(el, item, x, y);
+      if (pixelSelectedList) pixelSelectedList.hidden = false;
+      return true;
+    }
+    function removePixelSelection(item, x, y){
+      const map = getSelectedMap(item); if (!map) return false;
+      const k = keyFor(x,y); const rec = map.get(k); if (!rec) return false;
+      try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
+      try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+      map.delete(k);
+      return true;
+    }
+    function clearSelectionsForItem(item){
+      const map = getSelectedMap(item);
+      if (!map) return;
+      try {
+        map.forEach(rec => {
+          if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el);
+          if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl);
+        });
+      } catch {}
+      map.clear();
+      try { item._lastManualSelected = null; } catch {}
+    }
+    function clearAllReadySelections(){
+      try { if (pixelHoverEl) pixelHoverEl.hidden = true; } catch {}
+      try { if (pixelSelectedList) pixelSelectedList.hidden = true; } catch {}
+      for (let i = 0; i < signItems.length; i++) {
+        const it = signItems[i];
+        if (it) clearSelectionsForItem(it);
+      }
+      
+      try {
+        if (readyGlobalSelected && readyGlobalSelected.size > 0) {
+          readyGlobalSelected.forEach(rec => {
+            try { if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
+            try { if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+          });
+          readyGlobalSelected.clear();
+        }
+      } catch {}
+      try {
+        if (pixelSelectedList) {
+          while (pixelSelectedList.firstChild) pixelSelectedList.removeChild(pixelSelectedList.firstChild);
+        }
+      } catch {}
+      updatePixelMarkers();
+    }
+    function ensureRenderedSelectedForItem(item){
+      if (!pixelSelectedList || !item) return;
+      const current = pixelSelectedList._forItem || null;
+      if (current !== item) {
+        try { while (pixelSelectedList.firstChild) pixelSelectedList.removeChild(pixelSelectedList.firstChild); } catch {}
+        const map = getSelectedMap(item);
+        if (map) map.forEach(rec => {
+          if (rec && rec.fillEl) pixelSelectedList.appendChild(rec.fillEl);
+          if (rec && rec.el) pixelSelectedList.appendChild(rec.el);
+        });
+        pixelSelectedList._forItem = item;
+      }
+    }
+    function positionSelectedMarkersForItem(item){
+      const map = getSelectedMap(item); if (!map) return;
+      map.forEach(rec => {
+        if (rec && rec.fillEl) positionPixelMarker(rec.fillEl, item, rec.x, rec.y);
+        if (rec && rec.el) positionPixelMarker(rec.el, item, rec.x, rec.y);
+      });
+    }
+
+    function isReadyOpen() {
+      try {
+        const rp = document.getElementById('ready-popup');
+        return !!(rp && !rp.hidden);
+      } catch { return false; }
+    }
+
+    function ensureItemImageData(item){
+      if (!item || !item.image) return null;
+      if (item._imageData && item._imageData.width === item.image.naturalWidth && item._imageData.height === item.image.naturalHeight) return item._imageData;
+      try {
+        const off = document.createElement('canvas');
+        off.width = item.image.naturalWidth; off.height = item.image.naturalHeight;
+        const octx = off.getContext('2d', { willReadFrequently: true });
+        octx.drawImage(item.image, 0, 0);
+        item._imageData = octx.getImageData(0, 0, off.width, off.height);
+        return item._imageData;
+      } catch { return null; }
+    }
+
+    function isOpaquePixel(item, sx, sy){
+      const id = ensureItemImageData(item);
+      if (!id) return false;
+      if (sx < 0 || sy < 0 || sx >= id.width || sy >= id.height) return false;
+      const a = id.data[((id.width * sy + sx) << 2) + 3];
+      return a !== 0;
+    }
+
+    
+    function getItemPixelColor(item, sx, sy){
+      const id = ensureItemImageData(item);
+      if (!id) return null;
+      if (sx < 0 || sy < 0 || sx >= id.width || sy >= id.height) return null;
+      const i = ((id.width * sy + sx) << 2);
+      return { r: id.data[i], g: id.data[i+1], b: id.data[i+2], a: id.data[i+3] };
+    }
+    function getBasePixelColorAtWorld(wx, wy){
+      const baseId = ensureBaseImageData();
+      if (!baseId) return null;
+      const x = Math.round(wx);
+      const y = Math.round(wy);
+      if (x < 0 || y < 0 || x >= baseId.width || y >= baseId.height) return null;
+      const i = ((baseId.width * y + x) << 2);
+      return { r: baseId.data[i], g: baseId.data[i+1], b: baseId.data[i+2], a: baseId.data[i+3] };
+    }
+    function logSelectionDetails(item, sx, sy){  }
+
+    function worldToScreen(wx, wy){
+      const rect = canvas.getBoundingClientRect();
+      return { x: rect.left + state.translateX + wx * state.scale, y: rect.top + state.translateY + wy * state.scale };
+    }
+
+    function hitOverlayAt(worldX, worldY){
+      const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+      if (!sel || !sel._overlayRects) return null;
+      const r = sel._overlayRects;
+      if (r.lock && worldX >= r.lock.x && worldX <= r.lock.x + r.lock.w && worldY >= r.lock.y && worldY <= r.lock.y + r.lock.h) return 'lock';
+      if (r.del && worldX >= r.del.x && worldX <= r.del.x + r.del.w && worldY >= r.del.y && worldY <= r.del.y + r.del.h) return 'del';
+      return null;
+    }
+    function updateCanvasCursorAt(worldX, worldY){
+      try {
+        const hit = hitOverlayAt(worldX, worldY);
+        if (hit) canvas.style.cursor = 'pointer'; else canvas.style.cursor = '';
+      } catch {}
+    }
+
+    function positionPixelMarker(el, item, sx, sy){
+      if (!el || !item) return;
+      const wx = (item.worldX || 0) + sx;
+      const wy = (item.worldY || 0) + sy;
+      const p = worldToScreen(wx, wy);
+      const size = Math.max(1, state.scale);
+      el.style.left = p.x + 'px';
+      el.style.top = p.y + 'px';
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.hidden = false;
+    }
+    function positionPixelMarkerAtWorld(el, wx, wy){
+      if (!el) return;
+      const p = worldToScreen(wx, wy);
+      const size = Math.max(1, state.scale);
+      el.style.left = p.x + 'px';
+      el.style.top = p.y + 'px';
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.hidden = false;
+    }
+    function ensureBaseImageData(){
+      if (!img) return null;
+      const w = img.width|0, h = img.height|0;
+      if (baseImageData && baseImageData.width === w && baseImageData.height === h) return baseImageData;
+      try {
+        const off = document.createElement('canvas'); off.width = w; off.height = h;
+        const octx = off.getContext('2d', { willReadFrequently: true });
+        octx.drawImage(img, 0, 0);
+        baseImageData = octx.getImageData(0, 0, w, h);
+        return baseImageData;
+      } catch { return null; }
+    }
+
+    function isSameColorAsBase(item, sx, sy){
+      const itemId = ensureItemImageData(item);
+      const baseId = ensureBaseImageData();
+      if (!itemId || !baseId) return false;
+      
+      const wx = Math.round((item.worldX || 0) + sx);
+      const wy = Math.round((item.worldY || 0) + sy);
+      if (wx < 0 || wy < 0 || wx >= baseId.width || wy >= baseId.height) return false;
+      if (sx < 0 || sy < 0 || sx >= itemId.width || sy >= itemId.height) return false;
+      const iBase = ((baseId.width * wy + wx) << 2);
+      const iItem = ((itemId.width * sy + sx) << 2);
+      const a1 = itemId.data[iItem + 3];
+      if (a1 === 0) return false; 
+      const a0 = baseId.data[iBase + 3];
+      if (a0 === 0) return false; 
+      const r1 = itemId.data[iItem],   g1 = itemId.data[iItem+1], b1 = itemId.data[iItem+2];
+      const r0 = baseId.data[iBase],   g0 = baseId.data[iBase+1],  b0 = baseId.data[iBase+2];
+      return (r0 === r1) && (g0 === g1) && (b0 === b1);
+    }
+
+    function snapItemToNearest(item, targetX, targetY){
+      const baseId = ensureBaseImageData();
+      const id = ensureItemImageData(item);
+      
+      if (!img) {
+        return { x: Math.round(targetX || 0), y: Math.round(targetY || 0) };
+      }
+      if (!id || !baseId) {
+        const maxXFallback = Math.max(0, img.width - (id && id.width ? id.width : 0));
+        const maxYFallback = Math.max(0, img.height - (id && id.height ? id.height : 0));
+        const rxFallback = Math.round(Math.min(Math.max(0, targetX), maxXFallback));
+        const ryFallback = Math.round(Math.min(Math.max(0, targetY), maxYFallback));
+        return { x: rxFallback, y: ryFallback };
+      }
+      const maxX = Math.max(0, img.width - id.width);
+      const maxY = Math.max(0, img.height - id.height);
+      const rx = Math.round(Math.min(Math.max(0, targetX), maxX));
+      const ry = Math.round(Math.min(Math.max(0, targetY), maxY));
+      let bestX = rx, bestY = ry, bestScore = -1;
+      const radius = 2;
+      const minX = Math.max(0, rx - radius), maxXn = Math.min(maxX, rx + radius);
+      const minY = Math.max(0, ry - radius), maxYn = Math.min(maxY, ry + radius);
+      const stride = Math.max(1, Math.floor(Math.min(id.width, id.height) / 64));
+      for (let oy = minY; oy <= maxYn; oy++) {
+        for (let ox = minX; ox <= maxXn; ox++) {
+          let score = 0;
+          for (let sy = 0; sy < id.height; sy += stride) {
+            const by = oy + sy; if (by < 0 || by >= baseId.height) continue;
+            let iItem = ((id.width * sy) << 2);
+            let iBase = ((baseId.width * by) << 2) + (ox << 2);
+            for (let sx = 0; sx < id.width; sx += stride) {
+              const a = id.data[iItem + 3];
+              if (a !== 0) {
+                const r1 = id.data[iItem], g1 = id.data[iItem+1], b1 = id.data[iItem+2];
+                const bx = ox + sx; if (bx >= 0 && bx < baseId.width) {
+                  const r0 = baseId.data[iBase], g0 = baseId.data[iBase+1], b0 = baseId.data[iBase+2];
+                  if (r0 === r1 && g0 === g1 && b0 === b1) score++;
+                }
+              }
+              iItem += (stride << 2);
+              iBase += (stride << 2);
+            }
+          }
+          if (score > bestScore) { bestScore = score; bestX = ox; bestY = oy; }
+        }
+      }
+      return { x: bestX, y: bestY };
+    }
+
+    function hideEl(el){ try { if (el) el.hidden = true; } catch {} }
+
+    function updatePixelMarkers(){
+      const hideHover = !!(state.dragging || state.zooming);
+      if (!isReadyOpen()) {
+        hideEl(pixelHoverEl);
+        try { pixelHoverFillEl.hidden = true; } catch {}
+        if (pixelSelectedList) pixelSelectedList.hidden = true;
+        return;
+      }
+      if (readyGlobalMode) {
+        
+        try {
+          readyGlobalSelected.forEach(rec => {
+            if (rec.fillEl) positionPixelMarkerAtWorld(rec.fillEl, rec.wx, rec.wy);
+            if (rec.el) positionPixelMarkerAtWorld(rec.el, rec.wx, rec.wy);
+          });
+        } catch {}
+        
+        try { if (!hideHover) { pixelHoverEl.hidden = false; pixelHoverEl.src = HOVER_ICON_SRC; } else { hideEl(pixelHoverEl); } } catch {}
+        try {
+          if (!hideHover && selectedOverrideColorId != null && readyHoverPixel && readyHoverPixel.x != null && readyHoverPixel.y != null) {
+            pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
+            positionPixelMarkerAtWorld(pixelHoverFillEl, readyHoverPixel.x, readyHoverPixel.y);
+            pixelHoverFillEl.hidden = false;
+          } else {
+            pixelHoverFillEl.hidden = true;
+          }
+        } catch {}
+        
+        try {
+          const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+          if (sel) {
+            const map = getSelectedMap(sel);
+            if (map) map.forEach(rec => {
+              if (rec && rec.fillEl) positionPixelMarker(rec.fillEl, sel, rec.x, rec.y);
+              if (rec && rec.el) positionPixelMarker(rec.el, sel, rec.x, rec.y);
+            });
+            if (pixelSelectedList) pixelSelectedList.hidden = (readyGlobalSelected.size === 0) && (!map || map.size === 0);
+          } else {
+            if (pixelSelectedList) pixelSelectedList.hidden = readyGlobalSelected.size === 0;
+          }
+        } catch {}
+        return;
+      }
+      const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+      if (!sel || !sel.image || !sel.image.complete) { hideEl(pixelHoverEl); try { pixelHoverFillEl.hidden = true; } catch {}; if (pixelSelectedList) pixelSelectedList.hidden = true; return; }
+      ensureRenderedSelectedForItem(sel);
+      positionSelectedMarkersForItem(sel);
+      
+      try {
+        if (readyGlobalSelected && readyGlobalSelected.size > 0) {
+          readyGlobalSelected.forEach(rec => {
+            if (rec.fillEl) positionPixelMarkerAtWorld(rec.fillEl, rec.wx, rec.wy);
+            if (rec.el) positionPixelMarkerAtWorld(rec.el, rec.wx, rec.wy);
+          });
+        }
+      } catch {}
+      if (pixelSelectedList) {
+        const perImageCount = getSelectedMap(sel).size;
+        const globalCount = readyGlobalSelected ? readyGlobalSelected.size : 0;
+        pixelSelectedList.hidden = (perImageCount + globalCount) === 0;
+      }
+      if (!hideHover && readyHoverPixel && readyHoverPixel.x != null && readyHoverPixel.y != null) {
+        positionPixelMarker(pixelHoverEl, sel, readyHoverPixel.x, readyHoverPixel.y);
+        try {
+          if (!hideHover && selectedOverrideColorId != null) {
+            pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
+            positionPixelMarker(pixelHoverFillEl, sel, readyHoverPixel.x, readyHoverPixel.y);
+            pixelHoverFillEl.hidden = false;
+          } else {
+            pixelHoverFillEl.hidden = true;
+          }
+        } catch {}
+      } else {
+        hideEl(pixelHoverEl);
+        try { pixelHoverFillEl.hidden = true; } catch {}
+      }
+    }
+
+    function updateReadyHoverFromEvent(e){
+      if (!isReadyOpen()) { hideEl(pixelHoverEl); return; }
+      
+      try {
+        const t = e && e.target ? e.target : null;
+        const overUi = !!(t && t.closest && (
+          t.closest('#control-panel') ||
+          t.closest('#ready-popup') ||
+          t.closest('#sidebar') ||
+          t.closest('#color-palette')
+        ));
+        if (overUi) {
+          readyHoverPixel.x = null; readyHoverPixel.y = null;
+          hideEl(pixelHoverEl);
+          try { pixelHoverFillEl.hidden = true; } catch {}
+          return;
+        }
+      } catch {}
+      if (readyGlobalMode) {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const worldX = (px - state.translateX) / state.scale;
+        const worldY = (py - state.translateY) / state.scale;
+        const wx = Math.floor(worldX);
+        const wy = Math.floor(worldY);
+        
+        if (img && wx >= 0 && wy >= 0 && wx < img.width && wy < img.height) {
+          readyHoverPixel.x = wx; readyHoverPixel.y = wy;
+          try { pixelHoverEl.src = HOVER_ICON_SRC; positionPixelMarkerAtWorld(pixelHoverEl, wx, wy); pixelHoverEl.hidden = false; } catch {}
+          try {
+            if (selectedOverrideColorId != null) {
+              pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
+              positionPixelMarkerAtWorld(pixelHoverFillEl, wx, wy);
+              pixelHoverFillEl.hidden = false;
+            } else {
+              pixelHoverFillEl.hidden = true;
+            }
+          } catch {}
+        } else {
+          readyHoverPixel.x = null; readyHoverPixel.y = null; hideEl(pixelHoverEl); try { pixelHoverFillEl.hidden = true; } catch {}
+        }
+        return;
+      }
+      const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+      if (!sel || !sel.image || !sel.image.complete) { hideEl(pixelHoverEl); return; }
+      try { pixelHoverEl.src = HOVER_ICON_SRC; } catch {}
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const worldX = (px - state.translateX) / state.scale;
+      const worldY = (py - state.translateY) / state.scale;
+      const lx = Math.floor(worldX - (sel.worldX || 0));
+      const ly = Math.floor(worldY - (sel.worldY || 0));
+      if (lx >= 0 && ly >= 0 && lx < sel.image.naturalWidth && ly < sel.image.naturalHeight && isOpaquePixel(sel, lx, ly)) {
+        readyHoverPixel.x = lx; readyHoverPixel.y = ly;
+        positionPixelMarker(pixelHoverEl, sel, lx, ly);
+        try {
+          if (selectedOverrideColorId != null) {
+            pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
+            positionPixelMarker(pixelHoverFillEl, sel, lx, ly);
+            pixelHoverFillEl.hidden = false;
+          } else {
+            pixelHoverFillEl.hidden = true;
+          }
+        } catch {}
+      } else {
+        readyHoverPixel.x = null; readyHoverPixel.y = null; hideEl(pixelHoverEl); try { pixelHoverFillEl.hidden = true; } catch {}
+      }
+    }
+
+    
+    const PALETTE = [
+      { id: 1, rgb: [0, 0, 0] },
+      { id: 2, rgb: [60, 60, 60] },
+      { id: 3, rgb: [120, 120, 120] },
+      { id: 4, rgb: [210, 210, 210] },
+      { id: 5, rgb: [255, 255, 255] },
+      { id: 6, rgb: [96, 0, 24] },
+      { id: 7, rgb: [237, 28, 36] },
+      { id: 8, rgb: [255, 127, 39] },
+      { id: 9, rgb: [246, 170, 9] },
+      { id: 10, rgb: [249, 221, 59] },
+      { id: 11, rgb: [255, 250, 188] },
+      { id: 12, rgb: [14, 185, 104] },
+      { id: 13, rgb: [19, 230, 123] },
+      { id: 14, rgb: [135, 255, 94] },
+      { id: 15, rgb: [12, 129, 110] },
+      { id: 16, rgb: [16, 174, 166] },
+      { id: 17, rgb: [19, 225, 190] },
+      { id: 18, rgb: [40, 80, 158] },
+      { id: 19, rgb: [64, 147, 228] },
+      { id: 20, rgb: [96, 247, 242] },
+      { id: 21, rgb: [107, 80, 246] },
+      { id: 22, rgb: [153, 177, 251] },
+      { id: 23, rgb: [120, 12, 153] },
+      { id: 24, rgb: [170, 56, 185] },
+      { id: 25, rgb: [224, 159, 249] },
+      { id: 26, rgb: [203, 0, 122] },
+      { id: 27, rgb: [236, 31, 128] },
+      { id: 28, rgb: [243, 141, 169] },
+      { id: 29, rgb: [104, 70, 52] },
+      { id: 30, rgb: [149, 104, 42] },
+      { id: 31, rgb: [248, 178, 119] }
+    ];
+    function setupColorPalette(){
+      if (!colorPaletteEl) return;
+      colorPaletteEl.innerHTML = '';
+      
+      const swT = document.createElement('div');
+      swT.className = 'palette-swatch transparent selected';
+      swT.title = t('palette.transparentTitle');
+      swT.setAttribute('role', 'button');
+      swT.addEventListener('click', () => {
+        selectedOverrideColorId = null;
+        
+        readyGlobalMode = false;
+        try {
+          const rp = document.getElementById('ready-popup');
+          if (rp && !rp.hidden) {
+            readyShouldReset = true;
+            clearAllReadySelections();
+            resetReadyNow();
+          }
+        } catch {}
+        updatePaletteSelectionUi();
+        try { updateReadyButtonEnabled(); } catch {}
+        try { updatePixelMarkers(); } catch {}
+      });
+      colorPaletteEl.appendChild(swT);
+      
+      for (let i = 0; i < PALETTE.length; i++){
+        const p = PALETTE[i];
+        const el = document.createElement('div');
+        el.className = 'palette-swatch';
+        el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
+        el.title = t('palette.colorTitle', { id: p.id });
+        el.setAttribute('data-id', String(p.id));
+        el.setAttribute('role', 'button');
+        el.addEventListener('click', () => {
+          selectedOverrideColorId = p.id;
+          
+          try {
+            const rp = document.getElementById('ready-popup');
+            if (rp && !rp.hidden) {
+              const hasSelectedSign = (selectedIndex >= 0 && selectedIndex < signItems.length);
+              readyGlobalMode = !hasSelectedSign;
+              
+              try { clearAllReadySelections(); } catch {}
+              try { resetReadyNow(); } catch {}
+            }
+          } catch {}
+          updatePaletteSelectionUi();
+          try { updateReadyButtonEnabled(); } catch {}
+          try { updateReadySelectionLabel(); } catch {}
+          try { updatePixelMarkers(); } catch {}
+        });
+        colorPaletteEl.appendChild(el);
+      }
+      updatePaletteSelectionUi();
+    }
+    function updateReadyButtonEnabled(){
+      try {
+        const btn = document.getElementById('btn-ready');
+        if (!btn) return;
+        btn.disabled = !(
+          (selectedIndex >= 0 && selectedIndex < signItems.length) ||
+          (selectedOverrideColorId != null)
+        );
+      } catch {}
+    }
+    function openReadyOnPaletteClick(){  }
+    function updatePaletteSelectionUi(){
+      if (!colorPaletteEl) return;
+      const swatches = Array.from(colorPaletteEl.querySelectorAll('.palette-swatch'));
+      swatches.forEach(sw => {
+        const idAttr = sw.getAttribute('data-id');
+        const id = idAttr == null ? null : Number(idAttr);
+        const isSelected = (idAttr == null && selectedOverrideColorId == null) || (idAttr != null && id === selectedOverrideColorId);
+        sw.classList.toggle('selected', !!isSelected);
+      });
+    }
+
+    function squaredDistance(r1,g1,b1, r2,g2,b2){
+      const dr=r1-r2, dg=g1-g2, db=b1-b2; return dr*dr+dg*dg+db*db;
+    }
+    
+    function srgbToOklab(r, g, b){
+      const sr = r / 255, sg = g / 255, sb = b / 255;
+      const toLin = (u) => (u <= 0.04045) ? (u / 12.92) : Math.pow((u + 0.055) / 1.055, 2.4);
+      const lr = toLin(sr), lg = toLin(sg), lb = toLin(sb);
+      const l_ = 0.4122214708*lr + 0.5363325363*lg + 0.0514459929*lb;
+      const m_ = 0.2119034982*lr + 0.6806995451*lg + 0.1073969566*lb;
+      const s_ = 0.0883024619*lr + 0.2817188376*lg + 0.6299787005*lb;
+      const l = Math.cbrt(l_), m = Math.cbrt(m_), s = Math.cbrt(s_);
+      const L = 0.2104542553*l + 0.7936177850*m - 0.0040720468*s;
+      const A = 1.9779984951*l - 2.4285922050*m + 0.4505937099*s;
+      const B = 0.0259040371*l + 0.7827717662*m - 0.8086757660*s;
+      return [L, A, B];
+    }
+    const PALETTE_OKLAB = (() => {
+      const arr = [];
+      for (let i = 0; i < PALETTE.length; i++){
+        const p = PALETTE[i];
+        const lab = srgbToOklab(p.rgb[0], p.rgb[1], p.rgb[2]);
+        arr.push({ id: p.id, lab });
+      }
+      return arr;
+    })();
+    function nearestPaletteRgb(r,g,b){
+      const lab = srgbToOklab(r,g,b);
+      let best = PALETTE[0].rgb, bestD = Infinity;
+      for (let i = 0; i < PALETTE_OKLAB.length; i++){
+        const q = PALETTE_OKLAB[i].lab;
+        const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
+        const d = dL*dL + dA*dA + dB*dB;
+        if (d < bestD){ bestD = d; best = PALETTE[i].rgb; if (d === 0) break; }
+      }
+      return best;
+    }
+    
+    const EXACT_PALETTE_MAP = (() => {
+      const m = new Map();
+      for (let i = 0; i < PALETTE.length; i++) {
+        const p = PALETTE[i];
+        m.set(String(p.rgb[0]) + ',' + String(p.rgb[1]) + ',' + String(p.rgb[2]), p.id);
+      }
+      return m;
+    })();
+    function nearestPaletteId(r,g,b){
+      const lab = srgbToOklab(r,g,b);
+      let bestId = PALETTE[0].id;
+      let bestD = Infinity;
+      for (let i = 0; i < PALETTE_OKLAB.length; i++){
+        const q = PALETTE_OKLAB[i].lab;
+        const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
+        const d = dL*dL + dA*dA + dB*dB;
+        if (d < bestD){ bestD = d; bestId = PALETTE[i].id; if (d === 0) break; }
+      }
+      return bestId;
+    }
+    function rgbToPaletteId(r,g,b){
+      const key = String(r) + ',' + String(g) + ',' + String(b);
+      if (EXACT_PALETTE_MAP.has(key)) return EXACT_PALETTE_MAP.get(key);
+      return nearestPaletteId(r,g,b);
+    }
+    function quantizeImageToPalette(image){
+      const w=image.naturalWidth|0, h=image.naturalHeight|0;
+      const off=document.createElement('canvas'); off.width=w; off.height=h;
+      const octx=off.getContext('2d', { willReadFrequently: true });
+      octx.imageSmoothingEnabled = false;
+      octx.drawImage(image,0,0);
+      const id=octx.getImageData(0,0,w,h);
+      const data=id.data;
+      
+      const w2 = w + 2;
+      const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+      const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+      for (let y = 0; y < h; y++) {
+        const leftToRight = (y % 2 === 0);
+        
+        for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
+        
+        if (leftToRight) {
+          for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const a = data[idx + 3]; if (a === 0) continue;
+            let r = data[idx] + errCurrR[x+1];
+            let g = data[idx+1] + errCurrG[x+1];
+            let b = data[idx+2] + errCurrB[x+1];
+            r = r < 0 ? 0 : (r > 255 ? 255 : r);
+            g = g < 0 ? 0 : (g > 255 ? 255 : g);
+            b = b < 0 ? 0 : (b > 255 ? 255 : b);
+            const nn = nearestPaletteRgb(r, g, b);
+            data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+            const er = r - nn[0];
+            const eg = g - nn[1];
+            const eb = b - nn[2];
+            
+            errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+            errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+            errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+          }
+        } else {
+          for (let x = w - 1; x >= 0; x--) {
+            const idx = (y * w + x) * 4;
+            const a = data[idx + 3]; if (a === 0) continue;
+            let r = data[idx] + errCurrR[x+1];
+            let g = data[idx+1] + errCurrG[x+1];
+            let b = data[idx+2] + errCurrB[x+1];
+            r = r < 0 ? 0 : (r > 255 ? 255 : r);
+            g = g < 0 ? 0 : (g > 255 ? 255 : g);
+            b = b < 0 ? 0 : (b > 255 ? 255 : b);
+            const nn = nearestPaletteRgb(r, g, b);
+            data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+            const er = r - nn[0];
+            const eg = g - nn[1];
+            const eb = b - nn[2];
+            
+            errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+            errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+            errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+          }
+        }
+        
+        for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+      }
+      octx.putImageData(id,0,0);
+      return new Promise((resolve)=>{ off.toBlob((blob)=>resolve(blob), 'image/png'); });
+    }
+
+    
+    function countNonTransparentPixels(image){
+      try {
+        const w=image.naturalWidth|0, h=image.naturalHeight|0;
+        if (!w || !h) return 0;
+        const off=document.createElement('canvas'); off.width=w; off.height=h;
+        const octx=off.getContext('2d', { willReadFrequently: true });
+        octx.drawImage(image,0,0);
+        const id=octx.getImageData(0,0,w,h);
+        const data=id.data;
+        let cnt=0;
+        for(let i=3;i<data.length;i+=4){ if(data[i]!==0) cnt++; }
+        return cnt;
+      } catch { return 0; }
+    }
+
+    
+    const PIXEL_FONT_5x7 = {
+      '0': [
+        '01110','10001','10011','10101','11001','10001','01110'
+      ],
+      '1': [
+        '00100','01100','00100','00100','00100','00100','01110'
+      ],
+      '2': [
+        '01110','10001','00001','00010','00100','01000','11111'
+      ],
+      '3': [
+        '11110','00001','00001','01110','00001','00001','11110'
+      ],
+      '4': [
+        '00010','00110','01010','10010','11111','00010','00010'
+      ],
+      '5': [
+        '11111','10000','11110','00001','00001','10001','01110'
+      ],
+      '6': [
+        '00110','01000','10000','11110','10001','10001','01110'
+      ],
+      '7': [
+        '11111','00001','00010','00100','01000','01000','01000'
+      ],
+      '8': [
+        '01110','10001','10001','01110','10001','10001','01110'
+      ],
+      '9': [
+        '01110','10001','10001','01111','00001','00010','11100'
+      ],
+      'p': [
+        '11110','10001','10001','11110','10000','10000','10000'
+      ],
+      'i': [
+        '00100','00000','01100','00100','00100','00100','01110'
+      ],
+      'x': [
+        '10001','01010','00100','01010','10001','00000','00000'
+      ],
+      'e': [
+        '01110','10000','11110','10000','10000','10001','01110'
+      ],
+      'l': [
+        '10000','10000','10000','10000','10000','10000','11111'
+      ],
+      ' ': [
+        '00000','00000','00000','00000','00000','00000','00000'
+      ]
+    };
+
+    function measurePixelText(text, pixelSize){
+      const glyphW = 5, glyphH = 7, space = 1;
+      const cellsW = Math.max(0, text.length * (glyphW + space) - space);
+      return { width: cellsW * pixelSize, height: glyphH * pixelSize };
+    }
+
+    function drawPixelText(ctx, text, x, y, pixelSize, color){
+      const glyphW = 5, glyphH = 7, space = 1;
+      let cx = x;
+      ctx.save();
+      ctx.fillStyle = color || '#fff';
+      for(let k=0;k<text.length;k++){
+        const ch = text[k].toLowerCase();
+        const g = PIXEL_FONT_5x7[ch] || PIXEL_FONT_5x7[' '];
+        for(let r=0;r<glyphH;r++){
+          const row = g[r] || '00000';
+          for(let c=0;c<glyphW;c++){
+            if (row[c] === '1') ctx.fillRect(cx + c*pixelSize, y + r*pixelSize, pixelSize, pixelSize);
+          }
+        }
+        cx += (glyphW + space) * pixelSize;
+      }
+      ctx.restore();
+    }
+
+    
+    const PIX_ICON_LOCK_CLOSED = [
+      '0011100',
+      '0100010',
+      '0100010',
+      '0111110',
+      '0110110',
+      '0110110',
+      '0111110'
+    ];
+    const PIX_ICON_LOCK_OPEN = [
+      '0011000',
+      '0100000',
+      '0100000',
+      '0111110',
+      '0110110',
+      '0110110',
+      '0111110'
+    ];
+    const PIX_ICON_X = [
+      '1000001',
+      '0100010',
+      '0010100',
+      '0001000',
+      '0010100',
+      '0100010',
+      '1000001'
+    ];
+    function drawPixelIcon(ctx, pattern, x, y, pixelSize, color){
+      ctx.save();
+      ctx.fillStyle = color || '#ffffff';
+      const h = pattern.length|0;
+      const w = h ? pattern[0].length|0 : 0;
+      for (let r = 0; r < h; r++){
+        const row = pattern[r] || '';
+        for (let c = 0; c < w; c++){
+          if (row[c] === '1') ctx.fillRect(x + c*pixelSize, y + r*pixelSize, pixelSize, pixelSize);
+        }
+      }
+      ctx.restore();
+    }
+    function measurePixelIcon(pattern, pixelSize){
+      const h = pattern.length|0;
+      const w = h ? pattern[0].length|0 : 0;
+      return { width: w * pixelSize, height: h * pixelSize };
+    }
+
+    function getContentCenterPx() {
+      const c = canvas.getBoundingClientRect();
+      const s = sidebar && sidebar.getBoundingClientRect ? sidebar.getBoundingClientRect() : null;
+      const regionLeft = s ? Math.max(0, Math.min(c.width, s.right - c.left)) : 0;
+      return { x: regionLeft + (c.width - regionLeft) / 2, y: c.height / 2 };
+    }
+
+    let img = null;
+    let baseImageData = null;
+    const state = {
+      scale: 1,
+      minScale: 0.1,
+      maxScale: 16,
+      translateX: 0,
+      translateY: 0,
+      dragging: false,
+      lastX: 0,
+      lastY: 0,
+      zooming: false
+    };
+    let zoomingTimeout = null;
+
+    function resizeCanvasToDisplaySize() {
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = Math.floor(canvas.clientWidth * dpr);
+      const displayHeight = Math.floor(canvas.clientHeight * dpr);
+      if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+      }
+      return dpr;
+    }
+
+    function render() {
+      if (!img) return;
+      const dpr = resizeCanvasToDisplaySize();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      ctx.imageSmoothingEnabled = false;
+      ctx.setTransform(dpr * state.scale, 0, 0, dpr * state.scale, dpr * state.translateX, dpr * state.translateY);
+      ctx.drawImage(img, 0, 0);
+      
+      let dimSelectedWhileReadyOpen = false;
+      try {
+        const rp = document.getElementById('ready-popup');
+        dimSelectedWhileReadyOpen = !!(rp && !rp.hidden);
+      } catch {}
+      for (let i = 0; i < signItems.length; i++) {
+        const it = signItems[i];
+        if (it.image && it.image.complete) {
+          const wx = typeof it.worldX === 'number' ? it.worldX : 0;
+          const wy = typeof it.worldY === 'number' ? it.worldY : 0;
+          ctx.save();
+          if (i !== selectedIndex || dimSelectedWhileReadyOpen) {
+            ctx.globalAlpha = 0.70;
+            ctx.filter = 'saturate(0.6)';
+          } else {
+            ctx.globalAlpha = 1;
+            ctx.filter = 'none';
+          }
+          ctx.drawImage(it.image, wx, wy);
+          ctx.restore();
+        }
+      }
+      
+      if (!dimSelectedWhileReadyOpen && selectedIndex >= 0 && selectedIndex < signItems.length) {
+        const it = signItems[selectedIndex];
+        if (it && it.image && it.image.complete) {
+          const wx = (typeof it.worldX === 'number' ? it.worldX : 0);
+          const wy = (typeof it.worldY === 'number' ? it.worldY : 0);
+          const label = String(it.pixelCount == null ? 0 : it.pixelCount) + ' pixel';
+          // Scale UI relative to image size: baseline = 100x100 → scale = 1 (capped at 5x)
+          const uiScale = Math.min(5, Math.max(0.1, Math.max(it.image.naturalWidth, it.image.naturalHeight) / 100));
+          const pixelSize = 0.2 * uiScale;
+          const padding = Math.max(0.2 * uiScale, Math.floor((0.5 * uiScale) / state.scale));
+          const offset = 1 * uiScale;
+          const m = measurePixelText(label, pixelSize);
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.fillRect(wx + offset - padding, wy + offset - padding, m.width + padding * 2, m.height + padding * 2);
+          drawPixelText(ctx, label, wx + offset, wy + offset, pixelSize, '#ffffff');
+          ctx.restore();
+        }
+      }
+      const sel = signItems[selectedIndex];
+      if (sel && sel.image && sel.image.complete && !dimSelectedWhileReadyOpen) {
+        ctx.save();
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 2 / state.scale;
+        ctx.setLineDash([6 / state.scale, 6 / state.scale]);
+        ctx.strokeRect(sel.worldX || 0, sel.worldY || 0, sel.image.naturalWidth, sel.image.naturalHeight);
+        ctx.restore();
+        
+        const wx0 = (sel.worldX || 0);
+        const wy0 = (sel.worldY || 0);
+        // Scale lock/close icons relative to image size: baseline = 100x100 → scale = 1 (capped at 5x)
+        const uiScale2 = Math.min(5, Math.max(0.1, Math.max(sel.image.naturalWidth, sel.image.naturalHeight) / 100));
+        const pixelSize = 0.6 * uiScale2;
+        const padding = Math.max(0.3 * uiScale2, Math.floor((0.5 * uiScale2) / state.scale));
+        const gap = padding * 10; 
+        const off = 1 * uiScale2;
+        const lockPattern = sel.locked ? PIX_ICON_LOCK_CLOSED : PIX_ICON_LOCK_OPEN;
+        const lockSize = measurePixelIcon(lockPattern, pixelSize);
+        const delSize = measurePixelIcon(PIX_ICON_X, pixelSize);
+        const lockBgW = lockSize.width + padding * 2;
+        const delBgW = delSize.width + padding * 2;
+        const bgH = Math.max(lockSize.height, delSize.height) + padding * 2;
+        const totalW = lockBgW + delBgW + gap;
+        let xRight = wx0 + sel.image.naturalWidth - off - totalW;
+        let yTop = wy0 + off;
+        
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        const xLockBg = xRight;
+        const xDelBg = xLockBg + lockBgW + gap;
+        ctx.fillRect(xLockBg, yTop, lockBgW, bgH);
+        ctx.fillRect(xDelBg, yTop, delBgW, bgH);
+        
+        const xLockIcon = xLockBg + padding;
+        const yIcons = yTop + padding;
+        drawPixelIcon(ctx, lockPattern, xLockIcon, yIcons, pixelSize, '#ffffff');
+        
+        const xDelIcon = xDelBg + padding;
+        drawPixelIcon(ctx, PIX_ICON_X, xDelIcon, yIcons, pixelSize, '#ffffff');
+        ctx.restore();
+        
+        sel._overlayRects = {
+          lock: { x: xLockIcon, y: yIcons, w: lockSize.width, h: lockSize.height },
+          del: { x: xDelIcon, y: yIcons, w: delSize.width, h: delSize.height },
+          bg: { x: xRight, y: yTop, w: totalW, h: bgH }
+        };
+      }
+      
+      try { updatePixelMarkers(); } catch {}
+    }
+
+    function fitToView() {
+      if (!img) return;
+      const vw = canvas.clientWidth;
+      const vh = canvas.clientHeight;
+      const scaleToFit = Math.min(vw / img.width, vh / img.height);
+      state.scale = scaleToFit;
+      state.translateX = (vw - img.width * state.scale) / 2;
+      state.translateY = (vh - img.height * state.scale) / 2;
+      render();
+    }
+
+    function reloadCurrentBackground() {
+      try {
+        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
+        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
+        if (!area || !no) return;
+        
+        const url = buildUrl(area, no) + '?t=' + Date.now();
+        const image = new Image();
+        image.onload = () => {
+          img = image;
+          baseImageData = null;
+          render();
+          updatePixelMarkers();
+        };
+        image.onerror = () => {};
+        image.src = url;
+      } catch {}
+    }
+
+    const USE_LOCAL_TILE = false;
+    function buildUrl(area, no) {
+      if (USE_LOCAL_TILE) return '767.png';
+      
+      return '/tiles/' + encodeURIComponent(area) + '/' + encodeURIComponent(no) + '.png';
+    }
+
+    function loadImage(area, no) {
+      const url = buildUrl(area, no);
+      const image = new Image();
+      
+      image.onload = () => {
+        img = image;
+        try { baseImageData = null; } catch {}
+        
+        fitToView();
+      };
+      image.onerror = () => {
+        alert(t('messages.imageLoadFailed'));
+      };
+      image.src = url;
+    }
+
+    
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const worldX = (px - state.translateX) / state.scale;
+      const worldY = (py - state.translateY) / state.scale;
+      
+      if (isReadyOpen()) {
+        readyMouseDownPt = { screenX: e.clientX, screenY: e.clientY, worldX, worldY, button: e.button };
+        readyMouseMoved = false;
+      }
+
+      
+      let hitIndex = -1;
+      for (let i = signItems.length - 1; i >= 0; i--) {
+        const it = signItems[i];
+        if (!it || !it.image || !it.image.complete) continue;
+        const x = it.worldX || 0;
+        const y = it.worldY || 0;
+        const w = it.image.naturalWidth;
+        const h = it.image.naturalHeight;
+        if (worldX >= x && worldX <= x + w && worldY >= y && worldY <= y + h) {
+          hitIndex = i;
+          break;
+        }
+      }
+
+      if (!readyGlobalMode && hitIndex >= 0) {
+        selectedIndex = hitIndex;
+        
+        try {
+          const rp = document.getElementById('ready-popup');
+          if (rp && !rp.hidden && readyLockedItem && readyLockedItem !== signItems[selectedIndex]) {
+            readyLockedItem.lockedByReady = false;
+            try { updateItemLockUi(readyLockedItem); } catch {}
+            readyLockedItem = null;
+          }
+        } catch {}
+        updateThumbSelection();
+        updateCounter();
+        const it = signItems[selectedIndex];
+        
+        if (it && it._overlayRects) {
+          const rbg = it._overlayRects.bg;
+          if (rbg && worldX >= rbg.x && worldX <= rbg.x + rbg.w && worldY >= rbg.y && worldY <= rbg.y + rbg.h) {
+            const rLock = it._overlayRects.lock;
+            const rDel = it._overlayRects.del;
+            if (rLock && worldX >= rLock.x && worldX <= rLock.x + rLock.w && worldY >= rLock.y && worldY <= rLock.y + rLock.h) {
+              
+              it.locked = !it.locked;
+              try { updateItemLockUi(it); } catch {}
+              render();
+              return; 
+            }
+            if (rDel && worldX >= rDel.x && worldX <= rDel.x + rDel.w && worldY >= rDel.y && worldY <= rDel.y + rDel.h) {
+              
+              deleteItem(it);
+              render();
+              return; 
+            }
+          }
+        }
+        if (!(it.locked || it.lockedByReady)) {
+          signDragging = true;
+          signWorldOffsetX = worldX - (it.worldX || 0);
+          signWorldOffsetY = worldY - (it.worldY || 0);
+        }
+        render();
+        if (isReadyOpen()) {
+          
+          updateReadyHoverFromEvent(e);
+          updatePixelMarkers();
+        }
+      } else if (!readyGlobalMode) {
+        try {
+          const prev = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+          if (prev) clearSelectionsForItem(prev);
+        } catch {}
+        selectedIndex = -1;
+        try {
+          const rp = document.getElementById('ready-popup');
+          if (rp && !rp.hidden) {
+            resetReadyNow();
+          }
+        } catch {}
+        updateThumbSelection();
+        updateCounter();
+        if (!isReadyOpen()) {
+          state.dragging = true;
+          state.lastX = e.clientX;
+          state.lastY = e.clientY;
+          document.body.classList.add('dragging');
+        }
+        render();
+        updatePixelMarkers();
+      }
+    });
+    
+    canvas.addEventListener('contextmenu', (e) => { if (isReadyOpen()) { e.preventDefault(); } });
+    window.addEventListener('mousemove', (e) => {
+      if (isReadyOpen()) {
+        if (readyMouseDownPt) {
+          const moveDx = Math.abs(e.clientX - readyMouseDownPt.screenX);
+          const moveDy = Math.abs(e.clientY - readyMouseDownPt.screenY);
+          if (moveDx > READY_CLICK_MOVE_TOLERANCE || moveDy > READY_CLICK_MOVE_TOLERANCE) readyMouseMoved = true;
+        }
+      }
+      if (state.dragging) {
+        if (isReadyOpen()) {
+          return;
+        }
+        const dx = e.clientX - state.lastX;
+        const dy = e.clientY - state.lastY;
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
+        state.translateX += dx;
+        state.translateY += dy;
+        render();
+        updatePixelMarkers();
+        
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const worldX = (px - state.translateX) / state.scale;
+        const worldY = (py - state.translateY) / state.scale;
+        updateCanvasCursorAt(worldX, worldY);
+        return;
+      }
+      if (isReadyOpen()) {
+        try {
+          const t = e && e.target ? e.target : null;
+          const overUi = !!(t && t.closest && (
+            t.closest('#control-panel') ||
+            t.closest('#ready-popup') ||
+            t.closest('#sidebar') ||
+            t.closest('#color-palette')
+          ));
+          if (overUi) {
+            readyHoverPixel.x = null; readyHoverPixel.y = null;
+            hideEl(pixelHoverEl);
+            try { pixelHoverFillEl.hidden = true; } catch {}
+          } else {
+            updateReadyHoverFromEvent(e);
+          }
+        } catch { updateReadyHoverFromEvent(e); }
+      }
+      
+      
+      if (isReadyOpen() && readyMouseDownPt && !readyMouseMoved) {
+        return; 
+      }
+      
+      try {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const worldX = (px - state.translateX) / state.scale;
+        const worldY = (py - state.translateY) / state.scale;
+        updateCanvasCursorAt(worldX, worldY);
+      } catch {}
+      
+      if (isReadyOpen() && readyMouseDownPt && readyMouseMoved && !state.dragging) {
+        
+      }
+      if (!signDragging) return;
+      if (isReadyOpen()) {
+        return;
+      }
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      let worldX = (px - state.translateX) / state.scale - signWorldOffsetX;
+      let worldY = (py - state.translateY) / state.scale - signWorldOffsetY;
+      const sel = signItems[selectedIndex];
+      if (sel && sel.image && img) {
+        const snapped = snapItemToNearest(sel, worldX, worldY);
+        sel.worldX = snapped.x;
+        sel.worldY = snapped.y;
+        
+        if (sel.pixelCount == null) {
+          try { sel.pixelCount = countNonTransparentPixels(sel.image); } catch {}
+        }
+        render();
+        updatePixelMarkers();
+        if (isReadyOpen()) { try { updateReadySelectionLabel(); } catch {} }
+      }
+    });
+    window.addEventListener('mouseup', (e) => {
+      if (isReadyOpen()) {
+        
+        if (readyMouseDownPt && !readyMouseMoved && e.button === 0) {
+          const hasAccounts = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+          if (!hasAccounts) {
+            showToast(t('messages.selectAccountFirst'), 'error', 2000);
+            readyMouseDownPt = null; readyMouseMoved = false;
+            return;
+          }
+          const rect = canvas.getBoundingClientRect();
+          const px = e.clientX - rect.left;
+          const py = e.clientY - rect.top;
+          const worldX = (px - state.translateX) / state.scale;
+          const worldY = (py - state.translateY) / state.scale;
+          const wx = Math.floor(worldX);
+          const wy = Math.floor(worldY);
+          const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
+          const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
+          
+          if (!img) {
+            readyMouseDownPt = null; readyMouseMoved = false;
+            return;
+          }
+          if (readyGlobalMode) {
+            if (wx >= 0 && wy >= 0 && wx < img.width && wy < img.height) {
+              const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+              if (limit > 0 && readyGlobalSelected.size >= limit) {
+                showToast(t('messages.maxPixelsReached', { limit }), 'error', 2000);
+                readyMouseDownPt = null; readyMouseMoved = false;
+                return;
+              }
+              const key = String(wx) + ',' + String(wy);
+              if (!readyGlobalSelected.has(key)) {
+                const el = document.createElement('img');
+                el.className = 'pixel-marker'; el.alt = 'selected'; el.src = SELECTED_ICON_SRC;
+                const rec = { wx, wy, el, fillEl: null, colorId: selectedOverrideColorId };
+                if (selectedOverrideColorId != null) {
+                  const f = document.createElement('img'); f.className = 'pixel-marker'; f.alt = 'fill';
+                  try { f.style.zIndex = '1299'; } catch {}
+                  f.src = getMarkerSrcForColorId(selectedOverrideColorId);
+                  rec.fillEl = f;
+                  if (pixelSelectedList) pixelSelectedList.appendChild(f);
+                  positionPixelMarkerAtWorld(f, wx, wy);
+                }
+                if (pixelSelectedList) pixelSelectedList.appendChild(el);
+                positionPixelMarkerAtWorld(el, wx, wy);
+                readyGlobalSelected.set(key, rec);
+                if (pixelSelectedList) pixelSelectedList.hidden = false;
+                try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+              }
+            }
+          } else {
+            const selItem = signItems[selectedIndex];
+            if (selItem && selItem.image && selItem.image.complete) {
+              const lx = Math.floor(worldX - (selItem.worldX || 0));
+              const ly = Math.floor(worldY - (selItem.worldY || 0));
+              if (lx >= 0 && ly >= 0 && lx < selItem.image.naturalWidth && ly < selItem.image.naturalHeight) {
+                if (isOpaquePixel(selItem, lx, ly) && !isSameColorAsBase(selItem, lx, ly)) {
+                  const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+                  const map = getSelectedMap(selItem);
+                  const already = map ? map.size : 0;
+                  if (limit > 0 && already >= limit) {
+                    showToast(t('messages.maxPixelsReached', { limit }), 'error', 2000);
+                    readyMouseDownPt = null; readyMouseMoved = false;
+                    return;
+                  }
+                  const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+                  if (didAdd) {
+                    try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+                  }
+                }
+              }
+            }
+          }
+        } else if (readyMouseDownPt && !readyMouseMoved && e.button === 2) {
+          
+          const rect = canvas.getBoundingClientRect();
+          const px = e.clientX - rect.left;
+          const py = e.clientY - rect.top;
+          const worldX = (px - state.translateX) / state.scale;
+          const worldY = (py - state.translateY) / state.scale;
+          if (readyGlobalMode) {
+            const wx = Math.floor(worldX);
+            const wy = Math.floor(worldY);
+            if (img && wx >= 0 && wy >= 0 && wx < img.width && wy < img.height) {
+              const key = String(wx) + ',' + String(wy);
+              const rec = readyGlobalSelected.get(key);
+              if (rec) {
+                try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
+                try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+                readyGlobalSelected.delete(key);
+                try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+              }
+            }
+          } else {
+            const selItem = signItems[selectedIndex];
+            if (selItem && selItem.image && selItem.image.complete) {
+              const lx = Math.floor(worldX - (selItem.worldX || 0));
+              const ly = Math.floor(worldY - (selItem.worldY || 0));
+              if (lx >= 0 && ly >= 0 && lx < selItem.image.naturalWidth && ly < selItem.image.naturalHeight) {
+                const removed = removePixelSelection(selItem, lx, ly);
+                if (removed) { try { updateReadySelectionLabel(); updateStartEnabled(); } catch {} }
+              }
+            }
+          }
+        }
+        readyMouseDownPt = null; readyMouseMoved = false;
+      }
+      state.dragging = false;
+      signDragging = false;
+      document.body.classList.remove('dragging');
+      setTimeout(() => { try { updatePixelMarkers(); } catch {} }, 50);
+    });
+
+    
+    document.addEventListener('mousedown', (e) => {
+      try {
+        const rp = document.getElementById('ready-popup');
+        if (rp && !rp.hidden) {
+          const isCanvasClick = (e.target === canvas) || (canvas && canvas.contains && canvas.contains(e.target));
+          const isPopupClick = (e.target === rp) || (rp && rp.contains && rp.contains(e.target));
+          const readyBtnEl = document.getElementById('btn-ready');
+          const isReadyBtnClick = (e.target === readyBtnEl) || (readyBtnEl && readyBtnEl.contains && readyBtnEl.contains(e.target));
+          const paletteEl = document.getElementById('color-palette');
+          const isPaletteClick = (e.target === paletteEl) || (paletteEl && paletteEl.contains && paletteEl.contains(e.target));
+          if (!isCanvasClick && !isPopupClick && !isReadyBtnClick && !isPaletteClick) {
+            
+            resetReadyNow();
+          }
+        }
+      } catch {}
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      state.zooming = true;
+      try { if (zoomingTimeout) { clearTimeout(zoomingTimeout); } } catch {}
+      if (!img) return;
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const imageX = (px - state.translateX) / state.scale;
+      const imageY = (py - state.translateY) / state.scale;
+      const zoom = Math.exp(-e.deltaY * 0.0015);
+      const newScale = Math.min(state.maxScale, Math.max(state.minScale, state.scale * zoom));
+      if (newScale === state.scale) return;
+      state.translateX = px - imageX * newScale;
+      state.translateY = py - imageY * newScale;
+      state.scale = newScale;
+      render();
+      updatePixelMarkers();
+      zoomingTimeout = setTimeout(() => { state.zooming = false; try { updatePixelMarkers(); } catch {} }, 50);
+    }, { passive: false });
+
+    window.addEventListener('resize', () => {
+      render();
+      updatePixelMarkers();
+    });
+
+    
+    function updatePixelPowerPosition() {}
+
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const area = areaInput.value.trim();
+      const no = noInput.value.trim();
+      if (!area || !no) return;
+      loadImage(area, no);
+      try {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ worldX: Number(area), worldY: Number(no) })
+        });
+      } catch {}
+    });
+
+    function updateCounter() {
+      const total = signItems.length;
+      const selected = selectedIndex >= 0 ? (selectedIndex + 1) : 0;
+      counter.textContent = String(selected) + ' / ' + String(total);
+      try {
+        const btn = document.getElementById('btn-ready');
+        if (btn) btn.disabled = !(
+          (selectedIndex >= 0 && selectedIndex < signItems.length) ||
+          (selectedOverrideColorId != null)
+        );
+      } catch {}
+    }
+
+    function updateThumbSelection() {
+      signItems.forEach((it, i) => {
+        if (it.el) it.el.classList.toggle('selected', i === selectedIndex);
+      });
+      try {
+        const btn = document.getElementById('btn-ready');
+        if (btn) btn.disabled = !(
+          (selectedIndex >= 0 && selectedIndex < signItems.length) ||
+          (selectedOverrideColorId != null)
+        );
+      } catch {}
+      
+      try {
+        if (!(selectedIndex >= 0 && selectedIndex < signItems.length)) {
+          const rp = document.getElementById('ready-popup');
+          if (rp) rp.hidden = true;
+        }
+      } catch {}
+      if (isReadyOpen()) { try { updateReadySelectionLabel(); } catch {} }
+    }
+
+    function updateItemLockUi(item) {
+      if (!item || !item.el) return;
+      item.el.classList.toggle('locked', !!item.locked);
+      const btn = item.el.querySelector('.thumb-action.lock');
+      if (btn) btn.textContent = (item.locked || item.lockedByReady) ? '🔒' : '🔓';
+    }
+
+    function deleteItem(item) {
+      const idx = signItems.indexOf(item);
+      if (idx === -1) return;
+      if (readyLockedItem === item) {
+        try { readyLockedItem.lockedByReady = false; } catch {}
+        readyLockedItem = null;
+      }
+      if (item.el && item.el.parentNode) {
+        try { item.el.parentNode.removeChild(item.el); } catch {}
+      }
+      try { if (item.url) URL.revokeObjectURL(item.url); } catch {}
+      signItems.splice(idx, 1);
+      if (selectedIndex === idx) selectedIndex = Math.min(idx, signItems.length - 1);
+      else if (selectedIndex > idx) selectedIndex -= 1;
+      if (signItems.length === 0) selectedIndex = -1;
+      updateThumbSelection();
+      updateCounter();
+      render();
+    }
+
+    function zoomToSign(item) {
+      if (!item || !item.image) return;
+      const vw = canvas.clientWidth;
+      const vh = canvas.clientHeight;
+      const sw = item.image.naturalWidth || 1;
+      const sh = item.image.naturalHeight || 1;
+      const scaleToFit = Math.min(vw / sw, vh / sh);
+      const marginFactor = 0.85;
+      const newScale = Math.min(state.maxScale, Math.max(state.minScale, scaleToFit * marginFactor));
+      const centerX = (item.worldX || 0) + sw / 2;
+      const centerY = (item.worldY || 0) + sh / 2;
+      const centerPx = getContentCenterPx();
+      state.scale = newScale;
+      state.translateX = centerPx.x - centerX * newScale;
+      state.translateY = centerPx.y - centerY * newScale;
+      render();
+    }
+
+    function addThumbForItem(item, index) {
+      const div = document.createElement('div');
+      div.className = 'thumb-item';
+      const im = document.createElement('img');
+      im.src = item.url;
+      im.alt = item.name || (t('thumb.imageAlt', { n: (index + 1) }));
+      div.appendChild(im);
+
+      const actions = document.createElement('div');
+      actions.className = 'thumb-actions';
+      const btnLock = document.createElement('button');
+      btnLock.className = 'thumb-action lock';
+      btnLock.title = t('thumb.lock');
+      btnLock.textContent = item.locked ? '🔒' : '🔓';
+      btnLock.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        
+        item.locked = !item.locked;
+        updateItemLockUi(item);
+      });
+      const btnDel = document.createElement('button');
+      btnDel.className = 'thumb-action del';
+      btnDel.title = t('buttons.delete');
+      btnDel.textContent = '🗑️';
+      btnDel.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        deleteItem(item);
+      });
+      actions.appendChild(btnLock);
+      actions.appendChild(btnDel);
+      div.appendChild(actions);
+
+      div.addEventListener('click', () => {
+        selectSign(signItems.indexOf(item), true);
+      });
+      item.el = div;
+      if (item.lockedByReady == null) item.lockedByReady = false;
+      thumbList.appendChild(div);
+      updateItemLockUi(item);
+      updateThumbSelection();
+      updateCounter();
+    }
+
+    function selectSign(index, zoom = true) {
+      if (index < 0 || index >= signItems.length) return;
+      selectedIndex = index;
+      
+      try {
+        const rp = document.getElementById('ready-popup');
+        if (rp && !rp.hidden && readyLockedItem && readyLockedItem !== signItems[selectedIndex]) {
+          readyLockedItem.lockedByReady = false;
+          readyLockedItem = null;
+        }
+      } catch {}
+      const item = signItems[selectedIndex];
+      
+      try {
+        const rp = document.getElementById('ready-popup');
+        if (rp && !rp.hidden) {
+          readyHoverPixel = { x: null, y: null };
+          
+          ensureRenderedSelectedForItem(item);
+          updatePixelMarkers();
+        }
+      } catch {}
+      updateThumbSelection();
+      updateCounter();
+      try {
+        const btn = document.getElementById('btn-ready');
+        if (btn) btn.disabled = !(selectedIndex >= 0 && selectedIndex < signItems.length);
+      } catch {}
+      if (item.image && item.image.complete) {
+        if (zoom) zoomToSign(item);
+      } else {
+        pendingZoomToSelected = !!zoom;
+      }
+      render();
+    }
+
+    
+    function setAccountsActiveTab(name) {
+      if (!tabAccounts || !tabSettings) return;
+      const isAccounts = name === 'accounts';
+      tabAccounts.classList.toggle('active', isAccounts);
+      tabSettings.classList.toggle('active', !isAccounts);
+      if (accountsSection && settingsSection) {
+        accountsSection.hidden = !isAccounts;
+        settingsSection.hidden = isAccounts;
+        if (accountFormSection) accountFormSection.hidden = true;
+      }
+    }
+    if (tabAccounts) {
+      tabAccounts.addEventListener('click', () => setAccountsActiveTab('accounts'));
+    }
+    if (tabSettings) {
+      tabSettings.addEventListener('click', () => setAccountsActiveTab('settings'));
+    }
+    accountsBtn.addEventListener('click', () => {
+      accountsModal.hidden = false;
+      setAccountsActiveTab('accounts');
+    });
+    function showAccountForm() {
+      if (!accountsSection || !accountFormSection) return;
+      accountsSection.hidden = true;
+      accountFormSection.hidden = false;
+      try {
+        accountNameInput.value = '';
+        accountTokenInput.value = '';
+        accountIdInput.value = '';
+        accountNameInput.focus();
+      } catch {}
+    }
+    function openEditAccount(row) {
+      if (!row) return;
+      if (!accountsSection || !accountFormSection) return;
+      accountsSection.hidden = true;
+      accountFormSection.hidden = false;
+      try {
+        accountNameInput.value = row.name || '';
+        accountTokenInput.value = row.token || '';
+        accountIdInput.value = String(row.id || '');
+        accountNameInput.focus();
+      } catch {}
+      
+      try { accountSaveBtn.textContent = t('buttons.save'); } catch {}
+    }
+    function showAccountList() {
+      if (!accountsSection || !accountFormSection) return;
+      accountFormSection.hidden = true;
+      accountsSection.hidden = false;
+      try { accountSaveBtn.textContent = t('buttons.add'); } catch {}
+    }
+    if (addAccountBtn) {
+      addAccountBtn.addEventListener('click', async () => {
+        try { await loadSettings(); } catch {}
+        const cf = (settingsCfInput.value || '').trim();
+        if (cf.length < 30) {
+          showToast(t('messages.addCfClearancePrompt'), 'error', 3000);
+          setAccountsActiveTab('settings');
+          return;
+        }
+        showAccountForm();
+      });
+    }
+    if (accountCancelBtn) {
+      accountCancelBtn.addEventListener('click', showAccountList);
+    }
+    function renderAccountsTable(rows) {
+      accountsData = Array.isArray(rows) ? rows.slice() : [];
+      accountsTbody.innerHTML = '';
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        const tdName = document.createElement('td'); tdName.textContent = row.name || '';
+        const tdToken = document.createElement('td');
+        const fullToken = row.token || '';
+        const shortToken = fullToken.length > 30 ? (fullToken.slice(0, 30) + '…') : fullToken;
+        tdToken.textContent = shortToken;
+        tdToken.title = fullToken;
+        const tdPixel = document.createElement('td');
+        const countRaw = (row.pixelCount == null ? null : Number(row.pixelCount));
+        const maxRaw = (row.pixelMax == null ? null : Number(row.pixelMax));
+        const count = (Number.isFinite(countRaw) ? Math.floor(countRaw) : null);
+        const max = (Number.isFinite(maxRaw) ? Math.floor(maxRaw) : null);
+        const isActive = row && row.active !== false;
+        tdPixel.textContent = (count == null || max == null) ? '-' : (String(count) + ' / ' + String(max));
+        const tdStatus = document.createElement('td');
+        tdStatus.textContent = isActive ? t('table.statusActive') : t('table.statusPassive');
+        const tdActions = document.createElement('td');
+        const actionsWrap = document.createElement('div');
+        actionsWrap.className = 'table-actions';
+        const rowTop = document.createElement('div');
+        rowTop.className = 'table-actions-row';
+        const rowBottom = document.createElement('div');
+        rowBottom.className = 'table-actions-row';
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'app-btn';
+        editBtn.textContent = t('buttons.edit');
+        editBtn.addEventListener('click', () => {
+          openEditAccount(row);
+        });
+        const checkBtn = document.createElement('button');
+        checkBtn.type = 'button';
+        checkBtn.className = 'app-btn';
+        checkBtn.textContent = t('buttons.checkPixels');
+        checkBtn.addEventListener('click', async () => {
+          try {
+            const res = await fetch('/api/accounts/' + row.id + '/refresh', { method: 'POST' });
+            if (!res.ok) return;
+            const updated = await res.json();
+            await loadAccounts();
+          } catch {}
+        });
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'app-btn';
+        delBtn.textContent = t('buttons.delete');
+        delBtn.addEventListener('click', async () => {
+          try {
+            await fetch('/api/accounts/' + row.id, { method: 'DELETE' });
+            await loadAccounts();
+          } catch {}
+        });
+        rowTop.appendChild(editBtn);
+        rowTop.appendChild(delBtn);
+        rowBottom.appendChild(checkBtn);
+        actionsWrap.appendChild(rowTop);
+        actionsWrap.appendChild(rowBottom);
+        tdActions.appendChild(actionsWrap);
+        tr.appendChild(tdName);
+        tr.appendChild(tdToken);
+        tr.appendChild(tdPixel);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdActions);
+        accountsTbody.appendChild(tr);
+      });
+      
+      try {
+        if (Array.isArray(rows) && pixelPowerEl) {
+          let totalCount = 0;
+          let totalMax = 0;
+          for (let i = 0; i < rows.length; i++) {
+            const r = rows[i];
+            const isActive = r && r.active !== false && !!r.token;
+            if (!isActive) continue;
+            const cRaw = Number(r.pixelCount);
+            const mRaw = Number(r.pixelMax);
+            const c = Number.isFinite(cRaw) ? Math.floor(cRaw) : null;
+            const m = Number.isFinite(mRaw) ? Math.floor(mRaw) : null;
+            if (c != null) totalCount += c;
+            if (m != null) totalMax += m;
+          }
+          try { pixelPowerEl.setAttribute('data-count', String(totalCount)); pixelPowerEl.setAttribute('data-max', String(totalMax)); } catch {}
+          pixelPowerEl.textContent = t('pixel.powerLabel', { count: totalCount, max: totalMax });
+        }
+      } catch {}
+    }
+    async function loadAccounts() {
+      try {
+        const res = await fetch('/api/accounts');
+        const data = await res.json();
+        if (Array.isArray(data)) renderAccountsTable(data);
+      } catch {}
+    }
+    async function refreshAccountById(accountId){
+      try {
+        await fetch('/api/accounts/' + encodeURIComponent(String(accountId)) + '/refresh', { method: 'POST' });
+      } catch {}
+      try { await loadAccounts(); } catch {}
+    }
+    const BULK_REFRESH_PERIOD_MS = 90 * 1000;
+    let lastBulkRefreshAt = 0;
+    let bulkRefreshInFlight = false;
+    async function refreshAllAccounts(){
+      const now = Date.now();
+      if (bulkRefreshInFlight) return;
+      if (now - lastBulkRefreshAt < BULK_REFRESH_PERIOD_MS - 500) return;
+      bulkRefreshInFlight = true;
+      try {
+        const res = await fetch('/api/accounts');
+        const rows = await res.json();
+        if (Array.isArray(rows)) {
+          for (let i = 0; i < rows.length; i++) {
+            const r = rows[i];
+            const id = r && r.id != null ? String(r.id) : '';
+            if (!id) continue;
+            try { await fetch('/api/accounts/' + encodeURIComponent(id) + '/refresh', { method: 'POST' }); } catch {}
+            
+            try { await new Promise(resolve => setTimeout(resolve, 1000)); } catch {}
+          }
+        }
+      } catch {}
+      try { await loadAccounts(); } catch {}
+      try { reloadCurrentBackground(); } catch {}
+      finally {
+        lastBulkRefreshAt = Date.now();
+        bulkRefreshInFlight = false;
+      }
+    }
+    if (accountSaveBtn && accountsTbody) {
+      accountSaveBtn.addEventListener('click', async () => {
+        const id = (accountIdInput.value || '').trim();
+        const name = (accountNameInput.value || '').trim();
+        const token = (accountTokenInput.value || '').trim();
+        if (!name || !token) return;
+        try {
+          if (id) {
+            const res = await fetch('/api/accounts/' + id, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, token })
+            });
+            if (!res.ok) return;
+          } else {
+            const res = await fetch('/api/accounts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, token })
+            });
+            if (!res.ok) return;
+          }
+          await loadAccounts();
+          showAccountList();
+        } catch {}
+      });
+    }
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data && typeof data.cf_clearance === 'string') settingsCfInput.value = data.cf_clearance;
+        if (typeof data.worldX === 'number') areaInput.value = String(data.worldX);
+        if (typeof data.worldY === 'number') noInput.value = String(data.worldY);
+      } catch {}
+    }
+    if (settingsSaveBtn && settingsCfInput) {
+      settingsSaveBtn.addEventListener('click', async () => {
+        const v = (settingsCfInput.value || '').trim();
+        try {
+          await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cf_clearance: v })
+          });
+        } catch {}
+        setAccountsActiveTab('accounts');
+      });
+    }
+    accountsClose.addEventListener('click', () => {
+      accountsModal.hidden = true;
+    });
+    accountsModal.addEventListener('click', (e) => {
+      if (e.target === accountsModal) accountsModal.hidden = true;
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') accountsModal.hidden = true;
+    });
+
+    
+    sign.addEventListener('load', () => {});
+
+    
+    uploadBtn.addEventListener('click', () => {
+      try { signFileInput.value = ''; } catch {}
+      signFileInput.click();
+    });
+    signFileInput.addEventListener('change', () => {
+      const files = Array.from(signFileInput.files || []);
+      if (!files.length) return;
+      const processNext = (i) => {
+        if (i >= files.length) { try { signFileInput.value = ''; } catch {} ; return; }
+        const file = files[i];
+        const tmpUrl = URL.createObjectURL(file);
+        const tmpImg = new Image();
+        tmpImg.onload = async () => {
+          URL.revokeObjectURL(tmpUrl);
+          const blob = await quantizeImageToPalette(tmpImg);
+          const url = URL.createObjectURL(blob);
+          const imageEl = new Image();
+          imageEl.onload = () => {
+            const pixelCount = countNonTransparentPixels(imageEl);
+            const item = { url, name: file.name, image: imageEl, worldX: 0, worldY: 0, el: null, locked: false, pixelCount };
+            
+            const centerPx = getContentCenterPx();
+            const centerWorldX = (centerPx.x - state.translateX) / state.scale;
+            const centerWorldY = (centerPx.y - state.translateY) / state.scale;
+            item.worldX = centerWorldX - imageEl.naturalWidth / 2;
+            item.worldY = centerWorldY - imageEl.naturalHeight / 2;
+            if (img) {
+              const maxX = Math.max(0, img.width - imageEl.naturalWidth);
+              const maxY = Math.max(0, img.height - imageEl.naturalHeight);
+              item.worldX = Math.min(Math.max(0, item.worldX), maxX);
+              item.worldY = Math.min(Math.max(0, item.worldY), maxY);
+            }
+            signItems.push(item);
+            selectedIndex = signItems.length - 1;
+            addThumbForItem(item, signItems.length - 1);
+            updateCounter();
+            pendingZoomToSelected = true;
+            render();
+            if (pendingZoomToSelected) { pendingZoomToSelected = false; zoomToSign(item); }
+            processNext(i + 1);
+          };
+          imageEl.src = url;
+        };
+        tmpImg.src = tmpUrl;
+      };
+      processNext(0);
+    });
+
+    
+    
+
+    try {
+      const savedArea = localStorage.getItem('area code');
+      const savedNo = localStorage.getItem('no');
+      if (savedArea) areaInput.value = savedArea;
+      if (savedNo) noInput.value = savedNo;
+    } catch {}
+
+    
+    const readyBtn = document.getElementById('btn-ready');
+    const readyPopup = document.getElementById('ready-popup');
+    const autoSelectBtn = document.getElementById('btn-auto-select');
+    const startBtn = document.getElementById('start');
+    const readyPixelEl = document.getElementById('ready-pixel');
+    const readyAccountBtn = document.getElementById('btn-ready-account');
+    const readyAccountList = document.getElementById('ready-account-list');
+    const readyTokenInput = document.getElementById('ready-token-input');
+
+    function getAccountById(id) {
+      const idStr = String(id);
+      for (let i = 0; i < accountsData.length; i++) {
+        const a = accountsData[i];
+        if (String(a.id) === idStr) return a;
+      }
+      return null;
+    }
+
+    function getReadySelectedCount() {
+      const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+      const map = getSelectedMap(sel);
+      return map ? map.size : 0;
+    }
+
+    function getReadySelectionLimit() {
+      if (!Array.isArray(readySelectedAccountIds) || readySelectedAccountIds.length === 0) return 0;
+      let total = 0;
+      for (let i = 0; i < readySelectedAccountIds.length; i++) {
+        const a = getAccountById(readySelectedAccountIds[i]);
+        if (!a || a.active === false || !a.token) continue;
+        const c = Number.isFinite(Number(a.pixelCount)) ? Number(a.pixelCount) : 0;
+        total += Math.max(0, Math.floor(c));
+      }
+      return total;
+    }
+
+    function updateReadySelectionLabel() {
+      if (!readyPixelEl) return;
+      const selected = readyGlobalMode ? readyGlobalSelected.size : getReadySelectedCount();
+      const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+      const count = selected;
+      try { readyPixelEl.setAttribute('data-count', String(count)); readyPixelEl.setAttribute('data-max', String(limit)); } catch {}
+      readyPixelEl.textContent = t('pixel.powerLabel', { count, max: limit });
+    }
+
+    function updateReadyPixelForSelectedAccounts() {
+      updateReadySelectionLabel();
+      try { updateStartEnabled(); } catch {}
+    }
+
+    function renderReadyAccountList() {
+      if (!readyAccountList) return;
+      readyAccountList.innerHTML = '';
+      accountsData.forEach(row => {
+        const isActive = row && row.active !== false;
+        const hasToken = !!(row && row.token);
+        if (!isActive || !hasToken) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'app-btn';
+        const count = Number.isFinite(Number(row.pixelCount)) ? Number(row.pixelCount) : 0;
+        const max = Number.isFinite(Number(row.pixelMax)) ? Number(row.pixelMax) : 0;
+        const isSelected = readySelectedAccountIds.indexOf(row.id) !== -1;
+        btn.textContent = (isSelected ? '✓ ' : '') + (row.name || t('ready.accountLabelDefault')) + ' — ' + String(count) + ' / ' + String(max);
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        btn.addEventListener('click', () => {
+          const idx = readySelectedAccountIds.indexOf(row.id);
+          if (idx === -1) {
+            if (readySelectedAccountIds.length >= MAX_READY_ACCOUNTS) {
+              try { showToast(t('messages.max12Accounts'), 'error', 2000); } catch {}
+              return;
+            }
+            readySelectedAccountIds.push(row.id);
+          } else {
+            readySelectedAccountIds.splice(idx, 1);
+          }
+          
+          try { renderReadyAccountList(); } catch {}
+          try { if (readyPixelEl) readyPixelEl.hidden = false; } catch {}
+          updateReadyPixelForSelectedAccounts();
+        });
+        readyAccountList.appendChild(btn);
+      });
+    }
+
+    if (readyAccountBtn) {
+      readyAccountBtn.addEventListener('click', () => {
+        try { renderReadyAccountList(); } catch {}
+        if (readyAccountList) readyAccountList.hidden = !readyAccountList.hidden;
+      });
+    }
+
+    function resetReadyNow(){
+      try { if (readyPopup) readyPopup.hidden = true; } catch {}
+      try {
+        if (readyLockedItem) { readyLockedItem.lockedByReady = false; updateItemLockUi(readyLockedItem); readyLockedItem = null; }
+      } catch {}
+      readySelectedAccountIds = [];
+      readyShouldReset = false;
+      readyHoverPixel = { x: null, y: null };
+      
+      try {
+        if (readyAccountBtn) readyAccountBtn.hidden = false;
+        if (readyPixelEl) readyPixelEl.hidden = true;
+        if (readyAccountList) readyAccountList.hidden = true;
+      } catch {}
+      try { updatePixelMarkers(); } catch {}
+      render();
+    }
+    if (readyBtn && readyPopup) {
+      readyBtn.addEventListener('click', async () => {
+        try {
+          await loadAccounts();
+          
+          try {
+            
+            if (readyShouldReset) {
+              readyShouldReset = false;
+              readySelectedAccountIds = [];
+              try { clearAllReadySelections(); } catch {}
+              try {
+                if (readyAccountBtn) readyAccountBtn.hidden = false;
+                if (readyPixelEl) readyPixelEl.hidden = true;
+                if (readyAccountList) readyAccountList.hidden = true;
+              } catch {}
+            }
+            if (readyPixelEl) readyPixelEl.hidden = false;
+            if (readyAccountList) readyAccountList.hidden = true;
+          } catch {}
+          readyPopup.hidden = !readyPopup.hidden;
+          
+          try {
+            if (!readyPopup.hidden) {
+              
+              readyGlobalMode = !((selectedIndex >= 0 && selectedIndex < signItems.length)) && (selectedOverrideColorId != null);
+              if (selectedIndex >= 0 && selectedIndex < signItems.length) {
+                const it = signItems[selectedIndex];
+                it.lockedByReady = true;
+                readyLockedItem = it;
+                try { updateItemLockUi(it); } catch {}
+                
+                readyHoverPixel = { x: null, y: null };
+                ensureRenderedSelectedForItem(it);
+                updatePixelMarkers();
+                updateReadySelectionLabel();
+              } else if (readyGlobalMode) {
+                
+                try { clearAllReadySelections(); } catch {}
+                readyHoverPixel = { x: null, y: null };
+                updatePixelMarkers();
+                updateReadySelectionLabel();
+              }
+            } else {
+              readyGlobalMode = false;
+              if (readyLockedItem) {
+                readyLockedItem.lockedByReady = false;
+                try { updateItemLockUi(readyLockedItem); } catch {}
+                readyLockedItem = null;
+              }
+              
+              try { pixelHoverEl.hidden = true; if (pixelSelectedList) pixelSelectedList.hidden = true; } catch {}
+              
+              try { if (readyAccountList) readyAccountList.hidden = true; } catch {}
+            }
+          } catch {}
+          render();
+        } catch {}
+      });
+    }
+    if (autoSelectBtn) {
+      autoSelectBtn.addEventListener('click', () => {
+        
+      if (!Array.isArray(readySelectedAccountIds) || readySelectedAccountIds.length === 0) {
+          showToast(t('messages.selectAccountFirst'), 'error', 2000);
+          return;
+        }
+        
+      if (!(selectedIndex >= 0 && selectedIndex < signItems.length)) {
+        if (signItems.length > 0) selectSign(0, false); 
+      }
+        const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (!selItem || !selItem.image || !selItem.image.complete) return;
+      
+        const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+        const map = getSelectedMap(selItem);
+        const already = map ? map.size : 0;
+        if (already >= limit) return;
+        const start = (selItem._lastManualSelected && Number.isFinite(selItem._lastManualSelected.x) && Number.isFinite(selItem._lastManualSelected.y))
+          ? { x: selItem._lastManualSelected.x, y: selItem._lastManualSelected.y }
+          : { x: 0, y: 0 };
+        const w = selItem.image.naturalWidth|0;
+        const h = selItem.image.naturalHeight|0;
+        const need = limit - already;
+        let addedCount = 0;
+        
+        let sx = start.x|0, sy = start.y|0;
+        const totalCells = w * h;
+        let traversed = 0;
+        while (addedCount < need && traversed < totalCells) {
+          
+          if (isOpaquePixel(selItem, sx, sy) && !isSameColorAsBase(selItem, sx, sy)) {
+            const didAdd = addPixelSelection(selItem, sx, sy, null);
+            if (didAdd) addedCount++;
+          }
+          
+          sx += 1;
+          if (sx >= w) { sx = 0; sy += 1; }
+          if (sy >= h) { sy = 0; }
+          traversed++;
+        }
+        updateReadySelectionLabel();
+        updatePixelMarkers();
+        render();
+        try { updateStartEnabled(); } catch {}
+      });
+    }
+    function getSelectedAccountsSortedByCapacityDesc() {
+      const rows = [];
+      for (let i = 0; i < readySelectedAccountIds.length; i++) {
+        const a = getAccountById(readySelectedAccountIds[i]);
+        if (a && typeof a.token === 'string' && a.token && a.active !== false) rows.push(a);
+      }
+      rows.sort((a, b) => (Number(b.pixelCount)||0) - (Number(a.pixelCount)||0));
+      return rows;
+    }
+
+    async function postBatch(area, no, colors, coords, t, jToken) {
+      try {
+        const res = await fetch('/api/pixel/' + encodeURIComponent(area) + '/' + encodeURIComponent(no), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ colors, coords, t, j: jToken })
+        });
+        const text = await res.text();
+        let payload = null;
+        try { payload = JSON.parse(text); } catch {}
+        
+        return { ok: res.status < 500 && !!(payload && Object.prototype.hasOwnProperty.call(payload, 'painted')), payload, text, status: res.status };
+      } catch (e) {
+        return { ok: false, error: e && e.message ? e.message : String(e) };
+      }
+    }
+
+    function updateStartEnabled() {
+      try {
+        if (!startBtn) return;
+        const hasToken = !!(readyTokenInput && readyTokenInput.value && readyTokenInput.value.trim().length > 0);
+        const hasAccounts = getSelectedAccountsSortedByCapacityDesc().length > 0;
+        const hasAnyPixel = readyGlobalMode ? (readyGlobalSelected.size > 0) : (getReadySelectedCount() > 0);
+        startBtn.disabled = !(hasToken && hasAccounts && hasAnyPixel);
+      } catch {}
+    }
+
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        const hasToken = !!(readyTokenInput && readyTokenInput.value && readyTokenInput.value.trim().length > 0);
+        const hasAccounts = getSelectedAccountsSortedByCapacityDesc().length > 0;
+        const hasAnyPixel = readyGlobalMode ? (readyGlobalSelected.size > 0) : (getReadySelectedCount() > 0);
+        if (!(hasToken && hasAccounts && hasAnyPixel)) {
+          showToast(t('messages.startRequirementsMissing'), 'error', 2500);
+          try { updateStartEnabled(); } catch {}
+          return;
+        }
+        const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
+        const data = buildSelectedExportForItem(sel);
+        const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
+        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
+        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
+        const total = data.colors.length|0;
+        const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+        (async () => {
+          let offset = 0;
+          const usedIds = [];
+          for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
+            const acc = selectedAccounts[i];
+            const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
+            if (cap <= 0) continue;
+            const take = Math.min(cap, total - offset);
+            if (take <= 0) continue;
+            const colorsSlice = data.colors.slice(offset, offset + take);
+            const coordsSlice = data.coords.slice(offset * 2, (offset + take) * 2);
+            const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+            if (!r.ok) {
+              if (r.status >= 500) {
+                try { await loadAccounts(); } catch {}
+                continue;
+              } else {
+                showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
+                break;
+              }
+            }
+            usedIds.push(acc.id);
+            offset += take;
+            try { await refreshAccountById(acc.id); } catch {}
+          }
+          if (offset > 0) {
+            showToast(t('messages.painted'), 'success', 1800);
+            reloadCurrentBackground();
+            try { clearAllReadySelections(); } catch {}
+            try { resetReadyNow(); } catch {}
+            try { readyGlobalMode = false; } catch {}
+            try { updateStartEnabled(); } catch {}
+          }
+          if (offset < total) {
+            showToast(t('messages.insufficientPixelPower', { n: (total - offset) }), 'error', 3000);
+          }
+          
+          try { await loadAccounts(); } catch {}
+          
+          try { updateReadySelectionLabel(); } catch {}
+          render();
+          render();
+        })();
+      });
+    }
+
+    (async () => {
+      try {
+        await loadSettings();
+        if (areaInput.value && noInput.value) {
+          loadImage(areaInput.value, noInput.value);
+        }
+      } catch {}
+      updateCounter();
+      loadAccounts();
+    })();
+    updatePixelPowerPosition();
+    
+    try {
+      setInterval(() => { refreshAllAccounts(); }, 90 * 1000);
+    } catch {}
+    
+    
+    try { setupColorPalette(); } catch {}
+
+    function getItemPixelPaletteId(item, sx, sy){
+      const c = getItemPixelColor(item, sx, sy);
+      if (!c || c.a === 0) return null;
+      return rgbToPaletteId(c.r, c.g, c.b);
+    }
+
+    function buildSelectedExportForItem(item){
+      const map = getSelectedMap(item);
+      const coords = [];
+      const colors = [];
+      if (readyGlobalMode) {
+        readyGlobalSelected.forEach((rec) => {
+          coords.push(rec.wx, rec.wy);
+          colors.push(rec.colorId == null ? null : rec.colorId);
+        });
+      } else if (map) {
+        map.forEach((rec) => {
+          const wx = Math.round((item.worldX || 0) + rec.x);
+          const wy = Math.round((item.worldY || 0) + rec.y);
+          coords.push(wx, wy);
+          const pid = (rec && rec.colorId != null) ? rec.colorId : getItemPixelPaletteId(item, rec.x, rec.y);
+          colors.push(pid == null ? null : pid);
+        });
+      }
+      return { colors, coords };
+    }
+
+    function logSelectedPixelsCurrentItem(){
+      try {
+        const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (!sel) return;
+        const data = buildSelectedExportForItem(sel);
+        const t = (readyTokenInput && readyTokenInput.value) ? readyTokenInput.value : '';
+        console.log({ colors: data.colors, coords: data.coords, t });
+      } catch {}
+    }
+
+    if (readyTokenInput) {
+      readyTokenInput.addEventListener('input', () => {
+        updateStartEnabled();
+      });
+    }
+  </script>
+</body>
+</html> 
+
