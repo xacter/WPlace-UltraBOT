@@ -159,7 +159,7 @@ Tüm proje 1 günde hazırlandığı için gördüğünüz eksiklikleri veya ist
 ---
 
 <p align="center">
-  <img src="https://i.imgur.com/iOO5nFF.png" alt="Ana Sayfa"/>
+  <img src="https://i.imgur.com/msR5dM9.png" alt="AnaSayfa"/>
  </p>
 
 ---
