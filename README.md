@@ -201,7 +201,7 @@ Since the entire project was prepared in one day, please don't forget to report 
 
 
 <p align="center">
-  <img src="https://i.imgur.com/iOO5nFF.png" alt="Main"/>
+  <img src="https://i.imgur.com/msR5dM9.png" alt="Main"/>
 </p>
 
 ---
@@ -221,6 +221,7 @@ Since the entire project was prepared in one day, please don't forget to report 
 </p>
 
 ---
+
 
 
 
