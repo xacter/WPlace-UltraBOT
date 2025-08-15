@@ -80,6 +80,8 @@
     "insufficientPixelPower": "Insufficient pixel power: {n} pixels could not be sent.",
     "imageLoadFailed": "Image could not be loaded. Check the values.",
     "tokenAlreadyExists": "An account with this token already exists."
+    ,
+    "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist."
   }
 }
 
