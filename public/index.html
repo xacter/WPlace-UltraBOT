@@ -2642,6 +2642,18 @@
         const token = (accountTokenInput.value || '').trim();
         if (!name || !token) return;
         try {
+          try { await loadAccounts(); } catch {}
+          try {
+            const dup = Array.isArray(accountsData) && accountsData.find(row => {
+              if (!row) return false;
+              const sameId = (id && String(row.id) === id);
+              return !sameId && String(row.token || '') === token;
+            });
+            if (dup) {
+              showToast(t('messages.tokenAlreadyExists'), 'error', 2500);
+              return;
+            }
+          } catch {}
           if (id) {
             const res = await fetch('/api/accounts/' + id, {
               method: 'PUT',
@@ -2649,6 +2661,7 @@
               body: JSON.stringify({ name, token })
             });
             if (!res.ok) return;
+            try { await fetch('/api/accounts/' + id + '/refresh', { method: 'POST' }); } catch {}
           } else {
             const res = await fetch('/api/accounts', {
               method: 'POST',
@@ -2656,10 +2669,52 @@
               body: JSON.stringify({ name, token })
             });
             if (!res.ok) return;
+            try {
+              const created = await res.json();
+              if (created && created.id != null) {
+                try { await fetch('/api/accounts/' + String(created.id) + '/refresh', { method: 'POST' }); } catch {}
+              }
+            } catch {}
           }
           await loadAccounts();
           showAccountList();
         } catch {}
+      });
+    }
+    
+    
+    let accountTokenInputDebounce = null;
+    if (accountTokenInput) {
+      accountTokenInput.addEventListener('input', () => {
+        const id = (accountIdInput && accountIdInput.value) ? accountIdInput.value.trim() : '';
+        if (!id) return; 
+        const name = (accountNameInput && accountNameInput.value) ? accountNameInput.value.trim() : '';
+        const token = (accountTokenInput && accountTokenInput.value) ? accountTokenInput.value.trim() : '';
+        try { if (accountTokenInputDebounce) clearTimeout(accountTokenInputDebounce); } catch {}
+        accountTokenInputDebounce = setTimeout(async () => {
+          try {
+            if (!token) return;
+            try { await loadAccounts(); } catch {}
+            try {
+              const dup = Array.isArray(accountsData) && accountsData.find(row => {
+                if (!row) return false;
+                const sameId = (id && String(row.id) === id);
+                return !sameId && String(row.token || '') === token;
+              });
+              if (dup) {
+                showToast(t('messages.tokenAlreadyExists'), 'error', 2500);
+                return;
+              }
+            } catch {}
+            await fetch('/api/accounts/' + id, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, token })
+            });
+            await fetch('/api/accounts/' + id + '/refresh', { method: 'POST' });
+            await loadAccounts();
+          } catch {}
+        }, 800);
       });
     }
     async function loadSettings() {
