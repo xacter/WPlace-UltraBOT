@@ -148,7 +148,7 @@ Go back to the Wplace page, and in the search bar, enter the World Y value. Fill
 
 ---
 
-![Part 12](https://i.imgur.com/NEvGOnj.png)
+![Part 12](https://i.imgur.com/ZICIlpJ.png)
 
 Then, try to fill a pixel in the same spot again. This time it should give an error. Click on the request that gave the error, then click on the 'Payload' tab. If you click on 'view sourced', it will look like mine. After that, copy the 't' value completely.
 
@@ -221,6 +221,7 @@ Since the entire project was prepared in one day, please don't forget to report 
 </p>
 
 ---
+
 
 
 
