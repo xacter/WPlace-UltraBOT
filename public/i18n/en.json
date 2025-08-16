@@ -12,7 +12,11 @@
     "deleteAllSelected": "Delete all selected",
     "start": "Start",
     "tokenPlaceholder": "Token",
-    "accountLabelDefault": "Account"
+    "accountLabelDefault": "Account",
+    "selectMode": {
+      "multi": "Select from start",
+      "frame": "Select from outline"
+    }
   },
   "modal": {
     "closeTitle": "Close"
@@ -44,6 +48,14 @@
     "worldYLabel": "World Y",
     "fetchButton": "Fetch",
     "uploadImage": "Upload image"
+  },
+  "preview": {
+    "scale": "Scale (%)",
+    "keepRatio": "Keep ratio",
+    "width": "Width",
+    "height": "Height",
+    "addToMap": "Add to map",
+    "maxSizeExceeded": "Maximum size is 1000x1000 pixels."
   },
   "settings": {
     "cf_clearance": "cf_clearance"
@@ -81,7 +93,8 @@
     "imageLoadFailed": "Image could not be loaded. Check the values.",
     "tokenAlreadyExists": "An account with this token already exists."
     ,
-    "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist."
+    "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist.",
+    "cfClearanceChange": "Please change cf_clearance."
   }
 }
 
