@@ -12,7 +12,11 @@
     "deleteAllSelected": "Tüm seçilenleri sil",
     "start": "Başlat",
     "tokenPlaceholder": "Token",
-    "accountLabelDefault": "Hesap"
+    "accountLabelDefault": "Hesap",
+    "selectMode": {
+      "multi": "Önce başlangıçtan seç",
+      "frame": "Önce çerçeveden seç"
+    }
   },
   "modal": {
     "closeTitle": "Kapat"
@@ -44,6 +48,14 @@
     "worldYLabel": "World Y",
     "fetchButton": "Getir",
     "uploadImage": "Resim yükle"
+  },
+  "preview": {
+    "scale": "Ölçek (%)",
+    "keepRatio": "Oranı koru",
+    "width": "Genişlik",
+    "height": "Yükseklik",
+    "addToMap": "Haritaya ekle",
+    "maxSizeExceeded": "Maksimum boyut 1000x1000 piksel."
   },
   "settings": {
     "cf_clearance": "cf_clearance"
@@ -81,7 +93,8 @@
     "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin.",
     "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi."
     ,
-    "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz."
+    "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz.",
+    "cfClearanceChange": "Lütfen cf_clearance değiştirin."
   }
 }
 
