@@ -263,6 +263,36 @@
       z-index: 1100;
     }
     #accounts-modal[hidden] { display: none; }
+    #img-preview-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 1100;
+    }
+    #img-preview-modal[hidden] { display: none; }
+    body.no-scroll { overflow: hidden; }
+    #img-preview-canvas {
+      width: min(540px, 85vw);
+      height: min(360px, 48vh);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      image-rendering: pixelated;
+      display: block;
+      margin: 0 auto 10px auto;
+    }
+    #img-preview-modal .modal-card { max-height: 90vh; }
+    #img-preview-modal .modal-body { max-height: none; overflow: visible; }
+    .img-preview-grid {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 10px 12px;
+      align-items: center;
+      pointer-events: auto;
+    }
     .modal-card {
       background: rgba(17, 20, 24, 0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -408,6 +438,19 @@
     }
     #ready-popup .controls-row { justify-content: center; gap: 10px; }
     #ready-token-input { width: 320px; }
+    #select-mode-controls { justify-content: center; }
+    .select-mode-wrap { display: inline-flex; align-items: center; gap: 8px; }
+    .select-mode-label { font-size: 12px; color: #e5e7eb; opacity: 0.8; cursor: pointer; user-select: none; }
+    .select-mode-label.active { color: #22d3ee; opacity: 1; }
+    .select-mode-track { position: relative; width: 44px; height: 24px; border-radius: 9999px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; padding: 0; }
+    .select-mode-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #e5e7eb; transition: transform 0.18s ease; }
+    .select-mode-track.on .select-mode-knob { transform: translateX(20px); }
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle .slider { position: absolute; inset: 0; border-radius: 9999px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; }
+    .toggle .slider::before { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #e5e7eb; transition: transform 0.18s ease; }
+    .toggle input:checked + .slider { background: rgba(34,211,238,0.35); border-color: rgba(34,211,238,0.45); }
+    .toggle input:checked + .slider::before { transform: translateX(20px); }
     
     #color-palette {
       position: fixed;
@@ -508,6 +551,15 @@
             <button id="btn-auto-select" class="app-btn" type="button" data-i18n="ready.autoSelect">Otomatik seç</button>
             <button id="start" class="app-btn" type="button" data-i18n="ready.start">Başlat</button>
           </div>
+          <div class="controls-row" id="select-mode-controls">
+            <div class="select-mode-wrap">
+              <span id="select-mode-label-left" class="select-mode-label active" data-i18n="ready.selectMode.multi">Önce çok yerden seç</span>
+              <button id="select-mode-toggle" class="select-mode-track" type="button" role="switch" aria-checked="false" aria-label="Select mode">
+                <span class="select-mode-knob"></span>
+              </button>
+              <span id="select-mode-label-right" class="select-mode-label" data-i18n="ready.selectMode.frame">Önce çerçeveyi seç</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -566,6 +618,33 @@
             <button id="btn-settings-save" class="app-btn" type="button" data-i18n="buttons.saveSettings">Kaydet</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="img-preview-modal" hidden>
+    <div class="modal-card" style="width:min(720px,95vw);max-width:95vw;">
+      <button id="img-preview-close" class="modal-close app-btn" title="Kapat" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-header" data-i18n="form.uploadImage">Resim yükle</div>
+      <div class="modal-body">
+        <canvas id="img-preview-canvas" width="540" height="300" aria-label="Image preview"></canvas>
+        <div class="img-preview-grid">
+          <label for="img-scale" data-i18n="preview.scale">Ölçek (%)</label>
+          <input id="img-scale" type="number" min="1" max="800" step="1" value="100" />
+          <label for="img-keep-ratio" data-i18n="preview.keepRatio">Oranı koru</label>
+          <label class="toggle" aria-label="Keep ratio">
+            <input id="img-keep-ratio" type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+          <label for="img-width" data-i18n="preview.width">Genişlik</label>
+          <input id="img-width" type="number" min="1" max="1000" step="1" />
+          <label for="img-height" data-i18n="preview.height">Yükseklik</label>
+          <input id="img-height" type="number" min="1" max="1000" step="1" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="img-preview-cancel" class="app-btn" type="button" data-i18n="buttons.back">Geri</button>
+        <button id="img-preview-apply" class="app-btn" type="button" data-i18n="preview.addToMap">Haritaya ekle</button>
       </div>
     </div>
   </div>
@@ -2766,23 +2845,180 @@
       try { signFileInput.value = ''; } catch {}
       signFileInput.click();
     });
-    signFileInput.addEventListener('change', () => {
-      const files = Array.from(signFileInput.files || []);
-      if (!files.length) return;
-      const processNext = (i) => {
-        if (i >= files.length) { try { signFileInput.value = ''; } catch {} ; return; }
-        const file = files[i];
-        const tmpUrl = URL.createObjectURL(file);
+    const imgPreviewModal = document.getElementById('img-preview-modal');
+    const imgPreviewCanvas = document.getElementById('img-preview-canvas');
+    const imgPreviewClose = document.getElementById('img-preview-close');
+    const imgPreviewCancel = document.getElementById('img-preview-cancel');
+    const imgPreviewApply = document.getElementById('img-preview-apply');
+    const imgScaleInput = document.getElementById('img-scale');
+    const imgKeepRatioInput = document.getElementById('img-keep-ratio');
+    const imgWidthInput = document.getElementById('img-width');
+    const imgHeightInput = document.getElementById('img-height');
+    let previewSourceImage = null;
+
+    function openImagePreview(image, filename){
+      previewSourceImage = image;
+      const w = image.naturalWidth|0;
+      const h = image.naturalHeight|0;
+      try { imgWidthInput.value = String(w); } catch {}
+      try { imgHeightInput.value = String(h); } catch {}
+      try { imgScaleInput.value = '100'; } catch {}
+      drawPreview();
+      imgPreviewModal.hidden = false;
+      try { document.body.classList.add('no-scroll'); } catch {}
+      imgPreviewApply._filename = filename || 'image.png';
+    }
+    function drawPreview(){
+      if (!imgPreviewCanvas || !previewSourceImage) return;
+      const ctxp = imgPreviewCanvas.getContext('2d');
+      ctxp.imageSmoothingEnabled = false;
+      ctxp.clearRect(0,0,imgPreviewCanvas.width,imgPreviewCanvas.height);
+      const targetW = Math.max(1, parseInt(imgWidthInput.value||'1', 10));
+      const targetH = Math.max(1, parseInt(imgHeightInput.value||'1', 10));
+      const off = document.createElement('canvas'); off.width = targetW; off.height = targetH;
+      const octx = off.getContext('2d', { willReadFrequently: true });
+      octx.imageSmoothingEnabled = false;
+      octx.drawImage(previewSourceImage, 0, 0, previewSourceImage.naturalWidth, previewSourceImage.naturalHeight, 0, 0, targetW, targetH);
+      try {
+        const id = octx.getImageData(0, 0, targetW, targetH);
+        const data = id.data;
+        const w2 = targetW + 2;
+        const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+        const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+        for (let y = 0; y < targetH; y++) {
+          const leftToRight = (y % 2 === 0);
+          for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
+          if (leftToRight) {
+            for (let x = 0; x < targetW; x++) {
+              const idx = (y * targetW + x) * 4;
+              const a = data[idx + 3]; if (a === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteRgb(r, g, b);
+              data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+            }
+          } else {
+            for (let x = targetW - 1; x >= 0; x--) {
+              const idx = (y * targetW + x) * 4;
+              const a = data[idx + 3]; if (a === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteRgb(r, g, b);
+              data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+            }
+          }
+          for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+        }
+        octx.putImageData(id, 0, 0);
+      } catch {}
+      const scale = Math.min(imgPreviewCanvas.width/targetW, imgPreviewCanvas.height/targetH);
+      const drawW = Math.floor(targetW * scale);
+      const drawH = Math.floor(targetH * scale);
+      const dx = Math.floor((imgPreviewCanvas.width - drawW)/2);
+      const dy = Math.floor((imgPreviewCanvas.height - drawH)/2);
+      ctxp.drawImage(off, 0, 0, targetW, targetH, dx, dy, drawW, drawH);
+    }
+    const MAX_DIM = 1000;
+    function clampDim(v){ return Math.max(1, Math.min(MAX_DIM, v|0)); }
+    function updateSizeFromScale(){
+      const pct = Math.max(1, Math.min(800, parseInt(imgScaleInput.value||'100',10)));
+      if (!previewSourceImage) return;
+      const w0 = previewSourceImage.naturalWidth|0, h0 = previewSourceImage.naturalHeight|0;
+      let nw = Math.round(w0 * pct / 100);
+      let nh = Math.round(h0 * pct / 100);
+      if (nw > MAX_DIM || nh > MAX_DIM) {
+        const s = Math.min(MAX_DIM / nw, MAX_DIM / nh);
+        nw = Math.max(1, Math.round(nw * s));
+        nh = Math.max(1, Math.round(nh * s));
+        try { showToast(t('preview.maxSizeExceeded'), 'error', 2000); } catch {}
+      }
+      imgWidthInput.value = String(nw);
+      imgHeightInput.value = String(nh);
+      drawPreview();
+    }
+    function updateHeightFromWidth(){
+      if (!previewSourceImage) { drawPreview(); return; }
+      let nw = clampDim(parseInt(imgWidthInput.value||'1',10));
+      imgWidthInput.value = String(nw);
+      if (!imgKeepRatioInput.checked) { drawPreview(); return; }
+      const w0 = previewSourceImage.naturalWidth|0, h0 = previewSourceImage.naturalHeight|0;
+      let nh = Math.round(nw * h0 / w0);
+      if (nh > MAX_DIM) { nh = MAX_DIM; nw = Math.round(nh * w0 / h0); imgWidthInput.value = String(nw); try { showToast(t('preview.maxSizeExceeded'), 'error', 2000); } catch {} }
+      imgHeightInput.value = String(nh);
+      const pct = Math.round(nw / w0 * 100);
+      imgScaleInput.value = String(pct);
+      drawPreview();
+    }
+    function updateWidthFromHeight(){
+      if (!previewSourceImage) { drawPreview(); return; }
+      let nh = clampDim(parseInt(imgHeightInput.value||'1',10));
+      imgHeightInput.value = String(nh);
+      if (!imgKeepRatioInput.checked) {
+        const w0 = previewSourceImage.naturalWidth|0, h0 = previewSourceImage.naturalHeight|0;
+        const pct = Math.round(nh / (h0||1) * 100);
+        imgScaleInput.value = String(pct);
+        drawPreview();
+        return;
+      }
+      const w0 = previewSourceImage.naturalWidth|0, h0 = previewSourceImage.naturalHeight|0;
+      let nw = Math.round(nh * w0 / h0);
+      if (nw > MAX_DIM) { nw = MAX_DIM; nh = Math.round(nw * h0 / w0); imgHeightInput.value = String(nh); try { showToast(t('preview.maxSizeExceeded'), 'error', 2000); } catch {} }
+      imgWidthInput.value = String(nw);
+      const pct = Math.round(nh / h0 * 100);
+      imgScaleInput.value = String(pct);
+      drawPreview();
+    }
+    if (imgScaleInput) imgScaleInput.addEventListener('input', updateSizeFromScale);
+    if (imgWidthInput) imgWidthInput.addEventListener('change', updateHeightFromWidth);
+    if (imgHeightInput) imgHeightInput.addEventListener('change', updateWidthFromHeight);
+    if (imgKeepRatioInput) imgKeepRatioInput.addEventListener('change', () => { drawPreview(); });
+    function closeImgPreview(){ try { document.body.classList.remove('no-scroll'); } catch {} imgPreviewModal.hidden = true; }
+    if (imgPreviewClose) imgPreviewClose.addEventListener('click', closeImgPreview);
+    if (imgPreviewCancel) imgPreviewCancel.addEventListener('click', closeImgPreview);
+    if (imgPreviewApply) imgPreviewApply.addEventListener('click', async () => {
+      try {
+        if (!previewSourceImage) return;
+        let targetW = clampDim(parseInt(imgWidthInput.value||'1', 10));
+        let targetH = clampDim(parseInt(imgHeightInput.value||'1', 10));
+        if (targetW > MAX_DIM || targetH > MAX_DIM) { try { showToast(t('preview.maxSizeExceeded'), 'error', 2000); } catch {} }
+        const off = document.createElement('canvas');
+        off.width = targetW; off.height = targetH;
+        const octx = off.getContext('2d', { willReadFrequently: true });
+        octx.imageSmoothingEnabled = false;
+        octx.drawImage(previewSourceImage, 0, 0, previewSourceImage.naturalWidth, previewSourceImage.naturalHeight, 0, 0, targetW, targetH);
+        const blob = await new Promise((resolve)=>{ off.toBlob((b)=>resolve(b), 'image/png'); });
+        const url0 = URL.createObjectURL(blob);
         const tmpImg = new Image();
         tmpImg.onload = async () => {
-          URL.revokeObjectURL(tmpUrl);
-          const blob = await quantizeImageToPalette(tmpImg);
-          const url = URL.createObjectURL(blob);
+          URL.revokeObjectURL(url0);
+          const qBlob = await quantizeImageToPalette(tmpImg);
+          const url = URL.createObjectURL(qBlob);
           const imageEl = new Image();
           imageEl.onload = () => {
             const pixelCount = countNonTransparentPixels(imageEl);
-            const item = { url, name: file.name, image: imageEl, worldX: 0, worldY: 0, el: null, locked: false, pixelCount };
-            
+            const item = { url, name: imgPreviewApply._filename || 'image.png', image: imageEl, worldX: 0, worldY: 0, el: null, locked: false, pixelCount };
             const centerPx = getContentCenterPx();
             const centerWorldX = (centerPx.x - state.translateX) / state.scale;
             const centerWorldY = (centerPx.y - state.translateY) / state.scale;
@@ -2801,13 +3037,25 @@
             pendingZoomToSelected = true;
             render();
             if (pendingZoomToSelected) { pendingZoomToSelected = false; zoomToSign(item); }
-            processNext(i + 1);
+            closeImgPreview();
           };
           imageEl.src = url;
         };
-        tmpImg.src = tmpUrl;
+        tmpImg.src = url0;
+      } catch {}
+    });
+
+    signFileInput.addEventListener('change', () => {
+      const files = Array.from(signFileInput.files || []);
+      if (!files.length) return;
+      const file = files[0];
+      const tmpUrl = URL.createObjectURL(file);
+      const tmpImg = new Image();
+      tmpImg.onload = () => {
+        URL.revokeObjectURL(tmpUrl);
+        openImagePreview(tmpImg, file.name);
       };
-      processNext(0);
+      tmpImg.src = tmpUrl;
     });
 
     
@@ -2829,6 +3077,24 @@
     const readyAccountBtn = document.getElementById('btn-ready-account');
     const readyAccountList = document.getElementById('ready-account-list');
     const readyTokenInput = document.getElementById('ready-token-input');
+    const selectModeTrack = document.getElementById('select-mode-toggle');
+    const selectModeLabelLeft = document.getElementById('select-mode-label-left');
+    const selectModeLabelRight = document.getElementById('select-mode-label-right');
+    let selectMode = 'multi';
+
+    function updateSelectModeUi(){
+      try { if (selectModeTrack) selectModeTrack.classList.toggle('on', selectMode === 'frame'); } catch {}
+      try { if (selectModeTrack) selectModeTrack.setAttribute('aria-checked', selectMode === 'frame' ? 'true' : 'false'); } catch {}
+      try { if (selectModeLabelLeft) selectModeLabelLeft.classList.toggle('active', selectMode === 'multi'); } catch {}
+      try { if (selectModeLabelRight) selectModeLabelRight.classList.toggle('active', selectMode === 'frame'); } catch {}
+    }
+    function setSelectMode(mode){
+      selectMode = (mode === 'frame') ? 'frame' : 'multi';
+      updateSelectModeUi();
+    }
+    if (selectModeTrack) selectModeTrack.addEventListener('click', () => setSelectMode(selectMode === 'frame' ? 'multi' : 'frame'));
+    if (selectModeLabelLeft) selectModeLabelLeft.addEventListener('click', () => setSelectMode('multi'));
+    if (selectModeLabelRight) selectModeLabelRight.addEventListener('click', () => setSelectMode('frame'));
 
     function getAccountById(id) {
       const idStr = String(id);
@@ -3066,26 +3332,74 @@
         const need = limit - already;
         let addedCount = 0;
         
+        if (selectMode === 'frame') {
+          addedCount = autoSelectFrameFirst(selItem, need);
+        } else {
         let sx = start.x|0, sy = start.y|0;
         const totalCells = w * h;
         let traversed = 0;
         while (addedCount < need && traversed < totalCells) {
-          
           if (isOpaquePixel(selItem, sx, sy) && !isSameColorAsBase(selItem, sx, sy)) {
             const didAdd = addPixelSelection(selItem, sx, sy, null);
             if (didAdd) addedCount++;
           }
-          
           sx += 1;
           if (sx >= w) { sx = 0; sy += 1; }
           if (sy >= h) { sy = 0; }
           traversed++;
+          }
         }
         updateReadySelectionLabel();
         updatePixelMarkers();
         render();
         try { updateStartEnabled(); } catch {}
       });
+    }
+
+    function autoSelectFrameFirst(selItem, need){
+      if (!selItem || !selItem.image) return 0;
+      const w = selItem.image.naturalWidth|0;
+      const h = selItem.image.naturalHeight|0;
+      if (!(w && h)) return 0;
+      const size = w * h;
+      const idxOf = (x, y) => y * w + x;
+      const mask = new Uint8Array(size);
+      
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (isOpaquePixel(selItem, x, y) && !isSameColorAsBase(selItem, x, y)) {
+            mask[idxOf(x,y)] = 1;
+          }
+        }
+      }
+      let added = 0;
+      const isBoundary = (x, y) => {
+        const i = idxOf(x,y);
+        if (mask[i] === 0) return false;
+        if (x === 0 || mask[i-1] === 0) return true;
+        if (x === w-1 || mask[i+1] === 0) return true;
+        if (y === 0 || mask[i-w] === 0) return true;
+        if (y === h-1 || mask[i+w] === 0) return true;
+        return false;
+      };
+      while (added < need) {
+        const boundary = [];
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            if (isBoundary(x, y)) boundary.push({ x, y });
+          }
+        }
+        if (boundary.length === 0) break;
+        for (let k = 0; k < boundary.length && added < need; k++) {
+          const p = boundary[k];
+          if (addPixelSelection(selItem, p.x, p.y, null)) added++;
+        }
+        for (let k = 0; k < boundary.length; k++) {
+          const p = boundary[k];
+          mask[idxOf(p.x, p.y)] = 0;
+        }
+      }
+      return added;
     }
     function getSelectedAccountsSortedByCapacityDesc() {
       const rows = [];
@@ -3155,6 +3469,11 @@
             const colorsSlice = data.colors.slice(offset, offset + take);
             const coordsSlice = data.coords.slice(offset * 2, (offset + take) * 2);
             const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+            if (r && r.status === 429) {
+              hadRequestError = true;
+              try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
+              break;
+            }
             if (!r.ok) {
               if (r.status >= 500) {
                 try { await loadAccounts(); } catch {}
