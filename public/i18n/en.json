@@ -8,6 +8,7 @@
   "ready": {
     "prepare": "Ready",
     "selectAccount": "Select account",
+    "autoSelectAccounts": "Auto select account",
     "autoSelect": "Auto select",
     "deleteAllSelected": "Delete all selected",
     "start": "Start",
