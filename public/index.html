@@ -245,6 +245,16 @@
       border: 1px solid rgba(255,255,255,0.1);
       white-space: nowrap;
     }
+    /* Sound control floating (independent left of the panel) */
+    #sound-control { position: fixed; top: 16px; left: 16px; display: inline-flex; align-items: center; z-index: 1003; }
+    #sound-toggle { background-color: rgba(0,0,0,0.75); padding: 6px 10px; }
+    #sound-toggle.muted { opacity: 0.6; }
+    #sound-control .sound-slider { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: rgba(17, 20, 24, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; gap: 8px; align-items: center; flex-direction: column; z-index: 1003; min-width: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+    #sound-control:hover .sound-slider, #sound-control.open .sound-slider, #sound-control.hover .sound-slider { display: flex; }
+    #sound-volume { position: relative; width: 12px; height: 170px; user-select: none; touch-action: none; cursor: pointer; }
+    #sound-volume .slider-track { position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: rgba(255,255,255,0.18); border-radius: 9999px; }
+    #sound-volume .slider-fill { position: absolute; left: 50%; transform: translateX(-50%); width: 4px; bottom: 0; height: 0%; background: rgba(255,255,255,0.8); border-radius: 9999px; }
+    #sound-volume .slider-thumb { position: absolute; left: 50%; transform: translate(-50%, 50%); width: 12px; height: 12px; border-radius: 9999px; background: #e5e7eb; border: 1px solid rgba(255,255,255,0.5); bottom: 0%; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
     
     #btn-accounts {
       background-color: rgba(0,0,0,0.75);
@@ -531,8 +541,22 @@
   <img id="sign" alt="sign" draggable="false" hidden />
   <img id="pixel-hover" class="pixel-marker" alt="hover" hidden />
   <div id="pixel-selected-list" hidden></div>
+  <div id="sound-control">
+    <button id="sound-toggle" class="app-btn" type="button" title="" aria-label="">🔊</button>
+    <div class="sound-slider" role="group" aria-label="Ses ayarı">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#e5e7eb;opacity:0.9;font-size:12px">
+        <span data-i18n=""></span>
+        <div id="sound-volume" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="Volume">
+          <div class="slider-track"></div>
+          <div class="slider-fill"></div>
+          <div class="slider-thumb"></div>
+        </div>
+      </div>
+    </div>
+  </div>
     <div id="control-panel">
       <div class="controls-row">
+        
         <button id="btn-accounts" class="app-btn" type="button" data-i18n="nav.accounts">Hesaplar</button>
         <div id="pixel-power" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
       </div>
@@ -544,6 +568,9 @@
             <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
           </div>
           <div id="ready-account-list" hidden></div>
+          <div class="controls-row">
+            <button id="btn-auto-select-accounts" class="app-btn" type="button" data-i18n="ready.autoSelectAccounts">Auto select account</button>
+          </div>
           <div class="controls-row">
             <input id="ready-token-input" type="text" placeholder="Token" data-i18n-placeholder="ready.tokenPlaceholder" />
           </div>
@@ -807,8 +834,25 @@
     window.addEventListener('resize', layoutLangSwitch);
     window.addEventListener('scroll', layoutLangSwitch, { passive: true });
 
+    function layoutSoundControl(){
+      const el = document.getElementById('sound-control');
+      const accountsBtnLocal = document.getElementById('btn-accounts');
+      if (!el || !accountsBtnLocal) return;
+      const ac = accountsBtnLocal.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const elWidth = elRect.width || el.offsetWidth || 40;
+      const elHeight = elRect.height || el.offsetHeight || 28;
+      const topPx = Math.round(ac.top + (ac.height - elHeight) / 2);
+      const leftPx = Math.round(ac.left - 70 - elWidth);
+      try { el.style.top = String(topPx) + 'px'; } catch {}
+      try { el.style.left = String(Math.max(8, leftPx)) + 'px'; } catch {}
+    }
+    window.addEventListener('resize', layoutSoundControl);
+    window.addEventListener('scroll', layoutSoundControl, { passive: true });
+
     
     try { ensureLangSwitch(); initI18n(); layoutLangSwitch(); } catch {}
+    try { layoutSoundControl(); } catch {}
 
     const areaInput = document.getElementById('area-code');
     const noInput = document.getElementById('no');
@@ -829,6 +873,235 @@
     const counter = document.getElementById('counter');
     const accountsBtn = document.getElementById('btn-accounts');
       const pixelPowerEl = document.getElementById('pixel-power');
+    const soundToggleBtn = document.getElementById('sound-toggle');
+    const soundVolumeEl = document.getElementById('sound-volume');
+    const soundVolumeValue = document.getElementById('sound-volume-value');
+
+    let soundEnabled = true;
+    let soundVolume = 1.0;
+    try {
+      const se = localStorage.getItem('sound.enabled');
+      const sv = localStorage.getItem('sound.volume');
+      if (se != null) soundEnabled = (se === 'true');
+      if (sv != null && !isNaN(Number(sv))) soundVolume = Math.min(1, Math.max(0, Number(sv)));
+    } catch {}
+
+    let audioCtx = null;
+    function ensureAudioCtx(){
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch {} }
+      } catch {}
+      return audioCtx;
+    }
+    function playNotifySound(){
+      if (!soundEnabled) return;
+      const ctx = ensureAudioCtx();
+      if (!ctx) return;
+      try { ctx.resume(); } catch {}
+      const now = ctx.currentTime;
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.0001, now);
+      const targetVol = Math.max(0.0001, soundVolume * 0.8);
+      masterGain.gain.exponentialRampToValueAtTime(targetVol, now + 0.02);
+      masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+      masterGain.connect(ctx.destination);
+
+      const delay = ctx.createDelay(0.5);
+      delay.delayTime.value = 0.14;
+      const feedback = ctx.createGain(); feedback.gain.value = 0.25;
+      const delayMix = ctx.createGain(); delayMix.gain.value = 0.35;
+      delay.connect(feedback); feedback.connect(delay);
+      delay.connect(delayMix); delayMix.connect(masterGain);
+
+      function makeVoice(frequencyHz, startOffsetSec, durationSec){
+        const startAt = now + startOffsetSec;
+        const stopAt = startAt + durationSec;
+
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(frequencyHz * 0.995, startAt);
+        osc.frequency.linearRampToValueAtTime(frequencyHz, startAt + 0.08);
+
+        const overtone = ctx.createOscillator();
+        overtone.type = 'triangle';
+        overtone.frequency.value = frequencyHz * 2;
+        overtone.detune.value = 3;
+
+        const vibrato = ctx.createOscillator();
+        vibrato.type = 'sine';
+        vibrato.frequency.value = 6;
+        const vibratoGain = ctx.createGain();
+        vibratoGain.gain.value = frequencyHz * 0.015;
+        vibrato.connect(vibratoGain);
+        vibratoGain.connect(osc.frequency);
+
+        const voiceGain = ctx.createGain();
+        voiceGain.gain.setValueAtTime(0.0001, startAt);
+        voiceGain.gain.exponentialRampToValueAtTime(targetVol, startAt + 0.03);
+        voiceGain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
+
+        osc.connect(voiceGain);
+        const overtoneGain = ctx.createGain(); overtoneGain.gain.value = 0.22;
+        overtone.connect(overtoneGain); overtoneGain.connect(voiceGain);
+
+        const dry = ctx.createGain(); dry.gain.value = 1.0;
+        voiceGain.connect(dry); dry.connect(masterGain);
+        const wetSend = ctx.createGain(); wetSend.gain.value = 0.55;
+        voiceGain.connect(wetSend); wetSend.connect(delay);
+
+        osc.start(startAt);
+        overtone.start(startAt);
+        vibrato.start(startAt);
+        vibrato.stop(stopAt);
+        overtone.stop(stopAt);
+        osc.stop(stopAt + 0.01);
+      }
+
+      makeVoice(659.25, 0.00, 0.50);
+      makeVoice(987.77, 0.09, 0.50);
+      makeVoice(1318.51, 0.18, 0.65);
+
+      try {
+        const noiseDur = 0.18;
+        const noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * noiseDur), ctx.sampleRate);
+        const ch = noiseBuf.getChannelData(0);
+        for (let i = 0; i < ch.length; i++) {
+          const t = i / ch.length;
+          ch[i] = (Math.random() * 2 - 1) * (1 - t) * (1 - t) * 0.5;
+        }
+        const noise = ctx.createBufferSource(); noise.buffer = noiseBuf;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 4200; bp.Q.value = 1.1;
+        const ng = ctx.createGain(); ng.gain.value = targetVol * 0.18;
+        noise.connect(bp); bp.connect(ng); ng.connect(masterGain);
+        noise.start(now);
+        noise.stop(now + noiseDur);
+      } catch {}
+    }
+    function updateSoundUi(){
+      try {
+        if (soundVolumeEl) {
+          const percent = Math.round(soundVolume * 100);
+          try { soundVolumeEl.setAttribute('aria-valuenow', String(percent)); } catch {}
+          try {
+            const fill = soundVolumeEl.querySelector('.slider-fill');
+            const thumb = soundVolumeEl.querySelector('.slider-thumb');
+            if (fill) fill.style.height = percent + '%';
+            if (thumb) thumb.style.bottom = percent + '%';
+          } catch {}
+        }
+        if (soundVolumeValue) soundVolumeValue.textContent = Math.round(soundVolume * 100) + '%';
+        if (soundToggleBtn) {
+          soundToggleBtn.classList.toggle('muted', !soundEnabled || soundVolume === 0);
+          soundToggleBtn.textContent = (!soundEnabled || soundVolume === 0) ? '🔇' : (soundVolume < 0.5 ? '🔈' : '🔊');
+          soundToggleBtn.setAttribute('aria-pressed', soundEnabled ? 'true' : 'false');
+        }
+      } catch {}
+    }
+    function setSoundEnabled(v){
+      soundEnabled = !!v;
+      try { localStorage.setItem('sound.enabled', soundEnabled ? 'true' : 'false'); } catch {}
+      updateSoundUi();
+    }
+    function setSoundVolume(v){
+      const n = Number(v);
+      if (!isNaN(n)) {
+        const normalized = n > 1 ? (n / 100) : n;
+        soundVolume = Math.min(1, Math.max(0, normalized));
+        try { localStorage.setItem('sound.volume', String(soundVolume)); } catch {}
+        updateSoundUi();
+      }
+    }
+    if (soundToggleBtn) {
+      soundToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isZero = soundVolume === 0;
+        if (isZero) {
+          setSoundEnabled(true);
+          setSoundVolume(1);
+          try { ensureAudioCtx(); } catch {}
+        } else {
+          setSoundVolume(0);
+        }
+      });
+      soundToggleBtn.addEventListener('mouseenter', () => {
+        const sc = document.getElementById('sound-control');
+        if (sc) sc.classList.add('open');
+      });
+      soundToggleBtn.addEventListener('mouseleave', (e) => {
+        const sc = document.getElementById('sound-control');
+        if (!sc) return;
+        const to = e && e.relatedTarget ? e.relatedTarget : null;
+        if (to && sc.contains(to)) return; 
+        setTimeout(() => { if (!sc.matches(':hover')) sc.classList.remove('open'); }, 120);
+      });
+      // Toggle mute with middle-click
+      soundToggleBtn.addEventListener('auxclick', (e) => {
+        if (e && e.button === 1) { e.preventDefault(); setSoundEnabled(!soundEnabled); updateSoundUi(); }
+      });
+    }
+    if (soundVolumeEl) {
+      let isDraggingVol = false;
+      const onMove = (clientY) => {
+        const rect = soundVolumeEl.getBoundingClientRect();
+        const y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
+        const ratio = 1 - (y / rect.height);
+        setSoundVolume(ratio);
+        if (soundEnabled) { try { ensureAudioCtx(); } catch {} }
+      };
+      soundVolumeEl.addEventListener('pointerdown', (e) => {
+        isDraggingVol = true;
+        try { soundVolumeEl.setPointerCapture(e.pointerId); } catch {}
+        onMove(e.clientY);
+        const sc = document.getElementById('sound-control');
+        if (sc) sc.classList.add('open');
+      });
+      soundVolumeEl.addEventListener('pointermove', (e) => {
+        if (!isDraggingVol) return;
+        onMove(e.clientY);
+      });
+      const endDrag = () => {
+        if (!isDraggingVol) return;
+        isDraggingVol = false;
+        const sc = document.getElementById('sound-control');
+        setTimeout(() => { if (sc && !sc.matches(':hover')) sc.classList.remove('open'); }, 200);
+      };
+      soundVolumeEl.addEventListener('pointerup', endDrag);
+      soundVolumeEl.addEventListener('pointercancel', endDrag);
+      soundVolumeEl.addEventListener('mouseleave', () => {
+        const sc = document.getElementById('sound-control');
+        setTimeout(() => { if (sc && !sc.matches(':hover')) sc.classList.remove('open'); }, 200);
+      });
+    }
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      const sc = document.getElementById('sound-control');
+      if (!sc) return;
+      if (sc.contains(e.target)) return;
+      sc.classList.remove('open');
+    });
+    updateSoundUi();
+
+    // Pixel fullness notifier
+    const FULLNESS_NOTIFY_PERIOD_MS = 30 * 1000;
+    let lastFullnessNotifyAt = 0;
+    function maybeNotifyFullnessNow(){
+      const now = Date.now();
+      if (now - lastFullnessNotifyAt >= FULLNESS_NOTIFY_PERIOD_MS - 50) {
+        lastFullnessNotifyAt = now;
+        playNotifySound();
+      }
+    }
+    function checkFullnessNotify(){
+      try {
+        const c = Number(pixelPowerEl && pixelPowerEl.getAttribute('data-count') || '0');
+        const m = Number(pixelPowerEl && pixelPowerEl.getAttribute('data-max') || '0');
+        const ratio = m > 0 ? (c / m) : 0;
+        if (ratio >= 0.90) maybeNotifyFullnessNow();
+      } catch {}
+    }
+    try { setInterval(() => { checkFullnessNotify(); }, FULLNESS_NOTIFY_PERIOD_MS); } catch {}
     const accountsModal = document.getElementById('accounts-modal');
     const accountsClose = document.getElementById('accounts-close');
     const accountsBody = document.querySelector('#accounts-modal .modal-body');
@@ -2657,6 +2930,7 @@
           }
           try { pixelPowerEl.setAttribute('data-count', String(totalCount)); pixelPowerEl.setAttribute('data-max', String(totalMax)); } catch {}
           pixelPowerEl.textContent = t('pixel.powerLabel', { count: totalCount, max: totalMax });
+          try { checkFullnessNotify(); } catch {}
         }
       } catch {}
     }
@@ -3072,6 +3346,7 @@
     const readyBtn = document.getElementById('btn-ready');
     const readyPopup = document.getElementById('ready-popup');
     const autoSelectBtn = document.getElementById('btn-auto-select');
+    const autoSelectAccountsBtn = document.getElementById('btn-auto-select-accounts');
     const startBtn = document.getElementById('start');
     const readyPixelEl = document.getElementById('ready-pixel');
     const readyAccountBtn = document.getElementById('btn-ready-account');
@@ -3187,10 +3462,43 @@
       try { updateAutoSelectButtonLabel(); } catch {}
     }
 
+    function autoSelectTopAccountsByRatio(){
+      try {
+        const candidates = Array.isArray(accountsData) ? accountsData.filter(row => {
+          const isActive = row && row.active !== false && !!row.token;
+          const countRaw = Number(row && row.pixelCount);
+          const maxRaw = Number(row && row.pixelMax);
+          const valid = Number.isFinite(countRaw) && Number.isFinite(maxRaw) && maxRaw > 0;
+          return isActive && valid;
+        }).map(row => {
+          const count = Math.floor(Number(row.pixelCount));
+          const max = Math.floor(Number(row.pixelMax));
+          const ratio = (max > 0 ? (count / max) : -1);
+          return { id: row.id, ratio, count, max };
+        }) : [];
+        candidates.sort((a, b) => {
+          if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+          if (b.count !== a.count) return b.count - a.count;
+          return b.max - a.max;
+        });
+        const top = candidates.slice(0, MAX_READY_ACCOUNTS).map(x => x.id);
+        readySelectedAccountIds = top;
+        try { renderReadyAccountList(); } catch {}
+        try { if (readyPixelEl) readyPixelEl.hidden = false; } catch {}
+        updateReadyPixelForSelectedAccounts();
+      } catch {}
+    }
+
     if (readyAccountBtn) {
       readyAccountBtn.addEventListener('click', () => {
         try { renderReadyAccountList(); } catch {}
         if (readyAccountList) readyAccountList.hidden = !readyAccountList.hidden;
+      });
+    }
+    if (autoSelectAccountsBtn) {
+      autoSelectAccountsBtn.addEventListener('click', async () => {
+        try { await loadAccounts(); } catch {}
+        autoSelectTopAccountsByRatio();
       });
     }
 
