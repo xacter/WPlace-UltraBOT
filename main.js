@@ -442,16 +442,18 @@ function startServer(port, host) {
     }
     if (parsed.pathname === '/api/settings' && req.method === 'POST') {
       readJsonBody(req).then((body) => {
-        const cf_clearance = body && typeof body.cf_clearance === 'string' ? body.cf_clearance : '';
+        const existing = readJson(SETTINGS_FILE, { cf_clearance: '', worldX: null, worldY: null });
+        const merged = { ...existing };
+        if (body && Object.prototype.hasOwnProperty.call(body, 'cf_clearance') && typeof body.cf_clearance === 'string') {
+          merged.cf_clearance = body.cf_clearance;
+        }
         const worldX = (body && (typeof body.worldX === 'number' || body.worldX === null)) ? body.worldX : undefined;
         const worldY = (body && (typeof body.worldY === 'number' || body.worldY === null)) ? body.worldY : undefined;
-        const existing = readJson(SETTINGS_FILE, { cf_clearance: '', worldX: null, worldY: null });
-        const merged = { ...existing, cf_clearance };
         if (worldX !== undefined) merged.worldX = worldX;
         if (worldY !== undefined) merged.worldY = worldY;
         writeJson(SETTINGS_FILE, merged);
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ cf_clearance }));
+        res.end(JSON.stringify({ cf_clearance: merged.cf_clearance }));
       }).catch(() => {
         res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({ error: 'invalid json' }));
@@ -507,7 +509,11 @@ function startServer(port, host) {
         try {
           me = await fetchMe(settings.cf_clearance, acct.token);
         } catch (err) {
-          console.log('refresh fetch error:', err && err.message ? err.message : err);
+          const msg = (err && err.message) ? String(err.message) : String(err);
+          const code = (err && err.code) ? String(err.code) : '';
+          if (!(code === 'ECONNRESET' || (msg && msg.toUpperCase && msg.toUpperCase().includes('ECONNRESET')))) {
+            console.log('refresh fetch error:', msg);
+          }
         }
         debugLog('refresh: got-scraping result', {
           ok: !!me,
@@ -588,8 +594,12 @@ function main() {
     requestMeLikePython({ cookie: cookieHeader, cf_clearance: cfOpt, j: jOpt })
       .then(() => {})
       .catch((err) => {
-        console.error('Request failed:', err && err.message ? err.message : err);
-        process.exitCode = 1;
+        const msg = (err && err.message) ? String(err.message) : String(err);
+        const code = (err && err.code) ? String(err.code) : '';
+        if (!(code === 'ECONNRESET' || (msg && msg.toUpperCase && msg.toUpperCase().includes('ECONNRESET')))) {
+          console.error('Request failed:', msg);
+          process.exitCode = 1;
+        }
       });
     return;
   }
