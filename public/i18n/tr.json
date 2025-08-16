@@ -8,6 +8,7 @@
   "ready": {
     "prepare": "Hazırlan",
     "selectAccount": "Hesap seç",
+    "autoSelectAccounts": "Otomatik Hesap Seç",
     "autoSelect": "Otomatik seç",
     "deleteAllSelected": "Tüm seçilenleri sil",
     "start": "Başlat",
