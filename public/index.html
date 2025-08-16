@@ -843,7 +843,7 @@
       const elWidth = elRect.width || el.offsetWidth || 40;
       const elHeight = elRect.height || el.offsetHeight || 28;
       const topPx = Math.round(ac.top + (ac.height - elHeight) / 2);
-      const leftPx = Math.round(ac.left - 70 - elWidth);
+      const leftPx = Math.round(ac.left - 30 - elWidth);
       try { el.style.top = String(topPx) + 'px'; } catch {}
       try { el.style.left = String(Math.max(8, leftPx)) + 'px'; } catch {}
     }
