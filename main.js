@@ -129,7 +129,7 @@ function deactivateAccountByToken(jToken) {
     const idx = accounts.findIndex(a => a && typeof a.token === 'string' && a.token === jToken);
     if (idx === -1) return;
     const current = accounts[idx] || {};
-    const updated = { ...current, token: '', pixelCount: 0, pixelMax: 0, active: false };
+    const updated = { ...current, active: false };
     accounts[idx] = updated;
     writeJson(ACCOUNTS_FILE, accounts);
     console.log('[auto] account deactivated due to 500 when posting pixel:', current && current.name ? current.name : '(unknown)');
