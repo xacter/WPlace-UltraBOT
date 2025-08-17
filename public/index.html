@@ -391,6 +391,8 @@
       border-radius: 12px;
       backdrop-filter: blur(6px);
       padding: 10px 12px;
+      width: 280px;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -837,13 +839,15 @@
     function layoutSoundControl(){
       const el = document.getElementById('sound-control');
       const accountsBtnLocal = document.getElementById('btn-accounts');
-      if (!el || !accountsBtnLocal) return;
+      const controlPanel = document.getElementById('control-panel');
+      if (!el || !accountsBtnLocal || !controlPanel) return;
       const ac = accountsBtnLocal.getBoundingClientRect();
+      const cp = controlPanel.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
       const elWidth = elRect.width || el.offsetWidth || 40;
       const elHeight = elRect.height || el.offsetHeight || 28;
       const topPx = Math.round(ac.top + (ac.height - elHeight) / 2);
-      const leftPx = Math.round(ac.left - 30 - elWidth);
+      const leftPx = Math.round(cp.left - 12 - elWidth);
       try { el.style.top = String(topPx) + 'px'; } catch {}
       try { el.style.left = String(Math.max(8, leftPx)) + 'px'; } catch {}
     }
