@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WPlace Helper</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --card: #f8fafc;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-600: #1d4ed8;
+      --ring: rgba(37, 99, 235, 0.3);
+      --success: #16a34a;
+      --success-600: #15803d;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --text: #e5e7eb;
+        --muted: #9aa4b2;
+        --card: #0f172a;
+        --border: #1f2937;
+        --primary: #3b82f6;
+        --primary-600: #2563eb;
+        --ring: rgba(59, 130, 246, 0.35);
+        --success: #22c55e;
+        --success-600: #16a34a;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      width: 400px;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .container {
+      padding: 14px 14px 16px 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, rgba(37,99,235,0.09), rgba(37,99,235,0.02));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .logo { width: 28px; height: 28px; border-radius: 6px; }
+    .title { font-weight: 650; font-size: 14px; }
+    .subtitle { justify-self: end; color: var(--muted); font-size: 12px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .card-title { font-size: 13px; font-weight: 600; }
+    .card-subtitle { font-size: 12px; color: var(--muted); }
+    .card-header .left { display: inline-flex; align-items: center; gap: 10px; }
+
+    .switch { position: relative; width: 44px; height: 24px; border-radius: 999px; background: #e5e7eb; border: 1px solid var(--border); transition: background 0.15s ease, border-color 0.15s ease; flex: none; }
+    @media (prefers-color-scheme: dark) { .switch { background: #111827; } }
+    .switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .switch .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #ffffff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.25); transition: transform 0.15s ease; }
+    @media (prefers-color-scheme: dark) { .switch .knob { background: #0b1220; } }
+    .switch[data-checked="true"] { background: var(--primary); border-color: var(--primary); }
+    .switch[data-checked="true"] .knob { transform: translateX(20px); }
+    .switch-text { font-size: 12px; color: var(--muted); }
+
+    .input-row { display: flex; gap: 8px; align-items: stretch; }
+    input[type="text"] { flex: 1; padding: 10px 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; color: #0f172a; font-family: 'Courier New', Courier, monospace; font-size: 12px; outline: none; min-width: 0; }
+    @media (prefers-color-scheme: dark) { input[type="text"] { background: #0b1220; color: var(--text); } }
+
+    button { border: none; cursor: pointer; outline: none; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; min-width: 86px; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 600; font-size: 12px; height: 36px; box-shadow: 0 1px 0 rgba(0,0,0,0.1); transition: transform 0.06s ease, background 0.15s ease, box-shadow 0.15s ease; }
+    .btn:hover { background: var(--primary-600); }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
+    .btn svg { width: 14px; height: 14px; }
+    .btn-icon { min-width: 0; height: 30px; padding: 0 8px; font-size: 11px; gap: 6px; align-self: center; }
+    .btn-icon svg { width: 12px; height: 12px; }
+    .input-pair { display: grid; grid-template-columns: 1fr auto; gap: 8px; flex: 1; min-width: 0; }
+
+    #status { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08); font-size: 12px; line-height: 1.1; pointer-events: none; z-index: 1000; max-width: calc(100% - 24px); white-space: nowrap; min-height: 0; opacity: 0; }
+    #status:empty { display: none; }
+    #status:not(:empty) { opacity: 1; animation: toast-in 160ms ease-out; }
+    #status::before { content: ""; width: 16px; height: 16px; background: var(--success); -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7 19.59 5.59 9 16.17z"/></svg>') center / contain no-repeat; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7 19.59 5.59 9 16.17z"/></svg>') center / contain no-repeat; flex: none; }
+    @keyframes toast-in { from { transform: translateX(-50%) translateY(6px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img class="logo" src="../images/icon128.png" alt="WPlace" />
+      <div class="title">WPlace Helper</div>
+      <div class="subtitle">Token Manager</div>
+    </div>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="left">
+          <div class="card-title">Pixel Token</div>
+          <label id="toggle-capture-wrap" class="switch" title="Enable capture and block">
+            <input type="checkbox" id="toggle-capture" />
+            <span class="knob"></span>
+          </label>
+          <span id="toggle-capture-label" class="switch-text">Off</span>
+        </div>
+        <div class="card-subtitle">Captured from pixel request</div>
+      </div>
+      <div class="input-row">
+        <input type="text" id="token-input" readonly value="No token captured yet...">
+        <button id="copy-button" class="btn" title="Copy pixel token">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 8.5A2.5 2.5 0 0 1 11.5 6h5A2.5 2.5 0 0 1 19 8.5v8A2.5 2.5 0 0 1 16.5 19h-5A2.5 2.5 0 0 1 9 16.5v-8Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M7.5 16.5A2.5 2.5 0 0 1 5 14V7.5A2.5 2.5 0 0 1 7.5 5H14" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span>Copy</span>
+        </button>
+      </div>
+      <div class="input-row">
+        <div class="input-pair">
+          <input type="text" id="world-x" readonly value="-" title="World X" placeholder="World X">
+          <button id="copy-world-x" class="btn btn-icon" title="Copy World X">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M9 8.5A2.5 2.5 0 0 1 11.5 6h5A2.5 2.5 0 0 1 19 8.5v8A2.5 2.5 0 0 1 16.5 19h-5A2.5 2.5 0 0 1 9 16.5v-8Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7.5 16.5A2.5 2.5 0 0 1 5 14V7.5A2.5 2.5 0 0 1 7.5 5H14" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span>Copy X</span>
+          </button>
+        </div>
+        <div class="input-pair">
+          <input type="text" id="world-y" readonly value="-" title="World Y" placeholder="World Y">
+          <button id="copy-world-y" class="btn btn-icon" title="Copy World Y">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M9 8.5A2.5 2.5 0 0 1 11.5 6h5A2.5 2.5 0 0 1 19 8.5v8A2.5 2.5 0 0 1 16.5 19h-5A2.5 2.5 0 0 1 9 16.5v-8Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7.5 16.5A2.5 2.5 0 0 1 5 14V7.5A2.5 2.5 0 0 1 7.5 5H14" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span>Copy Y</span>
+          </button>
+        </div>
+      </div>
+      <div id="status" role="status" aria-live="polite" aria-atomic="true"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">Account Token</div>
+        <div class="card-subtitle">Cookie "j" on wplace.live</div>
+      </div>
+      <div class="input-row">
+        <input type="text" id="cookie-j" readonly value="Not found">
+        <button id="copy-j" class="btn" title="Copy account token">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 8.5A2.5 2.5 0 0 1 11.5 6h5A2.5 2.5 0 0 1 19 8.5v8A2.5 2.5 0 0 1 16.5 19h-5A2.5 2.5 0 0 1 9 16.5v-8Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M7.5 16.5A2.5 2.5 0 0 1 5 14V7.5A2.5 2.5 0 0 1 7.5 5H14" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span>Copy</span>
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="../scripts/popup.js"></script>
+</body>
+</html>
+
+
