@@ -51,72 +51,79 @@
 
 ![Part 1](https://i.imgur.com/yS9093x.png)
 
-
-
 When you go to localhost:3000, you should see a page like this.<br>
 
+---
+
+![Part 2](https://i.imgur.com/taF0I2T.png)
+
+Open a new tab and go to this link: `chrome://extensions/`<br>
+Enable developer mode. <br>
+
+![](https://i.imgur.com/oe42A42.png)
+
+Click "Load unpacked". <br>
+
+![](https://i.imgur.com/jPyzOr3.png)
+
+Select the `WPlace-Helper` folder. <br>
 
 ---
 
-![Part 2](https://i.imgur.com/r02ndS6.png)
+![Part 3](https://i.imgur.com/YVyvw3a.png)
 
-
-Open the area on Wplace where you want to draw.<br>
-Place 1 pixel.<br>
-Press the 'F12' button.<br>
-Go to the 'Network' tab and type 'png' in the filter.<br>
-Click the 'F5' button.<br>
-You should see png files like in the picture, then click on one.<br>
-
-https://backend.wplace.live/files/s0/tiles/1188/767.png<br>
-
-We have reached this link. Here, '1188' represents the World X part and '767' represents the World Y part.<br>
-
-
-
-
-
+Go to the wplace.live page. <br>
+Press F12.<br>
+On the page that opens, select the 'Application' section from the top (if you can't find it, click on the place I've shown in yellow and select it).<br>
+Click on `cf_clearance` and copy its value from below.<br>
 
 ---
 
-![Part 3](https://i.imgur.com/LniE1E8.png)
+![Part 4](https://i.imgur.com/sJvyiC6.png)
 
-
-When you enter the World X and World Y coordinates and click the 'fetch' button, a map like the one in the image should appear.
-
-
----
-
-![Part 4](https://i.imgur.com/FlXoyc7.png)
-
-Go back to the previous page and type 'me' into the search bar. Click on the result that appears. On the page that opens, scroll down and copy the 'cf_clearance' value. Similarly, copy the value from the part that says 'j' and save them both somewhere.
-
----
-![Part 5](https://i.imgur.com/IvNN9EZ.png)
-
+Go back to the bot.<br>
 Click on the "Accounts" button, then click the "Settings" button. Paste the value you copied into the field labeled 'cf_clearance' and save it.
 
 ---
-![Part 6](https://i.imgur.com/8sjhH1L.png)
 
-![Part 6](https://i.imgur.com/jf6W8NV.png)
+![Part 5](https://i.imgur.com/vJkPMx8.png)
 
+Go to wplace.live, and when you click on the extension from the top, it should look like this.<br>
+After making sure the "pixel token" section is enabled, try to paint a pixel on the map normally. <br>
+
+![Part 5 (Error)](https://i.imgur.com/uZmJDad.png)
+
+If you get the error you see on the screen, it means you are on the right track. Click on the extension again, and the "World X" and "World Y" information for the place you tried to paint will appear. Copy them.
+
+---
+
+![Part 6](https://i.imgur.com/LniE1E8.png)
+
+When you enter the World X and World Y coordinates and click the 'fetch' button, a map like the one in the image should appear.
+
+---
+
+![Part 7](https://i.imgur.com/vJkPMx8.png)
+
+Go back to the previous page, click on the extension, and copy the "Account Token" value.
+
+---
+
+![Part 8](https://i.imgur.com/8sjhH1L.png)
 
 Next, you'll be taken to the Accounts section. Click the "Add Account" button. The page shown above will then appear.
 
+![Part 8](https://i.imgur.com/jf6W8NV.png)
+
 You can enter any name for the account. However, in the "Account Token" field below, paste the value you copied in the previous step. Finally, click "Add".
 
-
-
-
-
 ---
-![Part 8](https://i.imgur.com/DJUEywj.png)
 
+![Part 9](https://i.imgur.com/DJUEywj.png)
 
-After you've uploaded as many accounts as you want, you can see the total number of pixels and your available pixels for all your accounts in the top right corner.
+After you've added as many accounts as you want, you can see the total number of pixels and your available pixels for all your accounts in the top right corner.
 
-The image you upload is automatically converted to the free color palettes available on the site and is uploaded that way. This system will be improved further in the future
+The image you upload is automatically converted to the free color palettes available on the site and is uploaded that way. This system will be improved further in the future.
 
 Once you upload an image using the Upload Image button:
 
@@ -126,56 +133,35 @@ On the top right of the image, there's a lock button. When you lock it, you can'
 
 You can see all your uploaded images in the bar on the left. If you can't find an image on the page, just click on it in the bar, and it will take you directly to the image.
 
-
 ---
-![Part 9](https://i.imgur.com/Dzt1p3o.png)
+
+![Part 10](https://i.imgur.com/Dzt1p3o.png)
 
 Click the Ready button. In the window that appears, click Select Account to choose your active accounts. When you're done, click Select Account again to close the window.
 
 ---
-![Part 10](https://i.imgur.com/QKJRVL9.png)
+
+![Part 11](https://i.imgur.com/QKJRVL9.png)
 
 When you zoom in on the image, every transparent pixel you fill will be colored with the corresponding color from your uploaded image, and you can only place pixels within the image's boundaries. If you select a specific color, you can paint anywhere you want, up to your maximum pixel capacity.
 
-
----
-![Part 11](https://i.imgur.com/s3hIJFD.png)
-
-
-Go back to the Wplace page, and in the search bar, enter the World Y value. Fill in one pixel, then find the area I've marked on the right, right-click, and select Block request URL.
-
-
-
 ---
 
-![Part 12](https://i.imgur.com/ZICIlpJ.png)
+![Part 12](https://i.imgur.com/vJkPMx8.png)
 
-Then, try to fill a pixel in the same spot again. This time it should give an error. Click on the request that gave the error, then click on the 'Payload' tab. If you click on 'view sourced', it will look like mine. After that, copy the 't' value completely.
-
-
-
+Return to the wplace page and since the previous token has expired, try to send a new pixel and copy the new pixel token.
 
 ---
-
-
 
 ![Part 13](https://i.imgur.com/wDp07pH.png)
 
-
-
 Then, return to our page, paste the value into the 'token' field, and click 'Start'.
 
-
-
-
-
 ---
+
 ![Part 14](https://i.imgur.com/iQTH5TR.png)
 
-
 If you have done everything correctly, you should receive a notification like this, and the changes should have been processed on the map. That's all there is to it; you can create any image you want by repeating these steps.
-
-
 
 </details>
 
@@ -184,7 +170,7 @@ If you have done everything correctly, you should receive a notification like th
 
 > [!IMPORTANT]
 > <p><sub><strong>1.</strong> In the Accounts section, if you click on 'Check Pixel', you can manually check the remaining pixels for that account. Normally, this is done automatically every 90 seconds.</sub></p>
-> <p><sub><strong>2.</strong> Account tokens last for about 4-5 hours. During the automatic account check, if a token has expired, the account will become inactive. You can re-activate it by entering the new token in the Edit section and clicking Check Pixel.</sub></p>
+> <p><sub><strong>2.</strong> Account tokens last for about 3-4 hours. During the automatic account check, if a token has expired, the account will become inactive. You can re-activate it by entering the new token in the Edit section and clicking Check Pixel.</sub></p>
 > <p><sub><strong>3.</strong> Once the submission token appears on the panel, you need to be quick. If you are too slow, the token will expire and you will get a 403 refresh error.</sub></p>
 
 <br>
@@ -221,6 +207,7 @@ Since the entire project was prepared in one day, please don't forget to report 
 </p>
 
 ---
+
 
 
 
