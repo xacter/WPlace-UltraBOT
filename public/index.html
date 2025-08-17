@@ -314,6 +314,15 @@
       align-items: center;
       pointer-events: auto;
     }
+    .img-preview-flex { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 720px){ .img-preview-flex { grid-template-columns: 1fr; } }
+    #img-fill-side { pointer-events: auto; }
+    #img-fill-side .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px 12px; align-items: center; }
+    #img-fill-side .row + .row { margin-top: 8px; }
+    #img-fill-side .color-row { align-items: start; }
+    #img-fill-color { display: grid; grid-template-columns: repeat(auto-fill, minmax(22px, 1fr)); gap: 6px; align-items: start; width: 100%; }
+    #img-fill-color .palette-swatch { cursor: pointer; width: 100%; aspect-ratio: 1 / 1; height: auto; min-width: 18px; }
+    #img-fill-color[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
     .modal-card {
       background: rgba(17, 20, 24, 0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -668,18 +677,35 @@
       <div class="modal-header" data-i18n="form.uploadImage">Resim yükle</div>
       <div class="modal-body">
         <canvas id="img-preview-canvas" width="540" height="300" aria-label="Image preview"></canvas>
-        <div class="img-preview-grid">
-          <label for="img-scale" data-i18n="preview.scale">Ölçek (%)</label>
-          <input id="img-scale" type="number" min="1" max="800" step="1" value="100" />
-          <label for="img-keep-ratio" data-i18n="preview.keepRatio">Oranı koru</label>
-          <label class="toggle" aria-label="Keep ratio">
-            <input id="img-keep-ratio" type="checkbox" checked />
-            <span class="slider"></span>
-          </label>
-          <label for="img-width" data-i18n="preview.width">Genişlik</label>
-          <input id="img-width" type="number" min="1" max="1000" step="1" />
-          <label for="img-height" data-i18n="preview.height">Yükseklik</label>
-          <input id="img-height" type="number" min="1" max="1000" step="1" />
+        <div class="img-preview-flex">
+          <div>
+            <div class="img-preview-grid">
+              <label for="img-scale" data-i18n="preview.scale">Ölçek (%)</label>
+              <input id="img-scale" type="number" min="1" max="800" step="1" value="100" />
+              <label for="img-keep-ratio" data-i18n="preview.keepRatio">Oranı koru</label>
+              <label class="toggle" aria-label="Keep ratio">
+                <input id="img-keep-ratio" type="checkbox" checked />
+                <span class="slider"></span>
+              </label>
+              <label for="img-width" data-i18n="preview.width">Genişlik</label>
+              <input id="img-width" type="number" min="1" max="1000" step="1" />
+              <label for="img-height" data-i18n="preview.height">Yükseklik</label>
+              <input id="img-height" type="number" min="1" max="1000" step="1" />
+            </div>
+          </div>
+          <div id="img-fill-side">
+            <div class="row">
+              <label for="img-fill-toggle" data-i18n="preview.fillBackground" style="margin-right:8px;">Arka planı doldur</label>
+              <label class="toggle" aria-label="Fill background" style="justify-self:start;">
+                <input id="img-fill-toggle" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="row color-row">
+              <label for="img-fill-color" data-i18n="preview.color">Renk</label>
+              <div id="img-fill-color" aria-disabled="true"></div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -3301,6 +3327,9 @@
     const imgKeepRatioInput = document.getElementById('img-keep-ratio');
     const imgWidthInput = document.getElementById('img-width');
     const imgHeightInput = document.getElementById('img-height');
+    const imgFillToggle = document.getElementById('img-fill-toggle');
+    const imgFillColorWrap = document.getElementById('img-fill-color');
+    let imgFillColorId = null; // null => none, number => palette id
     let previewSourceImage = null;
 
     function openImagePreview(image, filename){
@@ -3310,6 +3339,10 @@
       try { imgWidthInput.value = String(w); } catch {}
       try { imgHeightInput.value = String(h); } catch {}
       try { imgScaleInput.value = '100'; } catch {}
+      try { if (imgFillToggle) imgFillToggle.checked = false; } catch {}
+      imgFillColorId = null;
+      buildFillPaletteUi();
+      try { if (imgFillColorWrap) imgFillColorWrap.setAttribute('aria-disabled', 'true'); } catch {}
       drawPreview();
       imgPreviewModal.hidden = false;
       try { document.body.classList.add('no-scroll'); } catch {}
@@ -3338,7 +3371,11 @@
           if (leftToRight) {
             for (let x = 0; x < targetW; x++) {
               const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3]; if (a === 0) continue;
+              const a = data[idx + 3];
+              if (a === 0) {
+                // already filled by background above if enabled; skip quantization for speed
+                continue;
+              }
               let r = data[idx] + errCurrR[x+1];
               let g = data[idx+1] + errCurrG[x+1];
               let b = data[idx+2] + errCurrB[x+1];
@@ -3358,7 +3395,8 @@
           } else {
             for (let x = targetW - 1; x >= 0; x--) {
               const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3]; if (a === 0) continue;
+              const a = data[idx + 3];
+              if (a === 0) { continue; }
               let r = data[idx] + errCurrR[x+1];
               let g = data[idx+1] + errCurrG[x+1];
               let b = data[idx+2] + errCurrB[x+1];
@@ -3380,12 +3418,24 @@
         }
         octx.putImageData(id, 0, 0);
       } catch {}
+      // Compose optional background fill for display
+      let disp = off;
+      if (imgFillToggle && imgFillToggle.checked && imgFillColorId != null) {
+        const bg = document.createElement('canvas');
+        bg.width = targetW; bg.height = targetH;
+        const bctx = bg.getContext('2d', { willReadFrequently: true });
+        const rgb = getPaletteRgbById(imgFillColorId);
+        bctx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+        bctx.fillRect(0,0,targetW,targetH);
+        bctx.drawImage(off, 0, 0);
+        disp = bg;
+      }
       const scale = Math.min(imgPreviewCanvas.width/targetW, imgPreviewCanvas.height/targetH);
       const drawW = Math.floor(targetW * scale);
       const drawH = Math.floor(targetH * scale);
       const dx = Math.floor((imgPreviewCanvas.width - drawW)/2);
       const dy = Math.floor((imgPreviewCanvas.height - drawH)/2);
-      ctxp.drawImage(off, 0, 0, targetW, targetH, dx, dy, drawW, drawH);
+      ctxp.drawImage(disp, 0, 0, targetW, targetH, dx, dy, drawW, drawH);
     }
     const MAX_DIM = 1000;
     function clampDim(v){ return Math.max(1, Math.min(MAX_DIM, v|0)); }
@@ -3441,6 +3491,51 @@
     if (imgWidthInput) imgWidthInput.addEventListener('change', updateHeightFromWidth);
     if (imgHeightInput) imgHeightInput.addEventListener('change', updateWidthFromHeight);
     if (imgKeepRatioInput) imgKeepRatioInput.addEventListener('change', () => { drawPreview(); });
+    function buildFillPaletteUi(){
+      if (!imgFillColorWrap) return;
+      try { imgFillColorWrap.innerHTML = ''; } catch {}
+      // Transparent option (none)
+      const swNone = document.createElement('div');
+      swNone.className = 'palette-swatch transparent selected';
+      swNone.title = t('palette.transparentTitle');
+      swNone.setAttribute('role','button');
+      swNone.addEventListener('click', () => {
+        imgFillColorId = null;
+        updateFillPaletteSelectionUi();
+        drawPreview();
+      });
+      imgFillColorWrap.appendChild(swNone);
+      for (let i = 0; i < PALETTE.length; i++){
+        const p = PALETTE[i];
+        const el = document.createElement('div');
+        el.className = 'palette-swatch';
+        el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
+        el.title = t('palette.colorTitle', { id: p.id });
+        el.setAttribute('data-id', String(p.id));
+        el.setAttribute('role','button');
+        el.addEventListener('click', () => {
+          imgFillColorId = p.id;
+          updateFillPaletteSelectionUi();
+          drawPreview();
+        });
+        imgFillColorWrap.appendChild(el);
+      }
+      updateFillPaletteSelectionUi();
+    }
+    function updateFillPaletteSelectionUi(){
+      if (!imgFillColorWrap) return;
+      const swatches = Array.from(imgFillColorWrap.querySelectorAll('.palette-swatch'));
+      swatches.forEach(sw => {
+        const idAttr = sw.getAttribute('data-id');
+        const id = idAttr == null ? null : Number(idAttr);
+        const isSelected = (idAttr == null && imgFillColorId == null) || (idAttr != null && id === imgFillColorId);
+        sw.classList.toggle('selected', !!isSelected);
+      });
+    }
+    if (imgFillToggle) imgFillToggle.addEventListener('change', () => {
+      try { imgFillColorWrap.setAttribute('aria-disabled', imgFillToggle.checked ? 'false' : 'true'); } catch {}
+      drawPreview();
+    });
     function closeImgPreview(){ try { document.body.classList.remove('no-scroll'); } catch {} imgPreviewModal.hidden = true; }
     if (imgPreviewClose) imgPreviewClose.addEventListener('click', closeImgPreview);
     if (imgPreviewCancel) imgPreviewCancel.addEventListener('click', closeImgPreview);
@@ -3454,6 +3549,11 @@
         off.width = targetW; off.height = targetH;
         const octx = off.getContext('2d', { willReadFrequently: true });
         octx.imageSmoothingEnabled = false;
+        if (imgFillToggle && imgFillToggle.checked && imgFillColorId != null) {
+          const rgb = getPaletteRgbById(imgFillColorId);
+          octx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+          octx.fillRect(0, 0, targetW, targetH);
+        }
         octx.drawImage(previewSourceImage, 0, 0, previewSourceImage.naturalWidth, previewSourceImage.naturalHeight, 0, 0, targetW, targetH);
         const blob = await new Promise((resolve)=>{ off.toBlob((b)=>resolve(b), 'image/png'); });
         const url0 = URL.createObjectURL(blob);
