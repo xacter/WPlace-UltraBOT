@@ -55,6 +55,8 @@
     "keepRatio": "Keep ratio",
     "width": "Width",
     "height": "Height",
+    "fillBackground": "Fill background",
+    "color": "Color",
     "addToMap": "Add to map",
     "maxSizeExceeded": "Maximum size is 1000x1000 pixels."
   },
@@ -80,6 +82,16 @@
   "palette": {
     "transparentTitle": "Transparent (image color)",
     "colorTitle": "Color #{id}"
+  },
+  "controls": {
+    "movement": "Movement"
+  },
+  "movement": {
+    "title": "Move image",
+    "up": "Move up",
+    "down": "Move down",
+    "left": "Move left",
+    "right": "Move right"
   },
   "messages": {
     "selectAccountFirst": "Select an account first.",
