@@ -2674,7 +2674,7 @@
               const lx = Math.floor(worldX - (selItem.worldX || 0));
               const ly = Math.floor(worldY - (selItem.worldY || 0));
               if (lx >= 0 && ly >= 0 && lx < selItem.image.naturalWidth && ly < selItem.image.naturalHeight) {
-                if (isOpaquePixel(selItem, lx, ly) && !isSameColorAsBase(selItem, lx, ly)) {
+                if (isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, lx, ly))) {
                   const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
                   const map = getSelectedMap(selItem);
                   const already = map ? map.size : 0;
@@ -2834,7 +2834,7 @@
           const canOpen = !!(it && it.image && it.image.complete && !(it.locked || it.lockedByReady));
           if (canOpen) {
             if (window._mvOpenTmo) { try { clearTimeout(window._mvOpenTmo); } catch {} }
-            window._mvOpenTmo = setTimeout(() => { movementPopup.hidden = false; }, 50);
+            window._mvOpenTmo = setTimeout(() => { if (!readyPopup || readyPopup.hidden) movementPopup.hidden = false; }, 50);
           }
         }
       } catch {}
@@ -3146,7 +3146,7 @@
       } catch {}
       try { await loadAccounts(); } catch {}
     }
-    const BULK_REFRESH_PERIOD_MS = 90 * 1000;
+    const BULK_REFRESH_PERIOD_MS = 20 * 1000;
     let lastBulkRefreshAt = 0;
     let bulkRefreshInFlight = false;
     async function refreshAllAccounts(){
@@ -3827,6 +3827,8 @@
             if (readyPixelEl) readyPixelEl.hidden = false;
             if (readyAccountList) readyAccountList.hidden = true;
           } catch {}
+          // Always close movement popup when toggling Ready
+          try { if (movementPopup) movementPopup.hidden = true; } catch {}
           readyPopup.hidden = !readyPopup.hidden;
           
           try {
@@ -3920,8 +3922,8 @@
         const totalCells = w * h;
         let traversed = 0;
         while (addedCount < need && traversed < totalCells) {
-          if (isOpaquePixel(selItem, sx, sy) && !isSameColorAsBase(selItem, sx, sy)) {
-            const didAdd = addPixelSelection(selItem, sx, sy, null);
+          if (isOpaquePixel(selItem, sx, sy) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, sx, sy))) {
+            const didAdd = addPixelSelection(selItem, sx, sy, selectedOverrideColorId != null ? selectedOverrideColorId : null);
             if (didAdd) addedCount++;
           }
           sx += 1;
@@ -3948,7 +3950,7 @@
       
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          if (isOpaquePixel(selItem, x, y) && !isSameColorAsBase(selItem, x, y)) {
+          if (isOpaquePixel(selItem, x, y) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, x, y))) {
             mask[idxOf(x,y)] = 1;
           }
         }
@@ -3973,7 +3975,7 @@
         if (boundary.length === 0) break;
         for (let k = 0; k < boundary.length && added < need; k++) {
           const p = boundary[k];
-          if (addPixelSelection(selItem, p.x, p.y, null)) added++;
+          if (addPixelSelection(selItem, p.x, p.y, selectedOverrideColorId != null ? selectedOverrideColorId : null)) added++;
         }
         for (let k = 0; k < boundary.length; k++) {
           const p = boundary[k];
@@ -4103,7 +4105,7 @@
     updatePixelPowerPosition();
     
     try {
-      setInterval(() => { refreshAllAccounts(); }, 90 * 1000);
+      setInterval(() => { refreshAllAccounts(); }, 20 * 1000);
     } catch {}
     
     
