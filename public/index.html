@@ -255,6 +255,17 @@
     #sound-volume .slider-track { position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: rgba(255,255,255,0.18); border-radius: 9999px; }
     #sound-volume .slider-fill { position: absolute; left: 50%; transform: translateX(-50%); width: 4px; bottom: 0; height: 0%; background: rgba(255,255,255,0.8); border-radius: 9999px; }
     #sound-volume .slider-thumb { position: absolute; left: 50%; transform: translate(-50%, 50%); width: 12px; height: 12px; border-radius: 9999px; background: #e5e7eb; border: 1px solid rgba(255,255,255,0.5); bottom: 0%; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+    /* Movement control floating (bottom-right) */
+    #move-control { position: fixed; right: 16px; bottom: 16px; display: inline-flex; align-items: center; z-index: 1003; }
+    #btn-movement { background-color: rgba(0,0,0,0.75); }
+    #btn-movement:hover { background-color: rgba(0,0,0,0.60); }
+    #movement-popup { position: absolute; bottom: calc(100% + 8px); right: 0; background: rgba(17, 20, 24, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; gap: 8px; align-items: center; flex-direction: column; z-index: 1003; min-width: 120px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); display: flex; }
+    #movement-popup[hidden] { display: none; }
+    .movement-grid { display: grid; grid-template-columns: repeat(3, 34px); grid-auto-rows: 34px; gap: 8px; justify-content: center; align-items: center; }
+    .movement-grid .dir-btn { width: 34px; height: 34px; padding: 0; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+    .movement-grid .dir-btn.kbd-press,
+    .movement-grid .dir-btn:active,
+    .movement-grid .dir-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(34,211,238,0.35); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.25); }
     
     #btn-accounts {
       background-color: rgba(0,0,0,0.75);
@@ -692,6 +703,23 @@
   <div id="app-toast-container" aria-live="polite" aria-atomic="true"></div>
   <div id="color-palette" aria-label="Renk paleti" role="group" data-i18n-aria-label="labels.colorPalette"></div>
 
+  <div id="move-control">
+    <button id="btn-movement" class="app-btn" type="button" data-i18n="controls.movement">Hareket</button>
+    <div id="movement-popup" hidden>
+      <div class="movement-grid">
+        <span></span>
+        <button id="move-up" class="app-btn dir-btn" type="button" title="Yukarı" aria-label="Yukarı" data-i18n-title="movement.up" data-i18n-aria-label="movement.up">▲</button>
+        <span></span>
+        <button id="move-left" class="app-btn dir-btn" type="button" title="Sola" aria-label="Sola" data-i18n-title="movement.left" data-i18n-aria-label="movement.left">◄</button>
+        <span></span>
+        <button id="move-right" class="app-btn dir-btn" type="button" title="Sağa" aria-label="Sağa" data-i18n-title="movement.right" data-i18n-aria-label="movement.right">►</button>
+        <span></span>
+        <button id="move-down" class="app-btn dir-btn" type="button" title="Aşağı" aria-label="Aşağı" data-i18n-title="movement.down" data-i18n-aria-label="movement.down">▼</button>
+        <span></span>
+      </div>
+    </div>
+  </div>
+
   <script>
     
     const I18N_DEFAULT_LANG = 'en';
@@ -1086,6 +1114,127 @@
       sc.classList.remove('open');
     });
     updateSoundUi();
+
+    // Movement controls (pixel-by-pixel image movement)
+    const movementBtn = document.getElementById('btn-movement');
+    const movementPopup = document.getElementById('movement-popup');
+    const moveUpBtn = document.getElementById('move-up');
+    const moveDownBtn = document.getElementById('move-down');
+    const moveLeftBtn = document.getElementById('move-left');
+    const moveRightBtn = document.getElementById('move-right');
+
+    function isMovementOpen(){
+      try { return !!(movementPopup && !movementPopup.hidden); } catch { return false; }
+    }
+    function getSelectedItem(){
+      try {
+        return (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+      } catch { return null; }
+    }
+    function updateMovementButtonEnabled(){
+      if (!movementBtn) return;
+      const it = getSelectedItem();
+      let enable = false;
+      try { enable = !!(it && it.image && it.image.complete && !(it.locked || it.lockedByReady)); } catch { enable = false; }
+      try { movementBtn.disabled = !enable; } catch {}
+      // Do not auto-close when disabled due to transient selection changes; keep user's choice.
+    }
+    function clampPositionForItem(item, x, y){
+      let nx = Math.round(x|0), ny = Math.round(y|0);
+      try {
+        if (img && item && item.image && item.image.naturalWidth && item.image.naturalHeight) {
+          const maxX = Math.max(0, img.width - item.image.naturalWidth);
+          const maxY = Math.max(0, img.height - item.image.naturalHeight);
+          nx = Math.min(Math.max(0, nx), maxX);
+          ny = Math.min(Math.max(0, ny), maxY);
+        }
+      } catch {}
+      return { x: nx, y: ny };
+    }
+    function moveSelectedBy(dx, dy, step){
+      const it = getSelectedItem();
+      if (!it || !it.image || !it.image.complete) { try { showToast(t('messages.noSelectedImage'), 'error', 1800); } catch {} return; }
+      if (it.locked || it.lockedByReady) { return; }
+      const mult = Number.isFinite(step) ? Math.max(1, step|0) : 1;
+      const targetX = (it.worldX || 0) + dx * mult;
+      const targetY = (it.worldY || 0) + dy * mult;
+      const clamped = clampPositionForItem(it, targetX, targetY);
+      if (clamped.x === (it.worldX||0) && clamped.y === (it.worldY||0)) return;
+      it.worldX = clamped.x;
+      it.worldY = clamped.y;
+      try { it._placedCountCache = null; } catch {}
+      render();
+      try { updatePixelMarkers(); } catch {}
+      if (isReadyOpen()) { try { updateReadySelectionLabel(); } catch {} }
+    }
+    function setupMoveHold(btn, dx, dy){
+      if (!btn) return;
+      const stop = () => {
+        try { if (btn._mvInt) { clearInterval(btn._mvInt); btn._mvInt = null; } } catch {}
+        try { if (btn._mvTmo) { clearTimeout(btn._mvTmo); btn._mvTmo = null; } } catch {}
+      };
+      btn.addEventListener('click', (e) => { e.preventDefault(); moveSelectedBy(dx, dy, e && e.shiftKey ? 5 : 1); });
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        const step = e && e.shiftKey ? 5 : 1;
+        moveSelectedBy(dx, dy, step);
+        try { btn.setPointerCapture(e.pointerId); } catch {}
+        btn._mvTmo = setTimeout(() => {
+          btn._mvInt = setInterval(() => moveSelectedBy(dx, dy, step), 50);
+        }, 250);
+      });
+      const end = () => { stop(); };
+      btn.addEventListener('pointerup', end);
+      btn.addEventListener('pointercancel', end);
+      btn.addEventListener('pointerleave', end);
+    }
+    if (movementBtn && movementPopup) {
+      function clearKbdPressVisuals(){
+        setKbdVisual('up', false);
+        setKbdVisual('down', false);
+        setKbdVisual('left', false);
+        setKbdVisual('right', false);
+      }
+      movementBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (movementBtn.disabled) return;
+        movementPopup.hidden = !movementPopup.hidden;
+        if (movementPopup.hidden) clearKbdPressVisuals();
+      });
+      // Removed auto-close on outside click to prevent flicker when focusing an image.
+      function setKbdVisual(dir, on){
+        try {
+          const map = { up: moveUpBtn, down: moveDownBtn, left: moveLeftBtn, right: moveRightBtn };
+          const el = map[dir]; if (!el) return;
+          if (on) el.classList.add('kbd-press'); else el.classList.remove('kbd-press');
+        } catch {}
+      }
+      window.addEventListener('keydown', (e) => {
+        if (!isMovementOpen()) return;
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+        let handled = false;
+        const step = e.shiftKey ? 5 : 1;
+        if (e.key === 'ArrowUp') { moveSelectedBy(0, -1, step); setKbdVisual('up', true); handled = true; }
+        else if (e.key === 'ArrowDown') { moveSelectedBy(0, 1, step); setKbdVisual('down', true); handled = true; }
+        else if (e.key === 'ArrowLeft') { moveSelectedBy(-1, 0, step); setKbdVisual('left', true); handled = true; }
+        else if (e.key === 'ArrowRight') { moveSelectedBy(1, 0, step); setKbdVisual('right', true); handled = true; }
+        else if (e.key === 'Escape') { movementPopup.hidden = true; handled = true; }
+        if (handled) { try { e.preventDefault(); e.stopPropagation(); } catch {} }
+      });
+      window.addEventListener('keyup', (e) => {
+        if (!isMovementOpen()) return;
+        if (e.key === 'ArrowUp') setKbdVisual('up', false);
+        else if (e.key === 'ArrowDown') setKbdVisual('down', false);
+        else if (e.key === 'ArrowLeft') setKbdVisual('left', false);
+        else if (e.key === 'ArrowRight') setKbdVisual('right', false);
+      });
+    }
+    setupMoveHold(moveUpBtn, 0, -1);
+    setupMoveHold(moveDownBtn, 0, 1);
+    setupMoveHold(moveLeftBtn, -1, 0);
+    setupMoveHold(moveRightBtn, 1, 0);
+    updateMovementButtonEnabled();
 
     // Pixel fullness notifier
     const FULLNESS_NOTIFY_PERIOD_MS = 30 * 1000;
@@ -2648,9 +2797,21 @@
         if (!(selectedIndex >= 0 && selectedIndex < signItems.length)) {
           const rp = document.getElementById('ready-popup');
           if (rp) rp.hidden = true;
+          try { if (movementPopup) movementPopup.hidden = true; } catch {}
         }
       } catch {}
       if (isReadyOpen()) { try { updateReadySelectionLabel(); } catch {} }
+      try { updateMovementButtonEnabled(); } catch {}
+      try {
+        const it = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (movementBtn && movementPopup) {
+          const canOpen = !!(it && it.image && it.image.complete && !(it.locked || it.lockedByReady));
+          if (canOpen) {
+            if (window._mvOpenTmo) { try { clearTimeout(window._mvOpenTmo); } catch {} }
+            window._mvOpenTmo = setTimeout(() => { movementPopup.hidden = false; }, 50);
+          }
+        }
+      } catch {}
     }
 
     function updateItemLockUi(item) {
@@ -2658,6 +2819,7 @@
       item.el.classList.toggle('locked', !!item.locked);
       const btn = item.el.querySelector('.thumb-action.lock');
       if (btn) btn.textContent = (item.locked || item.lockedByReady) ? '🔒' : '🔓';
+      try { updateMovementButtonEnabled(); } catch {}
     }
 
     function deleteItem(item) {
@@ -2678,6 +2840,7 @@
       updateThumbSelection();
       updateCounter();
       render();
+      try { updateMovementButtonEnabled(); } catch {}
     }
 
     function zoomToSign(item) {
