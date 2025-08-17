@@ -3146,7 +3146,7 @@
       } catch {}
       try { await loadAccounts(); } catch {}
     }
-    const BULK_REFRESH_PERIOD_MS = 20 * 1000;
+    const BULK_REFRESH_PERIOD_MS = 90 * 1000;
     let lastBulkRefreshAt = 0;
     let bulkRefreshInFlight = false;
     async function refreshAllAccounts(){
