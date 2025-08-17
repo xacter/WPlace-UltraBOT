@@ -10,7 +10,7 @@
     "selectAccount": "Select account",
     "autoSelectAccounts": "Auto select account",
     "autoSelect": "Auto select",
-    "deleteAllSelected": "Delete all selected",
+    "deleteAllSelected": "Deselect all",
     "start": "Start",
     "tokenPlaceholder": "Token",
     "accountLabelDefault": "Account",
