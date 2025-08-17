@@ -1,6 +1,11 @@
   <p align="center">
     Translations ➜&nbsp;
       <a href="docs/TR.md"><img src="https://flagcdn.com/256x192/tr.png" width="48" alt="Turkey Flag"></a>
+      <a href="docs/DE.md"><img src="https://flagcdn.com/256x192/de.png" width="48" alt="Germany Flag"></a>
+      <a href="docs/ES.md"><img src="https://flagcdn.com/256x192/es.png" width="48" alt="Spain Flag"></a>
+      <a href="docs/FR.md"><img src="https://flagcdn.com/256x192/fr.png" width="48" alt="France Flag"></a>
+      <a href="docs/RU.md"><img src="https://flagcdn.com/256x192/ru.png" width="48" alt="Russia Flag"></a>
+      <a href="docs/JA.md"><img src="https://flagcdn.com/256x192/jp.png" width="48" alt="Japan Flag"></a>
   </p>
   <br>
   <br>
