@@ -55,6 +55,8 @@
     "keepRatio": "Oranı koru",
     "width": "Genişlik",
     "height": "Yükseklik",
+    "fillBackground": "Arka planı doldur",
+    "color": "Renk",
     "addToMap": "Haritaya ekle",
     "maxSizeExceeded": "Maksimum boyut 1000x1000 piksel."
   },
@@ -80,6 +82,16 @@
   "palette": {
     "transparentTitle": "Transparan (resim rengi)",
     "colorTitle": "Renk #{id}"
+  },
+  "controls": {
+    "movement": "Hareket"
+  },
+  "movement": {
+    "title": "Resmi hareket ettir",
+    "up": "Yukarı",
+    "down": "Aşağı",
+    "left": "Sola",
+    "right": "Sağa"
   },
   "messages": {
     "selectAccountFirst": "Önce hesap seçin.",
