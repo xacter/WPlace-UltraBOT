@@ -528,6 +528,14 @@
       background-size: 8px 8px;
       background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
     }
+    .palette-swatch.block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      background: rgba(0,0,0,0.25);
+    }
     
     #lang-switch {
       position: fixed;
@@ -866,7 +874,7 @@
       if (!el) {
         el = document.createElement('div');
         el.id = 'lang-switch';
-        el.innerHTML = '<select id="lang-select"><option value="tr">Türkçe</option><option value="en">English</option></select>';
+        el.innerHTML = '<select id="lang-select"><option value="tr">Türkçe</option><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option><option value="fr">Français</option><option value="ru">Русский</option><option value="ja">日本語</option></select>';
         document.body.appendChild(el);
       }
       return el;
@@ -1379,7 +1387,7 @@
       el.alt = 'selected';
       el.src = SELECTED_ICON_SRC;
       let fillEl = null;
-      if (colorIdOverride != null) {
+      if (colorIdOverride != null && colorIdOverride !== 0) {
         fillEl = document.createElement('img');
         fillEl.className = 'pixel-marker';
         fillEl.alt = 'fill';
@@ -1692,7 +1700,7 @@
         
         try { if (!hideHover) { pixelHoverEl.hidden = false; pixelHoverEl.src = HOVER_ICON_SRC; } else { hideEl(pixelHoverEl); } } catch {}
         try {
-          if (!hideHover && selectedOverrideColorId != null && readyHoverPixel && readyHoverPixel.x != null && readyHoverPixel.y != null) {
+          if (!hideHover && selectedOverrideColorId != null && selectedOverrideColorId !== 0 && readyHoverPixel && readyHoverPixel.x != null && readyHoverPixel.y != null) {
             pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
             positionPixelMarkerAtWorld(pixelHoverFillEl, readyHoverPixel.x, readyHoverPixel.y);
             pixelHoverFillEl.hidden = false;
@@ -1737,7 +1745,7 @@
       if (!hideHover && readyHoverPixel && readyHoverPixel.x != null && readyHoverPixel.y != null) {
         positionPixelMarker(pixelHoverEl, sel, readyHoverPixel.x, readyHoverPixel.y);
         try {
-          if (!hideHover && selectedOverrideColorId != null) {
+          if (!hideHover && selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
             pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
             positionPixelMarker(pixelHoverFillEl, sel, readyHoverPixel.x, readyHoverPixel.y);
             pixelHoverFillEl.hidden = false;
@@ -1782,7 +1790,7 @@
           readyHoverPixel.x = wx; readyHoverPixel.y = wy;
           try { pixelHoverEl.src = HOVER_ICON_SRC; positionPixelMarkerAtWorld(pixelHoverEl, wx, wy); pixelHoverEl.hidden = false; } catch {}
           try {
-            if (selectedOverrideColorId != null) {
+            if (selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
               pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
               positionPixelMarkerAtWorld(pixelHoverFillEl, wx, wy);
               pixelHoverFillEl.hidden = false;
@@ -1809,7 +1817,7 @@
         readyHoverPixel.x = lx; readyHoverPixel.y = ly;
         positionPixelMarker(pixelHoverEl, sel, lx, ly);
         try {
-          if (selectedOverrideColorId != null) {
+          if (selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
             pixelHoverFillEl.src = getMarkerSrcForColorId(selectedOverrideColorId);
             positionPixelMarker(pixelHoverFillEl, sel, lx, ly);
             pixelHoverFillEl.hidden = false;
@@ -1927,6 +1935,29 @@
         });
         colorPaletteEl.appendChild(el);
       }
+      // Block (remove) swatch → sends color id 0 and shows no fill overlay
+      const swB = document.createElement('div');
+      swB.className = 'palette-swatch block';
+      swB.title = 'Block';
+      swB.setAttribute('role', 'button');
+      swB.setAttribute('data-id', '0');
+      swB.textContent = '⛔';
+      swB.addEventListener('click', () => {
+        selectedOverrideColorId = 0;
+        
+        try {
+          const rp = document.getElementById('ready-popup');
+          if (rp && !rp.hidden) {
+            const hasSelectedSign = (selectedIndex >= 0 && selectedIndex < signItems.length);
+            readyGlobalMode = !hasSelectedSign;
+          }
+        } catch {}
+        updatePaletteSelectionUi();
+        try { updateReadyButtonEnabled(); } catch {}
+        try { updateReadySelectionLabel(); } catch {}
+        try { updatePixelMarkers(); } catch {}
+      });
+      colorPaletteEl.appendChild(swB);
       updatePaletteSelectionUi();
     }
     function updateReadyButtonEnabled(){
