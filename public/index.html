@@ -2848,9 +2848,15 @@
       accountCancelBtn.addEventListener('click', showAccountList);
     }
     function renderAccountsTable(rows) {
-      accountsData = Array.isArray(rows) ? rows.slice() : [];
+      const sortedRows = Array.isArray(rows) ? rows.slice().sort((a, b) => {
+        const aActive = a && a.active !== false;
+        const bActive = b && b.active !== false;
+        if (aActive === bActive) return 0;
+        return aActive ? 1 : -1; // Inactive first
+      }) : [];
+      accountsData = sortedRows.slice();
       accountsTbody.innerHTML = '';
-      rows.forEach(row => {
+      sortedRows.forEach(row => {
         const tr = document.createElement('tr');
         const tdName = document.createElement('td'); tdName.textContent = row.name || '';
         const tdToken = document.createElement('td');
@@ -2918,11 +2924,11 @@
       });
       
       try {
-        if (Array.isArray(rows) && pixelPowerEl) {
+        if (Array.isArray(sortedRows) && pixelPowerEl) {
           let totalCount = 0;
           let totalMax = 0;
-          for (let i = 0; i < rows.length; i++) {
-            const r = rows[i];
+          for (let i = 0; i < sortedRows.length; i++) {
+            const r = sortedRows[i];
             const isActive = r && r.active !== false && !!r.token;
             if (!isActive) continue;
             const cRaw = Number(r.pixelCount);
