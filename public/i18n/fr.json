@@ -1,0 +1,113 @@
+{
+  "nav": {
+    "accounts": "Comptes"
+  },
+  "pixel": {
+    "powerLabel": "Puissance de pixels : {count} / {max}"
+  },
+  "ready": {
+    "prepare": "Prêt",
+    "selectAccount": "Sélectionner un compte",
+    "autoSelectAccounts": "Sélection automatique des comptes",
+    "autoSelect": "Sélection auto",
+    "deleteAllSelected": "Tout désélectionner",
+    "start": "Démarrer",
+    "tokenPlaceholder": "Jeton",
+    "accountLabelDefault": "Compte",
+    "selectMode": {
+      "multi": "Sélection depuis le départ",
+      "frame": "Sélection depuis le cadre"
+    }
+  },
+  "modal": {
+    "closeTitle": "Fermer"
+  },
+  "tabs": {
+    "accounts": "Comptes",
+    "settings": "Paramètres"
+  },
+  "accounts": {
+    "add": "Ajouter un compte",
+    "checkAll": "Vérifier tous les comptes",
+    "checkAllTitle": "Vérifier la capacité de pixels de tous les comptes"
+  },
+  "table": {
+    "accountName": "Nom du compte",
+    "accountToken": "Jeton du compte",
+    "pixelRight": "Limite de pixels",
+    "status": "Statut",
+    "actions": "Action",
+    "statusActive": "Actif",
+    "statusPassive": "Inactif"
+  },
+  "form": {
+    "accountNameLabel": "Nom du compte",
+    "accountNamePlaceholder": "Ex. : Compte principal",
+    "accountTokenLabel": "Jeton du compte",
+    "accountTokenPlaceholder": "Ex. : eyJhbGciOi...",
+    "worldXLabel": "World X",
+    "worldYLabel": "World Y",
+    "fetchButton": "Récupérer",
+    "uploadImage": "Téléverser une image"
+  },
+  "preview": {
+    "scale": "Échelle (%)",
+    "keepRatio": "Conserver les proportions",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "fillBackground": "Remplir l’arrière-plan",
+    "color": "Couleur",
+    "addToMap": "Ajouter à la carte",
+    "maxSizeExceeded": "La taille maximale est de 1000x1000 pixels."
+  },
+  "settings": {
+    "cf_clearance": "cf_clearance"
+  },
+  "buttons": {
+    "back": "Retour",
+    "save": "Enregistrer",
+    "add": "Ajouter",
+    "saveSettings": "Enregistrer",
+    "edit": "Modifier",
+    "checkPixels": "Vérifier les pixels",
+    "delete": "Supprimer"
+  },
+  "thumb": {
+    "imageAlt": "Image {n}",
+    "lock": "Verrouiller"
+  },
+  "labels": {
+    "colorPalette": "Palette de couleurs"
+  },
+  "palette": {
+    "transparentTitle": "Transparent (couleur de l’image)",
+    "colorTitle": "Couleur #{id}"
+  },
+  "controls": {
+    "movement": "Déplacement"
+  },
+  "movement": {
+    "title": "Déplacer l’image",
+    "up": "Haut",
+    "down": "Bas",
+    "left": "Gauche",
+    "right": "Droite"
+  },
+  "messages": {
+    "selectAccountFirst": "Sélectionnez d’abord un compte.",
+    "maxPixelsReached": "Vous avez atteint le nombre maximal de pixels : {limit}/{limit}",
+    "addCfClearancePrompt": "Ajoutez d’abord la valeur cf_clearance dans Paramètres (min. 30 caractères).",
+    "max12Accounts": "Vous pouvez sélectionner jusqu’à 12 comptes.",
+    "startRequirementsMissing": "Pour démarrer, entrez le jeton, sélectionnez des comptes et choisissez au moins 1 pixel.",
+    "noSelectedImage": "Aucune image sélectionnée.",
+    "errorGeneric": "Erreur",
+    "painted": "Peint.",
+    "insufficientPixelPower": "Puissance de pixels insuffisante : {n} pixels n’ont pas pu être envoyés.",
+    "imageLoadFailed": "L’image n’a pas pu être chargée. Vérifiez les valeurs.",
+    "tokenAlreadyExists": "Un compte avec ce jeton existe déjà.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance ne peut pas être vide tant que des comptes existent.",
+    "cfClearanceChange": "Veuillez modifier cf_clearance."
+  }
+}
+
+
