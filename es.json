@@ -1,0 +1,113 @@
+{
+  "nav": {
+    "accounts": "Cuentas"
+  },
+  "pixel": {
+    "powerLabel": "Potencia de píxel: {count} / {max}"
+  },
+  "ready": {
+    "prepare": "Listo",
+    "selectAccount": "Seleccionar cuenta",
+    "autoSelectAccounts": "Seleccionar cuentas automáticamente",
+    "autoSelect": "Selección automática",
+    "deleteAllSelected": "Deseleccionar todo",
+    "start": "Iniciar",
+    "tokenPlaceholder": "Token",
+    "accountLabelDefault": "Cuenta",
+    "selectMode": {
+      "multi": "Seleccionar desde inicio",
+      "frame": "Seleccionar desde contorno"
+    }
+  },
+  "modal": {
+    "closeTitle": "Cerrar"
+  },
+  "tabs": {
+    "accounts": "Cuentas",
+    "settings": "Ajustes"
+  },
+  "accounts": {
+    "add": "Agregar cuenta",
+    "checkAll": "Comprobar todas las cuentas",
+    "checkAllTitle": "Comprobar capacidad de píxeles de todas las cuentas"
+  },
+  "table": {
+    "accountName": "Nombre de la cuenta",
+    "accountToken": "Token de la cuenta",
+    "pixelRight": "Límite de píxeles",
+    "status": "Estado",
+    "actions": "Acción",
+    "statusActive": "Activo",
+    "statusPassive": "Inactivo"
+  },
+  "form": {
+    "accountNameLabel": "Nombre de la cuenta",
+    "accountNamePlaceholder": "Ej.: Cuenta principal",
+    "accountTokenLabel": "Token de la cuenta",
+    "accountTokenPlaceholder": "Ej.: eyJhbGciOi...",
+    "worldXLabel": "World X",
+    "worldYLabel": "World Y",
+    "fetchButton": "Obtener",
+    "uploadImage": "Subir imagen"
+  },
+  "preview": {
+    "scale": "Escala (%)",
+    "keepRatio": "Mantener proporción",
+    "width": "Ancho",
+    "height": "Alto",
+    "fillBackground": "Rellenar fondo",
+    "color": "Color",
+    "addToMap": "Añadir al mapa",
+    "maxSizeExceeded": "El tamaño máximo es 1000x1000 píxeles."
+  },
+  "settings": {
+    "cf_clearance": "cf_clearance"
+  },
+  "buttons": {
+    "back": "Atrás",
+    "save": "Guardar",
+    "add": "Añadir",
+    "saveSettings": "Guardar",
+    "edit": "Editar",
+    "checkPixels": "Comprobar píxeles",
+    "delete": "Eliminar"
+  },
+  "thumb": {
+    "imageAlt": "Imagen {n}",
+    "lock": "Bloquear"
+  },
+  "labels": {
+    "colorPalette": "Paleta de colores"
+  },
+  "palette": {
+    "transparentTitle": "Transparente (color de la imagen)",
+    "colorTitle": "Color #{id}"
+  },
+  "controls": {
+    "movement": "Movimiento"
+  },
+  "movement": {
+    "title": "Mover imagen",
+    "up": "Arriba",
+    "down": "Abajo",
+    "left": "Izquierda",
+    "right": "Derecha"
+  },
+  "messages": {
+    "selectAccountFirst": "Selecciona primero una cuenta.",
+    "maxPixelsReached": "Has alcanzado el máximo de píxeles: {limit}/{limit}",
+    "addCfClearancePrompt": "Primero añade el valor cf_clearance en Ajustes (mín. 30 caracteres).",
+    "max12Accounts": "Puedes seleccionar hasta 12 cuentas.",
+    "startRequirementsMissing": "Para iniciar, introduce token, selecciona cuentas y elige al menos 1 píxel.",
+    "noSelectedImage": "No hay imagen seleccionada.",
+    "errorGeneric": "Error",
+    "painted": "Pintado.",
+    "insufficientPixelPower": "Potencia de píxel insuficiente: {n} píxeles no se pudieron enviar.",
+    "imageLoadFailed": "No se pudo cargar la imagen. Revisa los valores.",
+    "tokenAlreadyExists": "Ya existe una cuenta con este token.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance no puede quedar vacío mientras haya cuentas.",
+    "cfClearanceChange": "Cambia el valor de cf_clearance."
+  }
+}
+
+
