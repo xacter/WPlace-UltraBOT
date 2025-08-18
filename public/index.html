@@ -4123,6 +4123,109 @@
       });
     }
 
+    // Space-to-paint: press/hold Space to add selection at hover pixel (like left-click)
+    let spacePaintHeld = false;
+    let spacePaintLastKey = null;
+    let spacePaintLimitWarned = false;
+    let spacePaintAccountWarned = false;
+
+    function showMaxReachedToastOnceForSpace(limit){
+      if (spacePaintHeld) {
+        if (spacePaintLimitWarned) return;
+        spacePaintLimitWarned = true;
+      }
+      showToast(t('messages.maxPixelsReached', { limit }), 'error', 2000);
+    }
+
+    function maybeAddSelectionAtHover(){
+      if (!isReadyOpen()) return false;
+      if (!readyHoverPixel || readyHoverPixel.x == null || readyHoverPixel.y == null) return false;
+      if (!img) return false;
+      if (readyGlobalMode) {
+        const hasAccounts = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+        if (!hasAccounts) {
+          if (spacePaintHeld) {
+            if (!spacePaintAccountWarned) { showToast(t('messages.selectAccountFirst'), 'error', 2000); spacePaintAccountWarned = true; }
+          } else {
+            showToast(t('messages.selectAccountFirst'), 'error', 2000);
+          }
+          return false;
+        }
+        const wx = readyHoverPixel.x|0;
+        const wy = readyHoverPixel.y|0;
+        if (wx < 0 || wy < 0 || wx >= img.width || wy >= img.height) return false;
+        const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+        if (limit > 0 && readyGlobalSelected.size >= limit) { showMaxReachedToastOnceForSpace(limit); return false; }
+        const key = String(wx) + ',' + String(wy);
+        if (readyGlobalSelected.has(key)) return false;
+        const el = document.createElement('img');
+        el.className = 'pixel-marker'; el.alt = 'selected'; el.src = SELECTED_ICON_SRC;
+        const rec = { wx, wy, el, fillEl: null, colorId: selectedOverrideColorId };
+        if (selectedOverrideColorId != null) {
+          const f = document.createElement('img'); f.className = 'pixel-marker'; f.alt = 'fill';
+          try { f.style.zIndex = '1299'; } catch {}
+          f.src = getMarkerSrcForColorId(selectedOverrideColorId);
+          rec.fillEl = f;
+          if (pixelSelectedList) pixelSelectedList.appendChild(f);
+          positionPixelMarkerAtWorld(f, wx, wy);
+        }
+        if (pixelSelectedList) pixelSelectedList.appendChild(el);
+        positionPixelMarkerAtWorld(el, wx, wy);
+        readyGlobalSelected.set(key, rec);
+        if (pixelSelectedList) pixelSelectedList.hidden = false;
+        try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+        return true;
+      } else {
+        const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (!selItem || !selItem.image || !selItem.image.complete) return false;
+        const lx = readyHoverPixel.x|0;
+        const ly = readyHoverPixel.y|0;
+        if (lx < 0 || ly < 0 || lx >= selItem.image.naturalWidth || ly >= selItem.image.naturalHeight) return false;
+        if (!(isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, lx, ly)))) return false;
+        const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+        const map = getSelectedMap(selItem);
+        const already = map ? map.size : 0;
+        if (limit > 0 && already >= limit) { showMaxReachedToastOnceForSpace(limit); return false; }
+        const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+        if (didAdd) {
+          try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+          return true;
+        }
+        return false;
+      }
+    }
+    function isTypingTarget(target){
+      const tag = (target && target.tagName) ? target.tagName.toLowerCase() : '';
+      return tag === 'input' || tag === 'textarea' || tag === 'select' || (target && target.isContentEditable);
+    }
+    function currentHoverKey(){
+      if (!readyHoverPixel || readyHoverPixel.x == null || readyHoverPixel.y == null) return null;
+      return (readyGlobalMode ? 'g:' : 'l:') + String(readyHoverPixel.x) + ',' + String(readyHoverPixel.y);
+    }
+    window.addEventListener('keydown', (e) => {
+      const key = e.code || e.key || '';
+      if (key !== 'Space' && key !== ' ') return;
+      if (!isReadyOpen() || isTypingTarget(e.target)) return;
+      if (spacePaintHeld) { try { e.preventDefault(); e.stopPropagation(); } catch {} return; }
+      spacePaintHeld = true;
+      spacePaintLimitWarned = false;
+      spacePaintAccountWarned = false;
+      try { e.preventDefault(); e.stopPropagation(); } catch {}
+      maybeAddSelectionAtHover();
+      spacePaintLastKey = currentHoverKey();
+    });
+    window.addEventListener('mousemove', () => {
+      if (!spacePaintHeld || !isReadyOpen()) return;
+      if (spacePaintLastKey === currentHoverKey()) return;
+      if (maybeAddSelectionAtHover()) {
+        spacePaintLastKey = currentHoverKey();
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      const key = e.code || e.key || '';
+      if (key === 'Space' || key === ' ') { spacePaintHeld = false; spacePaintLastKey = null; spacePaintLimitWarned = false; spacePaintAccountWarned = false; }
+    });
+
     (async () => {
       try {
         await loadSettings();
