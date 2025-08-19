@@ -1,0 +1,111 @@
+{
+  "nav": {
+    "accounts": "账户"
+  },
+  "pixel": {
+    "powerLabel": "点数：{count} / {max}"
+  },
+  "ready": {
+    "prepare": "准备",
+    "selectAccount": "选择账户",
+    "autoSelectAccounts": "自动选择账户",
+    "autoSelect": "自动选择",
+    "deleteAllSelected": "取消全选",
+    "start": "开始",
+    "tokenPlaceholder": "令牌",
+    "accountLabelDefault": "账户",
+    "selectMode": {
+      "multi": "从头选择",
+      "frame": "从轮廓选择"
+    }
+  },
+  "modal": {
+    "closeTitle": "关闭"
+  },
+  "tabs": {
+    "accounts": "账户",
+    "settings": "设置"
+  },
+  "accounts": {
+    "add": "添加账户",
+    "checkAll": "检查所有账户",
+    "checkAllTitle": "检查所有账户的最大点数"
+  },
+  "table": {
+    "accountName": "账户名称",
+    "accountToken": "账户令牌",
+    "pixelRight": "像素上限",
+    "status": "状态",
+    "actions": "操作",
+    "statusActive": "启用",
+    "statusPassive": "停用"
+  },
+  "form": {
+    "accountNameLabel": "账户名称",
+    "accountNamePlaceholder": "例如：主账户",
+    "accountTokenLabel": "账户令牌",
+    "accountTokenPlaceholder": "例如：eyJhbGciOi...",
+    "worldXLabel": "世界 X",
+    "worldYLabel": "世界 Y",
+    "fetchButton": "获取",
+    "uploadImage": "上传图片"
+  },
+  "preview": {
+    "scale": "缩放（%）",
+    "keepRatio": "保持比例",
+    "width": "宽度",
+    "height": "高度",
+    "fillBackground": "填充背景",
+    "color": "颜色",
+    "addToMap": "添加到地图",
+    "maxSizeExceeded": "最大尺寸为 1000x1000 像素。"
+  },
+  "settings": {
+    "cf_clearance": "cf_clearance"
+  },
+  "buttons": {
+    "back": "返回",
+    "save": "保存",
+    "add": "添加",
+    "saveSettings": "保存",
+    "edit": "编辑",
+    "checkPixels": "检查像素",
+    "delete": "删除"
+  },
+  "thumb": {
+    "imageAlt": "图片 {n}",
+    "lock": "锁定"
+  },
+  "labels": {
+    "colorPalette": "调色板"
+  },
+  "palette": {
+    "transparentTitle": "透明（图片颜色）",
+    "colorTitle": "颜色 #{id}"
+  },
+  "controls": {
+    "movement": "移动"
+  },
+  "movement": {
+    "title": "移动图片",
+    "up": "上移",
+    "down": "下移",
+    "left": "左移",
+    "right": "右移"
+  },
+  "messages": {
+    "selectAccountFirst": "请先选择一个账户。",
+    "maxPixelsReached": "您已达到最大像素数：{limit}/{limit}",
+    "addCfClearancePrompt": "请先在设置中添加 cf_clearance 值（至少 30 个字符）。",
+    "max12Accounts": "最多可以选择 12 个账户。",
+    "startRequirementsMissing": "请输入令牌，选择账户并至少选择 1 个像素后才能开始。",
+    "noSelectedImage": "未选择图片。",
+    "errorGeneric": "错误",
+    "painted": "已绘制。",
+    "insufficientPixelPower": "点数不足：有 {n} 个像素无法发送。",
+    "imageLoadFailed": "图片加载失败，请检查数值。",
+    "tokenAlreadyExists": "已存在使用该令牌的账户。",
+    "cfCannotBeClearedWithAccounts": "存在账户时，cf_clearance 不能为空。",
+    "cfClearanceChange": "请更改 cf_clearance。"
+  }
+}
