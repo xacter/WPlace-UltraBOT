@@ -874,7 +874,7 @@
       if (!el) {
         el = document.createElement('div');
         el.id = 'lang-switch';
-        el.innerHTML = '<select id="lang-select"><option value="tr">Türkçe</option><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option><option value="fr">Français</option><option value="ru">Русский</option><option value="ja">日本語</option><option value="cn">中文</option></select>';
+        el.innerHTML = '<select id="lang-select"><option value="tr">Türkçe</option><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option><option value="fr">Français</option><option value="ru">Русский</option><option value="ja">日本語</option></select>';
         document.body.appendChild(el);
       }
       return el;
@@ -2462,6 +2462,10 @@
     }
 
     
+    let rightEraseHeld = false;
+    let rightEraseLastKey = null;
+    
+    
     canvas.addEventListener('mousedown', (e) => {
       const rect = canvas.getBoundingClientRect();
       const px = e.clientX - rect.left;
@@ -2472,6 +2476,12 @@
       if (isReadyOpen()) {
         readyMouseDownPt = { screenX: e.clientX, screenY: e.clientY, worldX, worldY, button: e.button };
         readyMouseMoved = false;
+        if (e.button === 2) {
+          try { updateReadyHoverFromEvent(e); } catch {}
+          rightEraseHeld = true;
+          rightEraseLastKey = currentHoverKey();
+          maybeRemoveSelectionAtHover();
+        }
       }
 
       
@@ -2567,7 +2577,18 @@
           if (moveDx > READY_CLICK_MOVE_TOLERANCE || moveDy > READY_CLICK_MOVE_TOLERANCE) readyMouseMoved = true;
         }
       }
+      if (rightEraseHeld && isReadyOpen()) {
+        try { updateReadyHoverFromEvent(e); } catch {}
+        if (rightEraseLastKey !== currentHoverKey()) {
+          if (maybeRemoveSelectionAtHover()) {
+            rightEraseLastKey = currentHoverKey();
+          }
+        }
+      }
       if (state.dragging) {
+        if (rightEraseHeld) {
+          return;
+        }
         const dx = e.clientX - state.lastX;
         const dy = e.clientY - state.lastY;
         state.lastX = e.clientX;
@@ -2755,6 +2776,7 @@
           }
         }
         readyMouseDownPt = null; readyMouseMoved = false;
+        rightEraseHeld = false; rightEraseLastKey = null;
       }
       state.dragging = false;
       signDragging = false;
@@ -4188,6 +4210,37 @@
         if (limit > 0 && already >= limit) { showMaxReachedToastOnceForSpace(limit); return false; }
         const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
         if (didAdd) {
+          try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+          return true;
+        }
+        return false;
+      }
+    }
+
+    function maybeRemoveSelectionAtHover(){
+      if (!isReadyOpen()) return false;
+      if (!readyHoverPixel || readyHoverPixel.x == null || readyHoverPixel.y == null) return false;
+      if (!img) return false;
+      if (readyGlobalMode) {
+        const wx = readyHoverPixel.x|0;
+        const wy = readyHoverPixel.y|0;
+        if (wx < 0 || wy < 0 || wx >= img.width || wy >= img.height) return false;
+        const key = String(wx) + ',' + String(wy);
+        if (!readyGlobalSelected.has(key)) return false;
+        const rec = readyGlobalSelected.get(key);
+        try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
+        try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+        readyGlobalSelected.delete(key);
+        try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+        return true;
+      } else {
+        const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (!selItem || !selItem.image || !selItem.image.complete) return false;
+        const lx = readyHoverPixel.x|0;
+        const ly = readyHoverPixel.y|0;
+        if (lx < 0 || ly < 0 || lx >= selItem.image.naturalWidth || ly >= selItem.image.naturalHeight) return false;
+        const removed = removePixelSelection(selItem, lx, ly);
+        if (removed) {
           try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
           return true;
         }
