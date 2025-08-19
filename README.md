@@ -6,6 +6,7 @@
       <a href="docs/FR.md"><img src="https://flagcdn.com/256x192/fr.png" width="48" alt="France Flag"></a>
       <a href="docs/RU.md"><img src="https://flagcdn.com/256x192/ru.png" width="48" alt="Russia Flag"></a>
       <a href="docs/JA.md"><img src="https://flagcdn.com/256x192/jp.png" width="48" alt="Japan Flag"></a>
+      <a href="docs/CN.md"><img src="https://flagcdn.com/256x192/cn.png" width="48" alt="China Flag"></a>
   </p>
   <br>
   <br>
