@@ -150,6 +150,7 @@
       z-index: 1300;
     }
     .pixel-marker[hidden] { display: none; }
+    #selection-overlay { position: fixed; left: 0; top: 0; z-index: 700; pointer-events: none; image-rendering: pixelated; }
     body.dragging-sign #sign { cursor: grabbing; }
     
     #sidebar {
@@ -751,6 +752,7 @@
   <canvas id="c"></canvas>
   <img id="sign" alt="sign" draggable="false" hidden />
   <img id="pixel-hover" class="pixel-marker" alt="hover" hidden />
+  <canvas id="selection-overlay"></canvas>
   <div id="pixel-selected-list" hidden></div>
   <div id="top-toolbar">
   <div id="sound-control">
@@ -779,7 +781,7 @@
             <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
           </div>
           <div id="ready-account-list" hidden></div>
-          <div class="controls-row">
+          <div class="controls-row" hidden>
             <button id="btn-auto-select-accounts" class="app-btn" type="button" data-i18n="ready.autoSelectAccounts">Auto select account</button>
           </div>
           <div class="controls-row">
@@ -962,7 +964,7 @@
  
   <div id="app-toast-container" aria-live="polite" aria-atomic="true"></div>
   <div id="color-palette" aria-label="Renk paleti" role="group" data-i18n-aria-label="labels.colorPalette"></div>
-  <div id="palette-mode" class="palette-mode-wrap" aria-label="Palette mode" style="bottom:76px; left:50%; transform:translateX(-50%);">
+  <div id="palette-mode" class="palette-mode-wrap" aria-label="Palette mode" style="bottom:76px; left:50%; transform:translateX(-50%); visibility:hidden;">
     <span id="palette-mode-label-left" class="palette-mode-label active" data-i18n="paletteMode.premium">Use premium color</span>
     <button id="palette-mode-toggle" class="palette-mode-track" type="button" role="switch" aria-checked="true" aria-label="Palette mode"><span class="palette-mode-knob"></span></button>
     <span id="palette-mode-label-right" class="palette-mode-label" data-i18n="paletteMode.free">Use free color</span>
@@ -1216,6 +1218,21 @@
     const paletteModeLabelLeft = document.getElementById('palette-mode-label-left');
     const paletteModeLabelRight = document.getElementById('palette-mode-label-right');
     const pixelSelectedList = document.getElementById('pixel-selected-list');
+    const selectionOverlay = document.getElementById('selection-overlay');
+    const selectionCtx = selectionOverlay ? selectionOverlay.getContext('2d', { willReadFrequently: true }) : null;
+    function resizeSelectionOverlay(){
+      try {
+        if (!selectionOverlay) return;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = document.body.getBoundingClientRect();
+        selectionOverlay.width = Math.floor(rect.width * dpr);
+        selectionOverlay.height = Math.floor(rect.height * dpr);
+        selectionOverlay.style.width = rect.width + 'px';
+        selectionOverlay.style.height = rect.height + 'px';
+      } catch {}
+    }
+    resizeSelectionOverlay();
+    window.addEventListener('resize', resizeSelectionOverlay);
     const signLayer = document.getElementById('sign-layer');
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
@@ -1482,10 +1499,12 @@
       if (clamped.x === (it.worldX||0) && clamped.y === (it.worldY||0)) return;
       it.worldX = clamped.x;
       it.worldY = clamped.y;
+      try { localStorage.setItem('last.image.worldX', String(it.worldX||0)); localStorage.setItem('last.image.worldY', String(it.worldY||0)); } catch {}
       try { it._placedCountCache = null; } catch {}
       render();
       try { updatePixelMarkers(); } catch {}
       if (isReadyOpen()) { try { updateReadySelectionLabel(); } catch {} }
+      try { saveImagesToStorage(); } catch {}
     }
     function setupMoveHold(btn, dx, dy){
       if (!btn) return;
@@ -1630,7 +1649,7 @@
     let autoSelecting = false;
     let ACTIVE_PALETTE = null;
     let paletteMode = 'premium'; // 'premium' | 'free'
-    
+    try { const savedMode = localStorage.getItem('palette.mode'); if (savedMode === 'free' || savedMode === 'premium') paletteMode = savedMode; } catch {}
     let readyShouldReset = false;
     const HOVER_ICON_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAAAAACoWZBhAAAAAXNSR0IArs4c6QAAACpJREFUeNpj+AsEZ86ASIa/DAwMZ84ACRDzDBigMs/AARITq1oUwxBWAADaREUdDMswKwAAAABJRU5ErkJggg==';
     const SELECTED_ICON_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAAXNSR0IArs4c6QAAACVJREFUeNpj+A8FDEAAZwMRBAIBmIYLIgHcgkQDIs3E6SRsjgcABYFLtfTgakEAAAAASUVORK5CYII=';
@@ -1695,52 +1714,34 @@
         try { effectiveColorId = getItemPixelPaletteId(item, x, y); } catch {}
       }
       if (effectiveColorId != null && effectiveColorId !== 0 && isPremiumColorId(effectiveColorId)){
+        const hasSelectedAccounts = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+        if (!hasSelectedAccounts) { try { showToast(t('messages.selectAccountFirst'), 'error', 2000); } catch {} return false; }
         const remain = getPremiumColorRemainingLimit(effectiveColorId);
         if (!(remain > 0)) { try { showToast(t('messages.premiumColorLimitReached'), 'error', 2000); } catch {} return false; }
       }
-      const el = document.createElement('img');
-      el.className = 'pixel-marker';
-      el.alt = 'selected';
-      el.src = SELECTED_ICON_SRC;
-      let fillEl = null;
-      if (colorIdOverride != null && colorIdOverride !== 0) {
-        fillEl = document.createElement('img');
-        fillEl.className = 'pixel-marker';
-        fillEl.alt = 'fill';
-        try { fillEl.style.zIndex = '1299'; } catch {}
-        fillEl.src = getMarkerSrcForColorId(colorIdOverride);
-      }
-      map.set(k, { x, y, el, fillEl, colorId: effectiveColorId });
+      // Store lightweight record; drawing handled by canvas overlay
+      map.set(k, { x, y, el: null, fillEl: null, colorId: effectiveColorId });
       try { item._lastManualSelected = { x, y }; } catch {}
-      if (pixelSelectedList) {
-        if (fillEl) pixelSelectedList.appendChild(fillEl);
-        pixelSelectedList.appendChild(el);
-      }
-      if (fillEl) positionPixelMarker(fillEl, item, x, y);
-      positionPixelMarker(el, item, x, y);
       if (pixelSelectedList) pixelSelectedList.hidden = false;
+      drawSelectionOverlay();
       try { refreshPaletteTooltips(); } catch {}
       return true;
     }
     function removePixelSelection(item, x, y){
       const map = getSelectedMap(item); if (!map) return false;
       const k = keyFor(x,y); const rec = map.get(k); if (!rec) return false;
-      try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
-      try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
+      // Remove from canvas overlay by redrawing without this record
       map.delete(k);
+      drawSelectionOverlay();
       try { refreshPaletteTooltips(); } catch {}
       return true;
     }
     function clearSelectionsForItem(item){
       const map = getSelectedMap(item);
       if (!map) return;
-      try {
-        map.forEach(rec => {
-          if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el);
-          if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl);
-        });
-      } catch {}
+      // Canvas overlay redraw will drop visuals
       map.clear();
+      drawSelectionOverlay();
       try { item._lastManualSelected = null; } catch {}
       try { refreshPaletteTooltips(); } catch {}
     }
@@ -1752,45 +1753,27 @@
         if (it) clearSelectionsForItem(it);
       }
       
-      try {
-        if (readyGlobalSelected && readyGlobalSelected.size > 0) {
-          readyGlobalSelected.forEach(rec => {
-            try { if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
-            try { if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
-          });
-          readyGlobalSelected.clear();
-        }
-      } catch {}
+      try { if (readyGlobalSelected) readyGlobalSelected.clear(); } catch {}
       try {
         if (pixelSelectedList) {
           while (pixelSelectedList.firstChild) pixelSelectedList.removeChild(pixelSelectedList.firstChild);
         }
       } catch {}
       updatePixelMarkers();
+      drawSelectionOverlay();
       try { updateReadySelectionLabel(); } catch {}
       try { updateStartEnabled(); } catch {}
       try { updateAutoSelectButtonLabel(); } catch {}
       try { refreshPaletteTooltips(); } catch {}
     }
     function ensureRenderedSelectedForItem(item){
-      if (!pixelSelectedList || !item) return;
-      const current = pixelSelectedList._forItem || null;
-      if (current !== item) {
-        try { while (pixelSelectedList.firstChild) pixelSelectedList.removeChild(pixelSelectedList.firstChild); } catch {}
-        const map = getSelectedMap(item);
-        if (map) map.forEach(rec => {
-          if (rec && rec.fillEl) pixelSelectedList.appendChild(rec.fillEl);
-          if (rec && rec.el) pixelSelectedList.appendChild(rec.el);
-        });
-        pixelSelectedList._forItem = item;
-      }
+      if (!item) return;
+      if (!selectionOverlay || !selectionCtx) return;
+      drawSelectionOverlay();
     }
     function positionSelectedMarkersForItem(item){
-      const map = getSelectedMap(item); if (!map) return;
-      map.forEach(rec => {
-        if (rec && rec.fillEl) positionPixelMarker(rec.fillEl, item, rec.x, rec.y);
-        if (rec && rec.el) positionPixelMarker(rec.el, item, rec.x, rec.y);
-      });
+      if (!item) return;
+      drawSelectionOverlay();
     }
 
     function isReadyOpen() {
@@ -1882,6 +1865,118 @@
       el.style.height = size + 'px';
       el.hidden = false;
     }
+    function drawSelectionOverlay(){
+      try {
+        if (!isReadyOpen()) { if (selectionCtx) selectionCtx.clearRect(0,0,selectionOverlay.width,selectionOverlay.height); return; }
+        if (!selectionOverlay || !selectionCtx) return;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = canvas.getBoundingClientRect();
+        selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
+        selectionCtx.imageSmoothingEnabled = false;
+        const drawPixel = (xPx, yPx, sPx, colorId, fallbackColor) => {
+          const s = Math.max(1, sPx|0);
+          const x = xPx|0, y = yPx|0;
+          // Determine fill color by palette id
+          let fillRgb = null;
+          if (colorId != null && colorId !== 0) {
+            try {
+              const rgb = getPaletteRgbById(colorId);
+              if (rgb && rgb.length === 3) fillRgb = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+            } catch {}
+          }
+          // Transparent (id 0)
+          if (colorId === 0) {
+            // Draw hollow box with red slash if space permits
+            if (s >= 3) {
+              selectionCtx.fillStyle = 'rgba(0,0,0,0.65)';
+              selectionCtx.fillRect(x, y, s, s);
+              selectionCtx.clearRect(x+1, y+1, s-2, s-2);
+              selectionCtx.fillStyle = '#ef4444';
+              // diagonal slash
+              selectionCtx.fillRect(x+1, y+s-2, s-2, 1);
+              selectionCtx.fillRect(x+1, y+s-3, s-2, 1);
+            } else {
+              // Minimal indicator
+              selectionCtx.fillStyle = '#ef4444';
+              selectionCtx.fillRect(x, y, s, s);
+            }
+            // continue to draw ring/dot for consistent indicator
+          }
+          // Unknown -> fallback
+          if (!fillRgb && fallbackColor) {
+            fillRgb = fallbackColor;
+          }
+          if (!fillRgb) fillRgb = '#ffffff';
+          // Border for contrast
+          if (s >= 2) {
+            selectionCtx.fillStyle = 'rgba(0,0,0,0.65)';
+            selectionCtx.fillRect(x, y, s, s);
+            selectionCtx.fillStyle = fillRgb;
+            selectionCtx.fillRect(x+1, y+1, s-2, s-2);
+          } else {
+            // 1px scale
+            selectionCtx.fillStyle = fillRgb;
+            selectionCtx.fillRect(x, y, s, s);
+          }
+          // Draw black center dot with white ring to be visible on all colors
+          const cx = x + s / 2;
+          const cy = y + s / 2;
+          if (s >= 3) {
+            const rOuter = Math.max(1, Math.floor(s / 2) - 1);
+            const rInner = Math.max(1, rOuter - 4);
+            try {
+              selectionCtx.beginPath();
+              selectionCtx.lineWidth = 1;
+              selectionCtx.strokeStyle = '#000000';
+              selectionCtx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+              selectionCtx.stroke();
+            } catch {}
+            try {
+              selectionCtx.beginPath();
+              selectionCtx.fillStyle = '#ffffff';
+              selectionCtx.arc(cx, cy, rInner, 0, Math.PI * 2);
+              selectionCtx.fill();
+            } catch {}
+          } else {
+            // Very small: approximate with black box and white center pixel
+            try { selectionCtx.fillStyle = '#000000'; selectionCtx.fillRect(x, y, s, s); } catch {}
+            try { const cxp = x + Math.floor(s/2); const cyp = y + Math.floor(s/2); selectionCtx.fillStyle = '#ffffff'; selectionCtx.fillRect(cxp, cyp, 1, 1); } catch {}
+          }
+        };
+        // Draw global selections (world coords)
+        try {
+          if (readyGlobalSelected && readyGlobalSelected.size > 0) {
+            readyGlobalSelected.forEach(rec => {
+              if (!rec) return;
+              const p = worldToScreen(rec.wx, rec.wy);
+              const x = Math.floor(p.x * dpr);
+              const y = Math.floor(p.y * dpr);
+              const s = Math.max(1, Math.floor(state.scale * dpr));
+              drawPixel(x, y, s, rec.colorId, '#ffffff');
+            });
+          }
+        } catch {}
+        // Draw per-image selections
+        try {
+          const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+          if (sel) {
+            const map = getSelectedMap(sel);
+            if (map && map.size > 0) {
+              map.forEach(rec => {
+                if (!rec) return;
+                const wx = (sel.worldX || 0) + rec.x;
+                const wy = (sel.worldY || 0) + rec.y;
+                const p = worldToScreen(wx, wy);
+                const x = Math.floor(p.x * dpr);
+                const y = Math.floor(p.y * dpr);
+                const s = Math.max(1, Math.floor(state.scale * dpr));
+                drawPixel(x, y, s, rec.colorId, '#22d3ee');
+              });
+            }
+          }
+        } catch {}
+      } catch {}
+    }
     function ensureBaseImageData(){
       if (!img) return null;
       const w = img.width|0, h = img.height|0;
@@ -1936,8 +2031,8 @@
           const wx = wx0 + x;
           if (wx < 0 || wx >= baseId.width) continue;
           const iItem = ((w * y + x) << 2);
-          const a1 = itemData[iItem + 3];
-          if (a1 === 0) continue;
+          const a = itemData[iItem + 3];
+          if (a === 0) continue;
           const iBase = ((baseId.width * wy + wx) << 2);
           const a0 = baseData[iBase + 3];
           if (a0 === 0) continue;
@@ -2007,16 +2102,13 @@
         hideEl(pixelHoverEl);
         try { pixelHoverFillEl.hidden = true; } catch {}
         if (pixelSelectedList) pixelSelectedList.hidden = true;
+        drawSelectionOverlay();
         return;
       }
       if (readyGlobalMode) {
         
-        try {
-          readyGlobalSelected.forEach(rec => {
-            if (rec.fillEl) positionPixelMarkerAtWorld(rec.fillEl, rec.wx, rec.wy);
-            if (rec.el) positionPixelMarkerAtWorld(rec.el, rec.wx, rec.wy);
-          });
-        } catch {}
+        // Global selections drawn by overlay
+        drawSelectionOverlay();
         
         try { if (!hideHover) { pixelHoverEl.hidden = false; pixelHoverEl.src = HOVER_ICON_SRC; } else { hideEl(pixelHoverEl); } } catch {}
         try {
@@ -2033,10 +2125,6 @@
           const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
           if (sel) {
             const map = getSelectedMap(sel);
-            if (map) map.forEach(rec => {
-              if (rec && rec.fillEl) positionPixelMarker(rec.fillEl, sel, rec.x, rec.y);
-              if (rec && rec.el) positionPixelMarker(rec.el, sel, rec.x, rec.y);
-            });
             if (pixelSelectedList) pixelSelectedList.hidden = (readyGlobalSelected.size === 0) && (!map || map.size === 0);
           } else {
             if (pixelSelectedList) pixelSelectedList.hidden = readyGlobalSelected.size === 0;
@@ -2048,15 +2136,9 @@
       if (!sel || !sel.image || !sel.image.complete) { hideEl(pixelHoverEl); try { pixelHoverFillEl.hidden = true; } catch {}; if (pixelSelectedList) pixelSelectedList.hidden = true; return; }
       ensureRenderedSelectedForItem(sel);
       positionSelectedMarkersForItem(sel);
+      drawSelectionOverlay();
       
-      try {
-        if (readyGlobalSelected && readyGlobalSelected.size > 0) {
-          readyGlobalSelected.forEach(rec => {
-            if (rec.fillEl) positionPixelMarkerAtWorld(rec.fillEl, rec.wx, rec.wy);
-            if (rec.el) positionPixelMarkerAtWorld(rec.el, rec.wx, rec.wy);
-          });
-        }
-      } catch {}
+      // Global selections drawn by overlay
       if (pixelSelectedList) {
         const perImageCount = getSelectedMap(sel).size;
         const globalCount = readyGlobalSelected ? readyGlobalSelected.size : 0;
@@ -2240,7 +2322,17 @@
         el.setAttribute('data-id', String(p.id));
         el.setAttribute('role', 'button');
         el.addEventListener('click', () => {
+          // Block choosing a premium override color if no selected accounts can provide it or capacity is 0
+          if (isPremiumColorId(p.id)) {
+            const providers = getAccountsProvidingColor(p.id);
+            const remain = getPremiumColorRemainingLimit(p.id);
+            if (!(Array.isArray(providers) && providers.length > 0 && remain > 0)) {
+              try { showToast(t('messages.premiumColorLimitReached'), 'error', 2000); } catch {}
+              return;
+            }
+          }
           selectedOverrideColorId = p.id;
+          try { localStorage.setItem('palette.selectedColorId', String(p.id)); } catch {}
           
           try {
             const rp = document.getElementById('ready-popup');
@@ -2770,6 +2862,15 @@
       return '/tiles/' + encodeURIComponent(area) + '/' + encodeURIComponent(no) + '.png';
     }
 
+    function hasSavedView(){
+      try {
+        const sx = parseFloat(localStorage.getItem('view.translateX') || '');
+        const sy = parseFloat(localStorage.getItem('view.translateY') || '');
+        const sc = parseFloat(localStorage.getItem('view.scale') || '');
+        return !isNaN(sx) && !isNaN(sy) && !isNaN(sc);
+      } catch { return false; }
+    }
+
     function loadImage(area, no) {
       const url = buildUrl(area, no);
       const image = new Image();
@@ -2778,15 +2879,18 @@
         img = image;
         try { baseImageData = null; } catch {}
         
-        fitToView();
+        if (hasSavedView()) {
+          render();
+          updatePixelMarkers();
+        } else {
+          fitToView();
+        }
       };
       image.onerror = () => {
         alert(t('messages.imageLoadFailed'));
       };
       image.src = url;
     }
-
-    
     let rightEraseHeld = false;
     let rightEraseLastKey = null;
     
@@ -2845,9 +2949,19 @@
             const rLock = it._overlayRects.lock;
             const rDel = it._overlayRects.del;
             if (rLock && worldX >= rLock.x && worldX <= rLock.x + rLock.w && worldY >= rLock.y && worldY <= rLock.y + rLock.h) {
-              
               it.locked = !it.locked;
               try { updateItemLockUi(it); } catch {}
+              try {
+                const mapKey = 'locks.map';
+                let locks = {};
+                try { locks = JSON.parse(localStorage.getItem(mapKey) || '{}'); } catch {}
+                locks[it.url] = !!it.locked;
+                try {
+                  const altKey = (it.url && it.url.startsWith('data:')) ? it.url : (localStorage.getItem('last.image.dataUrl') || null);
+                  if (altKey) locks[altKey] = !!it.locked;
+                } catch {}
+                localStorage.setItem(mapKey, JSON.stringify(locks));
+              } catch {}
               render();
               return; 
             }
@@ -2990,6 +3104,7 @@
         render();
         updatePixelMarkers();
         if (isReadyOpen()) { try { updateReadySelectionLabel(); } catch {} }
+        try { saveImagesToStorage(); } catch {}
       }
     });
     window.addEventListener('mouseup', (e) => {
@@ -3026,23 +3141,12 @@
               }
               const key = String(wx) + ',' + String(wy);
               if (!readyGlobalSelected.has(key)) {
-                const el = document.createElement('img');
-                el.className = 'pixel-marker'; el.alt = 'selected'; el.src = SELECTED_ICON_SRC;
-                const rec = { wx, wy, el, fillEl: null, colorId: selectedOverrideColorId };
-                if (selectedOverrideColorId != null) {
-                  const f = document.createElement('img'); f.className = 'pixel-marker'; f.alt = 'fill';
-                  try { f.style.zIndex = '1299'; } catch {}
-                  f.src = getMarkerSrcForColorId(selectedOverrideColorId);
-                  rec.fillEl = f;
-                  if (pixelSelectedList) pixelSelectedList.appendChild(f);
-                  positionPixelMarkerAtWorld(f, wx, wy);
-                }
-                if (pixelSelectedList) pixelSelectedList.appendChild(el);
-                positionPixelMarkerAtWorld(el, wx, wy);
+                const rec = { wx, wy, el: null, fillEl: null, colorId: selectedOverrideColorId };
                 readyGlobalSelected.set(key, rec);
                 if (pixelSelectedList) pixelSelectedList.hidden = false;
                 try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
                 try { refreshPaletteTooltips(); } catch {}
+                drawSelectionOverlay();
               }
             }
           } else {
@@ -3082,11 +3186,10 @@
               const key = String(wx) + ',' + String(wy);
               const rec = readyGlobalSelected.get(key);
               if (rec) {
-                try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
-                try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
                 readyGlobalSelected.delete(key);
                 try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
                 try { refreshPaletteTooltips(); } catch {}
+                drawSelectionOverlay();
               }
             }
           } else {
@@ -3107,6 +3210,15 @@
       state.dragging = false;
       signDragging = false;
       document.body.classList.remove('dragging');
+      try {
+        // Persist current selected item's world position at end of drag
+        const it = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+        if (it && it.image && it.image.complete) {
+          localStorage.setItem('last.image.worldX', String(it.worldX||0));
+          localStorage.setItem('last.image.worldY', String(it.worldY||0));
+        }
+      } catch {}
+      try { saveImagesToStorage(); } catch {}
       setTimeout(() => { try { updatePixelMarkers(); } catch {} }, 50);
     });
 
@@ -3155,6 +3267,15 @@
       updatePixelMarkers();
     });
 
+    // Persist view pan/zoom changes periodically
+    setInterval(() => {
+      try {
+        localStorage.setItem('view.translateX', String(state.translateX));
+        localStorage.setItem('view.translateY', String(state.translateY));
+        localStorage.setItem('view.scale', String(state.scale));
+      } catch {}
+    }, 1000);
+
     
     function updatePixelPowerPosition() {}
 
@@ -3171,6 +3292,7 @@
           body: JSON.stringify({ worldX: Number(area), worldY: Number(no) })
         });
       } catch {}
+      try { localStorage.setItem('view.worldX', String(Number(area))); localStorage.setItem('view.worldY', String(Number(no))); } catch {}
     });
 
     function updateCounter() {
@@ -3190,6 +3312,7 @@
       signItems.forEach((it, i) => {
         if (it.el) it.el.classList.toggle('selected', i === selectedIndex);
       });
+      try { localStorage.setItem('selected.index', String(selectedIndex)); } catch {}
       try {
         const btn = document.getElementById('btn-ready');
         if (btn) btn.disabled = !(
@@ -3246,6 +3369,7 @@
       updateCounter();
       render();
       try { updateMovementButtonEnabled(); } catch {}
+      try { saveImagesToStorage(); } catch {}
     }
 
     function zoomToSign(item) {
@@ -3264,6 +3388,11 @@
       state.translateX = centerPx.x - centerX * newScale;
       state.translateY = centerPx.y - centerY * newScale;
       render();
+      try {
+        localStorage.setItem('view.translateX', String(state.translateX));
+        localStorage.setItem('view.translateY', String(state.translateY));
+        localStorage.setItem('view.scale', String(state.scale));
+      } catch {}
     }
 
     function addThumbForItem(item, index) {
@@ -3285,6 +3414,18 @@
         
         item.locked = !item.locked;
         updateItemLockUi(item);
+        try {
+          const mapKey = 'locks.map';
+          let locks = {};
+          try { locks = JSON.parse(localStorage.getItem(mapKey) || '{}'); } catch {}
+          locks[item.url] = !!item.locked;
+          try {
+            const altKey = (item.url && item.url.startsWith('data:')) ? item.url : (localStorage.getItem('last.image.dataUrl') || null);
+            if (altKey) locks[altKey] = !!item.locked;
+          } catch {}
+          localStorage.setItem(mapKey, JSON.stringify(locks));
+        } catch {}
+        try { saveImagesToStorage(); } catch {}
       });
       const btnDel = document.createElement('button');
       btnDel.className = 'thumb-action del';
@@ -3293,6 +3434,7 @@
       btnDel.addEventListener('click', (ev) => {
         ev.stopPropagation();
         deleteItem(item);
+        try { saveImagesToStorage(); } catch {}
       });
       actions.appendChild(btnLock);
       actions.appendChild(btnDel);
@@ -3307,6 +3449,116 @@
       updateItemLockUi(item);
       updateThumbSelection();
       updateCounter();
+      try {
+        // Persist current item's position when it is added
+        localStorage.setItem('last.image.worldX', String(item.worldX || 0));
+        localStorage.setItem('last.image.worldY', String(item.worldY || 0));
+        // Persist lock state per image
+        const mapKey = 'locks.map';
+        let locks = {};
+        try { locks = JSON.parse(localStorage.getItem(mapKey) || '{}'); } catch {}
+        locks[item.url] = !!item.locked;
+        try {
+          const altKey = (item.url && item.url.startsWith('data:')) ? item.url : (localStorage.getItem('last.image.dataUrl') || null);
+          if (altKey) locks[altKey] = !!item.locked;
+        } catch {}
+        localStorage.setItem(mapKey, JSON.stringify(locks));
+      } catch {}
+      try { saveImagesToStorage(); } catch {}
+    }
+
+    function ensureDataUrlForItem(item){
+      try {
+        if (!item) return null;
+        if (item.dataUrl && typeof item.dataUrl === 'string' && item.dataUrl.startsWith('data:')) return item.dataUrl;
+        const src = String(item.url || '');
+        if (src.startsWith('data:')) { item.dataUrl = src; return src; }
+        if (item.image && item.image.naturalWidth && item.image.naturalHeight) {
+          const off = document.createElement('canvas');
+          off.width = item.image.naturalWidth; off.height = item.image.naturalHeight;
+          const octx = off.getContext('2d', { willReadFrequently: true });
+          octx.imageSmoothingEnabled = false;
+          octx.drawImage(item.image, 0, 0);
+          const durl = off.toDataURL('image/png');
+          item.dataUrl = durl;
+          return durl;
+        }
+      } catch {}
+      return null;
+    }
+    function saveImagesToStorage(){
+      try {
+        const list = [];
+        for (let i = 0; i < signItems.length; i++) {
+          const it = signItems[i];
+          if (!it || !it.image) continue;
+          const durl = ensureDataUrlForItem(it);
+          if (!durl) continue;
+          list.push({ name: it.name || 'image.png', dataUrl: durl, worldX: Math.floor(Number(it.worldX || 0)), worldY: Math.floor(Number(it.worldY || 0)), locked: !!it.locked });
+        }
+        localStorage.setItem('images.list', JSON.stringify(list));
+      } catch {}
+    }
+    function restoreImagesFromStorage(){
+      try {
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem('images.list') || '[]'); } catch {}
+        if (Array.isArray(list) && list.length > 0) {
+          const savedSelRaw = parseInt(localStorage.getItem('selected.index') || '', 10);
+          const savedSel = Number.isFinite(savedSelRaw) ? savedSelRaw : -1;
+          for (let i = 0; i < list.length; i++) {
+            const entry = list[i];
+            if (!entry || !entry.dataUrl) continue;
+            try {
+              const imgEl = new Image();
+              imgEl.onload = () => {
+                const item = { url: entry.dataUrl, dataUrl: entry.dataUrl, name: entry.name || 'image.png', image: imgEl, worldX: Number(entry.worldX || 0), worldY: Number(entry.worldY || 0), el: null, locked: !!entry.locked, pixelCount: countNonTransparentPixels(imgEl) };
+                signItems.push(item);
+                addThumbForItem(item, signItems.length - 1);
+                updateCounter();
+                render();
+                try { updatePixelMarkers(); } catch {}
+              };
+              imgEl.src = entry.dataUrl;
+            } catch {}
+          }
+          setTimeout(() => {
+            const idx = (savedSel >= 0 && savedSel < signItems.length) ? savedSel : -1;
+            if (idx >= 0) { try { selectSign(idx, false); } catch {} }
+          }, 100);
+          return;
+        }
+        // Fallback to legacy single-image restore
+        let lastUrl = localStorage.getItem('last.image.url');
+        const lastName = localStorage.getItem('last.image.name') || 'image.png';
+        const dataUrl = localStorage.getItem('last.image.dataUrl');
+        if (!lastUrl && dataUrl) lastUrl = dataUrl;
+        if (lastUrl) {
+          const imgEl = new Image();
+          imgEl.onload = () => {
+            const savedWX = parseFloat(localStorage.getItem('last.image.worldX') || '');
+            const savedWY = parseFloat(localStorage.getItem('last.image.worldY') || '');
+            const item = { url: lastUrl, dataUrl: (lastUrl && lastUrl.startsWith('data:')) ? lastUrl : null, name: lastName, image: imgEl, worldX: 0, worldY: 0, el: null, locked: false, pixelCount: countNonTransparentPixels(imgEl) };
+            if (!isNaN(savedWX)) item.worldX = savedWX;
+            if (!isNaN(savedWY)) item.worldY = savedWY;
+            try {
+              const locks = JSON.parse(localStorage.getItem('locks.map') || '{}');
+              const dataKey = localStorage.getItem('last.image.dataUrl') || null;
+              if (locks && Object.prototype.hasOwnProperty.call(locks, item.url)) item.locked = !!locks[item.url];
+              else if (dataKey && Object.prototype.hasOwnProperty.call(locks, dataKey)) item.locked = !!locks[dataKey];
+            } catch {}
+            signItems.push(item);
+            let savedSel = parseInt(localStorage.getItem('selected.index') || '', 10);
+            if (!Number.isFinite(savedSel)) savedSel = -1;
+            selectedIndex = (savedSel >= 0 && savedSel < signItems.length) ? savedSel : -1;
+            addThumbForItem(item, signItems.length - 1);
+            updateCounter();
+            render();
+            try { updatePixelMarkers(); } catch {}
+          };
+          imgEl.src = lastUrl;
+        }
+      } catch {}
     }
 
     function selectSign(index, zoom = true) {
@@ -3339,6 +3591,7 @@
       } catch {}
       if (item.image && item.image.complete) {
         if (zoom) zoomToSign(item);
+        try { localStorage.setItem('last.image.url', item.url || ''); localStorage.setItem('last.image.name', item.name || 'image.png'); } catch {}
       } else {
         pendingZoomToSelected = !!zoom;
       }
@@ -3529,15 +3782,26 @@
     }
     function getAccountsProvidingColor(colorId){
       const rows = Array.isArray(accountsData) ? accountsData : [];
-      const restrictToSelected = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
       const selectedSet = new Set(readySelectedAccountIds || []);
       const out = [];
       for (let i = 0; i < rows.length; i++){
         const r = rows[i];
-        if (restrictToSelected && !selectedSet.has(r.id)) continue;
+        if (!selectedSet.has(r.id)) continue;
         if (accountProvidesColor(r, colorId)) out.push(r);
       }
       return out;
+    }
+    function getAccountsProvidingColorAll(colorId){
+      const rows = Array.isArray(accountsData) ? accountsData : [];
+      const out = [];
+      for (let i = 0; i < rows.length; i++){
+        const r = rows[i];
+        if (accountProvidesColor(r, colorId)) out.push(r);
+      }
+      return out;
+    }
+    function getAccountsProvidingColorScoped(colorId, scope){
+      return (scope === 'selected') ? getAccountsProvidingColor(colorId) : getAccountsProvidingColorAll(colorId);
     }
     function getPremiumColorTotalLimit(colorId){
       if (!isPremiumColorId(colorId)) return Infinity;
@@ -3548,6 +3812,20 @@
         if (Number.isFinite(cRaw)) total += Math.max(0, Math.floor(cRaw));
       }
       return total;
+    }
+    function getPremiumColorTotalLimitAll(colorId){
+      if (!isPremiumColorId(colorId)) return Infinity;
+      const rows = getAccountsProvidingColorAll(colorId);
+      let total = 0;
+      for (let i = 0; i < rows.length; i++){
+        const cRaw = Number(rows[i] && rows[i].pixelCount);
+        if (Number.isFinite(cRaw)) total += Math.max(0, Math.floor(cRaw));
+      }
+      return total;
+    }
+    function getPremiumColorRemainingLimitAll(colorId){
+      // For the homepage (no selected accounts), remaining == total across all eligible accounts
+      return getPremiumColorTotalLimitAll(colorId);
     }
     function getSelectedPremiumColorIds(){
       const out = [];
@@ -3567,14 +3845,13 @@
       return out;
     }
     function computePremiumAssignmentUsedPerAccount(){
-      // Capacity by account (selected accounts if any)
-      const restrictToSelected = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+      // Capacity only from selected accounts
       const selectedSet = new Set(readySelectedAccountIds || []);
       const capacity = new Map();
       const rows = Array.isArray(accountsData) ? accountsData : [];
       for (let i = 0; i < rows.length; i++){
         const r = rows[i];
-        if (r && r.active !== false && r.token && (!restrictToSelected || selectedSet.has(r.id))){
+        if (r && r.active !== false && r.token && selectedSet.has(r.id)){
           const cRaw = Number(r.pixelCount);
           const cap = Number.isFinite(cRaw) ? Math.max(0, Math.floor(cRaw)) : 0;
           capacity.set(r.id, cap);
@@ -3614,9 +3891,17 @@
       try {
         if (!el || !p) return;
         if (isPremiumColorId(p.id)){
-          const total = getPremiumColorTotalLimit(p.id);
-          const remain = getPremiumColorRemainingLimit(p.id);
-          el.title = t('palette.premiumColorTitle', { remain, total });
+          const hasSelected = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+          const inReady = isReadyOpen();
+          if (hasSelected && inReady) {
+            const total = getPremiumColorTotalLimit(p.id); // selected accounts total
+            const remain = getPremiumColorRemainingLimit(p.id); // selected accounts remaining (subtracts used)
+            el.title = t('palette.premiumColorTitle', { remain, total });
+          } else {
+            const total = getPremiumColorTotalLimitAll(p.id); // all accounts total
+            const remain = getPremiumColorRemainingLimitAll(p.id); // equal to total across all
+            el.title = t('palette.premiumColorTitle', { remain, total });
+          }
         } else {
           el.title = t('palette.colorTitle', { id: p.id });
         }
@@ -3910,6 +4195,13 @@
               shopDropletsInfo.textContent = '💧 Droplets: ' + label;
             }
           } catch {}
+          // Ensure internal state is refreshed so affordability checks are correct
+          try {
+            const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+            const dRaw2 = updated && updated.droplets != null ? Number(updated.droplets) : null;
+            shopCurrentDroplets = Number.isFinite(dRaw2) ? Math.floor(dRaw2) : 0;
+            updateShopButtonsDisabled();
+          } catch {}
         } else {
           const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
           showToast(msg, 'error', 2500);
@@ -3944,6 +4236,13 @@
               const label = Number.isFinite(dRaw) ? String(Math.floor(dRaw)) : '-';
               shopDropletsInfo.textContent = '💧 Droplets: ' + label;
             }
+          } catch {}
+          // Ensure internal state is refreshed so affordability checks are correct
+          try {
+            const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+            const dRaw2 = updated && updated.droplets != null ? Number(updated.droplets) : null;
+            shopCurrentDroplets = Number.isFinite(dRaw2) ? Math.floor(dRaw2) : 0;
+            updateShopButtonsDisabled();
           } catch {}
         } else {
           const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
@@ -4469,6 +4768,7 @@
         imgFillColorId = null;
         updateFillPaletteSelectionUi();
         drawPreview();
+        try { localStorage.removeItem('img.fillColorId'); } catch {}
       });
       imgFillColorWrap.appendChild(swNone);
       const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
@@ -4484,10 +4784,20 @@
           imgFillColorId = p.id;
           updateFillPaletteSelectionUi();
           drawPreview();
+          try { localStorage.setItem('img.fillColorId', String(p.id)); } catch {}
         });
         imgFillColorWrap.appendChild(el);
       }
       updateFillPaletteSelectionUi();
+      // Restore last chosen fill color if exists
+      try {
+        const savedFill = localStorage.getItem('img.fillColorId');
+        if (savedFill != null) {
+          imgFillColorId = Number(savedFill);
+          updateFillPaletteSelectionUi();
+          drawPreview();
+        }
+      } catch {}
     }
     function updateFillPaletteSelectionUi(){
       if (!imgFillColorWrap) return;
@@ -4528,6 +4838,14 @@
         tmpImg.onload = async () => {
           URL.revokeObjectURL(url0);
           const qBlob = await quantizeImageToPalette(tmpImg);
+          // Persist quantized image as data URL for future sessions
+          try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              try { localStorage.setItem('last.image.dataUrl', String(reader.result || '')); } catch {}
+            };
+            reader.readAsDataURL(qBlob);
+          } catch {}
           const url = URL.createObjectURL(qBlob);
           const imageEl = new Image();
           imageEl.onload = () => {
@@ -4548,9 +4866,12 @@
             selectedIndex = signItems.length - 1;
             addThumbForItem(item, signItems.length - 1);
             updateCounter();
+            try { saveImagesToStorage(); } catch {}
+            // Always focus newly added image at current viewport center
             pendingZoomToSelected = true;
             render();
             if (pendingZoomToSelected) { pendingZoomToSelected = false; zoomToSign(item); }
+            try { localStorage.setItem('last.image.url', url); localStorage.setItem('last.image.name', item.name || 'image.png'); } catch {}
             closeImgPreview();
           };
           imageEl.src = url;
@@ -4581,8 +4902,6 @@
       if (savedArea) areaInput.value = savedArea;
       if (savedNo) noInput.value = savedNo;
     } catch {}
-
-    
     const readyBtn = document.getElementById('btn-ready');
     const readyPopup = document.getElementById('ready-popup');
     const autoSelectBtn = document.getElementById('btn-auto-select');
@@ -4682,20 +5001,16 @@
         btn.textContent = (isSelected ? '✓ ' : '') + (row.name || t('ready.accountLabelDefault')) + ' — ' + String(count) + ' / ' + String(max);
         btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         btn.addEventListener('click', () => {
-          const idx = readySelectedAccountIds.indexOf(row.id);
-          if (idx === -1) {
-            if (readySelectedAccountIds.length >= MAX_READY_ACCOUNTS) {
-              try { showToast(t('messages.max12Accounts'), 'error', 2000); } catch {}
-              return;
-            }
-            readySelectedAccountIds.push(row.id);
+          const isSelectedNow = readySelectedAccountIds.indexOf(row.id) !== -1;
+          if (isSelectedNow) {
+            readySelectedAccountIds = [];
           } else {
-            readySelectedAccountIds.splice(idx, 1);
+            readySelectedAccountIds = [row.id];
           }
-          
           try { renderReadyAccountList(); } catch {}
           try { if (readyPixelEl) readyPixelEl.hidden = false; } catch {}
           updateReadyPixelForSelectedAccounts();
+          try { refreshPaletteTooltips(); } catch {}
         });
         readyAccountList.appendChild(btn);
       });
@@ -4729,6 +5044,8 @@
       } catch {}
     }
 
+    // Single-account mode: we no longer auto-select on open; user picks explicitly.
+
     if (readyAccountBtn) {
       readyAccountBtn.addEventListener('click', () => {
         try { renderReadyAccountList(); } catch {}
@@ -4759,7 +5076,7 @@
       try { document.body.classList.remove('dragging'); } catch {}
       
       try {
-        if (readyAccountBtn) readyAccountBtn.hidden = false;
+        if (readyAccountBtn) readyAccountBtn.hidden = true;
         if (readyPixelEl) readyPixelEl.hidden = true;
         if (readyAccountList) readyAccountList.hidden = true;
       } catch {}
@@ -4790,6 +5107,11 @@
                 if (readyPixelEl) readyPixelEl.hidden = true;
                 if (readyAccountList) readyAccountList.hidden = true;
               } catch {}
+            }
+            // Enforce single account if pre-existing selection had multiple
+            if (Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 1) {
+              readySelectedAccountIds = [readySelectedAccountIds[0]];
+              updateReadyPixelForSelectedAccounts();
             }
             if (readyPixelEl) readyPixelEl.hidden = false;
             if (readyAccountList) readyAccountList.hidden = true;
@@ -4860,14 +5182,18 @@
           return;
         }
 
-      if (!Array.isArray(readySelectedAccountIds) || readySelectedAccountIds.length === 0) {
+        // Force auto-select to act as Transparent (no override color)
+        selectedOverrideColorId = null;
+        try { updatePaletteSelectionUi(); } catch {}
+
+        if (!Array.isArray(readySelectedAccountIds) || readySelectedAccountIds.length === 0) {
           showToast(t('messages.selectAccountFirst'), 'error', 2000);
           return;
         }
         
-      if (!(selectedIndex >= 0 && selectedIndex < signItems.length)) {
-        if (signItems.length > 0) selectSign(0, false); 
-      }
+        if (!(selectedIndex >= 0 && selectedIndex < signItems.length)) {
+          if (signItems.length > 0) selectSign(0, false); 
+        }
         const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
         if (!selItem || !selItem.image || !selItem.image.complete) return;
       
@@ -5021,22 +5347,48 @@
         if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
         const data = buildSelectedExportForItem(sel);
         const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
+        // Clear token immediately upon starting
+        try { if (readyTokenInput) { readyTokenInput.value = ''; } } catch {}
+        try { updateStartEnabled(); } catch {}
         const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
         const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
         const total = data.colors.length|0;
         const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+        // Build task list from exported data (already premium-first)
+        const tasks = [];
+        for (let i = 0; i < data.colors.length; i++) {
+          const c = data.colors[i];
+          const x = data.coords[i * 2];
+          const y = data.coords[i * 2 + 1];
+          tasks.push({ c, x, y });
+        }
+        const assigned = new Array(tasks.length).fill(false);
         (async () => {
-          let offset = 0;
+          let assignedCount = 0;
           const usedIds = [];
           let hadRequestError = false;
-          for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
+          for (let i = 0; i < selectedAccounts.length && assignedCount < total; i++) {
             const acc = selectedAccounts[i];
             const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
             if (cap <= 0) continue;
-            const take = Math.min(cap, total - offset);
-            if (take <= 0) continue;
-            const colorsSlice = data.colors.slice(offset, offset + take);
-            const coordsSlice = data.coords.slice(offset * 2, (offset + take) * 2);
+            const colorsSlice = [];
+            const coordsSlice = [];
+            for (let j = 0; j < tasks.length && colorsSlice.length < cap; j++) {
+              if (assigned[j]) continue;
+              const tsk = tasks[j];
+              let ok = true;
+              if (tsk.c != null && tsk.c !== 0 && isPremiumColorId(tsk.c)) {
+                const idx = Number(tsk.c) - 32;
+                const mask = idx >= 0 ? (1 << idx) : 0;
+                const bm = Number(acc.extraColorsBitmap || 0);
+                ok = (mask !== 0) && ((bm & mask) !== 0);
+              }
+              if (!ok) continue;
+              colorsSlice.push(tsk.c);
+              coordsSlice.push(tsk.x, tsk.y);
+              assigned[j] = true;
+            }
+            if (colorsSlice.length === 0) continue;
             const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
             if (r && r.status === 429) {
               hadRequestError = true;
@@ -5054,19 +5406,22 @@
               }
             }
             usedIds.push(acc.id);
-            offset += take;
+            assignedCount += colorsSlice.length;
             try { await refreshAccountById(acc.id); } catch {}
           }
-          if (offset > 0) {
+          if (assignedCount > 0) {
             showToast(t('messages.painted'), 'success', 1800);
             reloadCurrentBackground();
             try { clearAllReadySelections(); } catch {}
             try { resetReadyNow(); } catch {}
             try { readyGlobalMode = false; } catch {}
             try { updateStartEnabled(); } catch {}
+            // Clear token input after successful start
+            try { if (readyTokenInput) readyTokenInput.value = ''; } catch {}
+            try { updateStartEnabled(); } catch {}
           }
-          if (offset < total && !hadRequestError) {
-            showToast(t('messages.insufficientPixelPower', { n: (total - offset) }), 'error', 3000);
+          if (assignedCount < total && !hadRequestError) {
+            showToast(t('messages.insufficientPixelPower', { n: (total - assignedCount) }), 'error', 3000);
           }
           
           try { await loadAccounts(); } catch {}
@@ -5113,27 +5468,31 @@
         if (limit > 0 && readyGlobalSelected.size >= limit) { showMaxReachedToastOnceForSpace(limit); return false; }
         const key = String(wx) + ',' + String(wy);
         if (readyGlobalSelected.has(key)) return false;
-        const el = document.createElement('img');
-        el.className = 'pixel-marker'; el.alt = 'selected'; el.src = SELECTED_ICON_SRC;
-        const rec = { wx, wy, el, fillEl: null, colorId: selectedOverrideColorId };
-        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)){
-          const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+        const rec = { wx, wy, el: null, fillEl: null, colorId: selectedOverrideColorId };
+        // Enforce premium capacity both for override color and base pixel color
+        let checkColorId = null;
+        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
+          checkColorId = selectedOverrideColorId;
+        } else {
+          const base = getBasePixelColorAtWorld(wx, wy);
+          if (base && base.a !== 0) {
+            try { checkColorId = rgbToPaletteId(base.r, base.g, base.b); } catch { checkColorId = null; }
+          }
+        }
+        if (checkColorId != null && isPremiumColorId(checkColorId)){
+          const remain = getPremiumColorRemainingLimit(checkColorId);
           if (!(remain > 0)) { showMaxReachedToastOnceForSpace(remain || 0); return false; }
         }
         if (selectedOverrideColorId != null) {
           const f = document.createElement('img'); f.className = 'pixel-marker'; f.alt = 'fill';
-          try { f.style.zIndex = '1299'; } catch {}
-          f.src = getMarkerSrcForColorId(selectedOverrideColorId);
-          rec.fillEl = f;
-          if (pixelSelectedList) pixelSelectedList.appendChild(f);
-          positionPixelMarkerAtWorld(f, wx, wy);
+          try {}
+          catch {}
         }
-        if (pixelSelectedList) pixelSelectedList.appendChild(el);
-        positionPixelMarkerAtWorld(el, wx, wy);
         readyGlobalSelected.set(key, rec);
         if (pixelSelectedList) pixelSelectedList.hidden = false;
         try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
         try { refreshPaletteTooltips(); } catch {}
+        drawSelectionOverlay();
         return true;
       } else {
         const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
@@ -5146,8 +5505,15 @@
         const map = getSelectedMap(selItem);
         const already = map ? map.size : 0;
         if (limit > 0 && already >= limit) { showMaxReachedToastOnceForSpace(limit); return false; }
-        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)){
-          const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+        // Determine effective color for capacity check (override or image pixel)
+        let checkColorId = null;
+        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
+          checkColorId = selectedOverrideColorId;
+        } else {
+          try { checkColorId = getItemPixelPaletteId(selItem, lx, ly); } catch { checkColorId = null; }
+        }
+        if (checkColorId != null && isPremiumColorId(checkColorId)){
+          const remain = getPremiumColorRemainingLimit(checkColorId);
           if (!(remain > 0)) { showMaxReachedToastOnceForSpace(remain || 0); return false; }
         }
         const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
@@ -5171,11 +5537,10 @@
         const key = String(wx) + ',' + String(wy);
         if (!readyGlobalSelected.has(key)) return false;
         const rec = readyGlobalSelected.get(key);
-        try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
-        try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
         readyGlobalSelected.delete(key);
         try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
         try { refreshPaletteTooltips(); } catch {}
+        drawSelectionOverlay();
         return true;
       } else {
         const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
@@ -5226,9 +5591,26 @@
     (async () => {
       try {
         await loadSettings();
-        if (areaInput.value && noInput.value) {
-          loadImage(areaInput.value, noInput.value);
-        }
+        // Restore last view position
+        try {
+          const sx = parseFloat(localStorage.getItem('view.translateX') || '');
+          const sy = parseFloat(localStorage.getItem('view.translateY') || '');
+          const sc = parseFloat(localStorage.getItem('view.scale') || '');
+          if (!isNaN(sx)) state.translateX = sx;
+          if (!isNaN(sy)) state.translateY = sy;
+          if (!isNaN(sc)) state.scale = Math.min(state.maxScale, Math.max(state.minScale, sc));
+          render();
+          updatePixelMarkers();
+        } catch {}
+        // Restore last looked world coordinates
+        try {
+          const wx = localStorage.getItem('view.worldX');
+          const wy = localStorage.getItem('view.worldY');
+          if (wx && wy) { areaInput.value = String(wx); noInput.value = String(wy); }
+        } catch {}
+        // Restore images (supports multiple); falls back to legacy single image if list is empty
+        try { restoreImagesFromStorage(); } catch {}
+        if (areaInput.value && noInput.value) { loadImage(areaInput.value, noInput.value); }
       } catch {}
       updateCounter();
       loadAccounts();
@@ -5251,11 +5633,25 @@
           paletteModeLabelRight.classList.toggle('active', !isPremium);
         } catch {}
       };
-      const setMode = (mode) => { paletteMode = (mode === 'free') ? 'free' : 'premium'; recomputeActivePalette(); updateToggleUi(); };
+      const setMode = (mode) => { paletteMode = (mode === 'free') ? 'free' : 'premium'; try { localStorage.setItem('palette.mode', paletteMode); } catch {} recomputeActivePalette(); updateToggleUi(); };
+      // Initialize using saved mode BEFORE making control visible
+      try {
+        const savedMode = localStorage.getItem('palette.mode');
+        if (savedMode === 'free' || savedMode === 'premium') {
+          paletteMode = savedMode;
+        }
+      } catch {}
+      recomputeActivePalette();
+      updateToggleUi();
+      try { paletteModeEl.style.visibility = 'visible'; } catch {}
+      // Wire events
       paletteModeToggle.addEventListener('click', () => setMode(paletteMode === 'premium' ? 'free' : 'premium'));
       paletteModeLabelLeft.addEventListener('click', () => setMode('premium'));
       paletteModeLabelRight.addEventListener('click', () => setMode('free'));
-      updateToggleUi();
+      // Always start with Transparent selected (no cache)
+      try { localStorage.removeItem('palette.selectedColorId'); } catch {}
+      selectedOverrideColorId = null;
+      try { updatePaletteSelectionUi(); } catch {}
     }
 
     function getItemPixelPaletteId(item, sx, sy){
@@ -5282,7 +5678,22 @@
           colors.push(pid == null ? null : pid);
         });
       }
-      return { colors, coords };
+      // Reorder: premium colors first, then free colors to satisfy "send premium first"
+      const pairs = [];
+      for (let i = 0; i < colors.length; i++) {
+        const c = colors[i];
+        const x = coords[i*2];
+        const y = coords[i*2 + 1];
+        pairs.push({ c, x, y, premium: (c != null && c !== 0 && isPremiumColorId(c)) });
+      }
+      pairs.sort((a, b) => (b.premium ? 1 : 0) - (a.premium ? 1 : 0));
+      const colorsOut = [];
+      const coordsOut = [];
+      for (let i = 0; i < pairs.length; i++) {
+        colorsOut.push(pairs[i].c);
+        coordsOut.push(pairs[i].x, pairs[i].y);
+      }
+      return { colors: colorsOut, coords: coordsOut };
     }
 
     function logSelectedPixelsCurrentItem(){
