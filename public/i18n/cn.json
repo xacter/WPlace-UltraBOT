@@ -34,6 +34,7 @@
   "table": {
     "accountName": "账户名称",
     "accountToken": "账户令牌",
+    "droplets": "Droplets",
     "pixelRight": "像素上限",
     "status": "状态",
     "actions": "操作",

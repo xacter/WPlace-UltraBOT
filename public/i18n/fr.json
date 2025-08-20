@@ -34,6 +34,7 @@
   "table": {
     "accountName": "Nom du compte",
     "accountToken": "Jeton du compte",
+    "droplets": "Droplets",
     "pixelRight": "Limite de pixels",
     "status": "Statut",
     "actions": "Action",

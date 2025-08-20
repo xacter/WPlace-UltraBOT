@@ -423,6 +423,7 @@ function startServer(port, host) {
         if (typeof body.name === 'string') updated.name = body.name;
         if (typeof body.token === 'string') updated.token = body.token;
         if (body.pixelRight != null) updated.pixelRight = body.pixelRight;
+        if (body.droplets != null) updated.droplets = body.droplets;
         if (typeof body.active === 'boolean') updated.active = body.active;
         accounts[idx] = updated;
         writeJson(ACCOUNTS_FILE, accounts);
@@ -470,7 +471,7 @@ function startServer(port, host) {
           return;
         }
         const accounts = readJson(ACCOUNTS_FILE, []);
-        const account = { id: Date.now(), name, token, pixelCount: null, pixelMax: null, active: false };
+        const account = { id: Date.now(), name, token, pixelCount: null, pixelMax: null, droplets: null, active: false };
         
         const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
         if (settings.cf_clearance && settings.cf_clearance.length >= 30) {
@@ -481,6 +482,7 @@ function startServer(port, host) {
               account.pixelMax = Number(me.charges.max);
               account.active = true;
             }
+            if (me && me.droplets != null) account.droplets = Number(me.droplets);
             if (me && me.name && !name) account.name = String(me.name);
           } catch {}
         }
@@ -523,9 +525,10 @@ function startServer(port, host) {
           } : null
         });
         if (me && me.charges) {
-          
+
           acct.pixelCount = Math.floor(Number(me.charges.count));
           acct.pixelMax = Math.floor(Number(me.charges.max));
+          if (me.droplets != null) acct.droplets = Math.floor(Number(me.droplets));
           acct.active = true;
         } else {
           acct.active = false;
