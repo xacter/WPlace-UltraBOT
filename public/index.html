@@ -790,6 +790,13 @@
               </button>
               <span id="auto-mode-label-right" class="select-mode-label" data-i18n="ready.autoMode.on">Auto mode on</span>
             </div>
+            <div class="select-mode-wrap" style="margin-left:12px;">
+              <span id="auto-start-label-left" class="select-mode-label" data-i18n="ready.autoStart.off">Auto start off</span>
+              <button id="auto-start-toggle" class="select-mode-track" type="button" role="switch" aria-checked="false" aria-label="Auto start on token">
+                <span class="select-mode-knob"></span>
+              </button>
+              <span id="auto-start-label-right" class="select-mode-label" data-i18n="ready.autoStart.on">Auto start on</span>
+            </div>
           </div>
           <div id="ready-account-list" hidden></div>
           <div class="controls-row" hidden>
@@ -2016,7 +2023,6 @@
       if (a1 === 0) return false; 
       const a0 = baseId.data[iBase + 3];
       if (a0 === 0) return false; 
-      if (a1 <255 ) return true; // Opaque pixel, no need to compare
       const r1 = itemId.data[iItem],   g1 = itemId.data[iItem+1], b1 = itemId.data[iItem+2];
       const r0 = baseId.data[iBase],   g0 = baseId.data[iBase+1],  b0 = baseId.data[iBase+2];
       return (r0 === r1) && (g0 === g1) && (b0 === b1);
@@ -4938,14 +4944,49 @@
     const readyAccountBtn = document.getElementById('btn-ready-account');
     const readyAccountList = document.getElementById('ready-account-list');
     const readyTokenInput = document.getElementById('ready-token-input');
+    // Listen for token events from local server (extension posts here)
+    (function initTokenSse(){
+      try {
+        const es = new EventSource('/api/events');
+        es.addEventListener('token', async (ev) => {
+          try {
+            const data = ev && ev.data ? JSON.parse(ev.data) : null;
+            const token = data && data.token ? String(data.token) : '';
+            if (!token) return;
+            const rp = document.getElementById('ready-popup');
+            const isOpen = rp && !rp.hidden;
+            if (isOpen && readyTokenInput) {
+              readyTokenInput.value = token;
+              try { updateStartEnabled(); } catch {}
+              showToast(t('messages.tokenPastedFromExtension'), 'success', 1200);
+              // Auto start on token if enabled
+              try {
+                const startBtn = document.getElementById('start');
+                const canStart = startBtn && !startBtn.disabled;
+                if (autoStart && canStart) {
+                  await new Promise(r => setTimeout(r, 50));
+                  startBtn.click();
+                }
+              } catch {}
+            } else {
+              try { localStorage.setItem('last.captured.token', token); } catch {}
+            }
+          } catch {}
+        });
+      } catch {}
+    })();
     const autoModeTrack = document.getElementById('auto-mode-toggle');
     const autoModeLabelLeft = document.getElementById('auto-mode-label-left');
     const autoModeLabelRight = document.getElementById('auto-mode-label-right');
+    const autoStartTrack = document.getElementById('auto-start-toggle');
+    const autoStartLabelLeft = document.getElementById('auto-start-label-left');
+    const autoStartLabelRight = document.getElementById('auto-start-label-right');
     const selectModeTrack = document.getElementById('select-mode-toggle');
     const selectModeLabelLeft = document.getElementById('select-mode-label-left');
     const selectModeLabelRight = document.getElementById('select-mode-label-right');
     let selectMode = 'multi';
     let autoMode = false;
+    let autoStart = false;
 
     function updateSelectModeUi(){
       try { if (selectModeTrack) selectModeTrack.classList.toggle('on', selectMode === 'frame'); } catch {}
@@ -4963,18 +5004,34 @@
       try { if (autoModeLabelLeft) autoModeLabelLeft.classList.toggle('active', !autoMode); } catch {}
       try { if (autoModeLabelRight) autoModeLabelRight.classList.toggle('active', !!autoMode); } catch {}
     }
+    function updateAutoStartUi(){
+      try { if (autoStartTrack) autoStartTrack.classList.toggle('on', !!autoStart); } catch {}
+      try { if (autoStartTrack) autoStartTrack.setAttribute('aria-checked', autoStart ? 'true' : 'false'); } catch {}
+      try { if (autoStartLabelLeft) autoStartLabelLeft.classList.toggle('active', !autoStart); } catch {}
+      try { if (autoStartLabelRight) autoStartLabelRight.classList.toggle('active', !!autoStart); } catch {}
+    }
     try {
       const savedAuto = localStorage.getItem('ready.autoMode');
       autoMode = (savedAuto === '1' || savedAuto === 'true');
       updateAutoModeUi();
+      const savedAutoStart = localStorage.getItem('ready.autoStart');
+      autoStart = (savedAutoStart === '1' || savedAutoStart === 'true');
+      updateAutoStartUi();
     } catch {}
     if (autoModeTrack) autoModeTrack.addEventListener('click', () => {
       autoMode = !autoMode;
       try { localStorage.setItem('ready.autoMode', autoMode ? '1' : '0'); } catch {}
       updateAutoModeUi();
     });
+    if (autoStartTrack) autoStartTrack.addEventListener('click', () => {
+      autoStart = !autoStart;
+      try { localStorage.setItem('ready.autoStart', autoStart ? '1' : '0'); } catch {}
+      updateAutoStartUi();
+    });
     if (autoModeLabelLeft) autoModeLabelLeft.addEventListener('click', () => { autoMode = false; try { localStorage.setItem('ready.autoMode','0'); } catch {}; updateAutoModeUi(); });
     if (autoModeLabelRight) autoModeLabelRight.addEventListener('click', () => { autoMode = true; try { localStorage.setItem('ready.autoMode','1'); } catch {}; updateAutoModeUi(); });
+    if (autoStartLabelLeft) autoStartLabelLeft.addEventListener('click', () => { autoStart = false; try { localStorage.setItem('ready.autoStart','0'); } catch {}; updateAutoStartUi(); });
+    if (autoStartLabelRight) autoStartLabelRight.addEventListener('click', () => { autoStart = true; try { localStorage.setItem('ready.autoStart','1'); } catch {}; updateAutoStartUi(); });
     if (selectModeTrack) selectModeTrack.addEventListener('click', () => setSelectMode(selectMode === 'frame' ? 'multi' : 'frame'));
     if (selectModeLabelLeft) selectModeLabelLeft.addEventListener('click', () => setSelectMode('multi'));
     if (selectModeLabelRight) selectModeLabelRight.addEventListener('click', () => setSelectMode('frame'));
