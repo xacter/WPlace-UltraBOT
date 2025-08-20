@@ -2854,15 +2854,26 @@
       return '/tiles/' + encodeURIComponent(area) + '/' + encodeURIComponent(no) + '.png';
     }
 
-    function loadImage(area, no) {
+    function loadImage(area, no, preserveView = false) {
       const url = buildUrl(area, no);
       const image = new Image();
-      
+
       image.onload = () => {
+        const prevScale = state.scale;
+        const prevTx = state.translateX;
+        const prevTy = state.translateY;
+
         img = image;
         try { baseImageData = null; } catch {}
 
-        fitToView();
+        if (preserveView) {
+          state.scale = prevScale;
+          state.translateX = prevTx;
+          state.translateY = prevTy;
+          render();
+        } else {
+          fitToView();
+        }
         localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
       };
       image.onerror = () => {
@@ -4421,7 +4432,7 @@
       });
     }
 
-    async function loadMosaic(coords) {
+    async function loadMosaic(coords, preserveView = false) {
       const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
       const tileW = images[0].width;
       const tileH = images[0].height;
@@ -4437,7 +4448,11 @@
       }
       img = mosaicCanvas;
       try { baseImageData = null; } catch {}
-      fitToView();
+      if (preserveView) {
+        render();
+      } else {
+        fitToView();
+      }
     }
 
     mosaicFetch.addEventListener('click', async () => {
@@ -5435,9 +5450,9 @@
         const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
         if (!saved) return;
         if (saved.mode === 'mosaic') {
-          loadMosaic(saved.coords);
+          loadMosaic(saved.coords, true);
         } else if (saved.mode === 'single') {
-          loadImage(saved.coords[0].x, saved.coords[0].y);
+          loadImage(saved.coords[0].x, saved.coords[0].y, true);
         }
       } catch {}
     }, CANVAS_REFRESH_MS);
