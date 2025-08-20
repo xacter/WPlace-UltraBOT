@@ -49,7 +49,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "Obtener",
-    "uploadImage": "Subir imagen"
+    "uploadImage": "Subir imagen",
+    "mosaicButton": "Mosaico"
   },
   "preview": {
     "scale": "Escala (%)",
@@ -71,6 +72,12 @@
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "Mosaico",
+    "use2": "Usar 2 coord",
+    "use4": "Usar 4 coord",
+    "fetch": "Obtener"
   },
   "buttons": {
     "back": "Atrás",
