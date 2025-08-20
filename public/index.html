@@ -2682,6 +2682,11 @@
 
     let img = null;
     let baseImageData = null;
+    let currentTiles = [];
+    let currentTileW = 0;
+    let currentTileH = 0;
+    let currentMosaicCols = 1;
+    let currentMosaicRows = 1;
     const state = {
       scale: 1,
       minScale: 0.1,
@@ -2829,15 +2834,25 @@
 
     function reloadCurrentBackground() {
       try {
-        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
-        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        if (!area || !no) return;
-        
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (!saved) return;
+        if (saved.mode === 'mosaic') {
+          loadMosaic(saved.coords, true);
+          return;
+        }
+        if (saved.mode !== 'single') return;
+        const area = saved.coords[0].x;
+        const no = saved.coords[0].y;
         const url = buildUrl(area, no) + '?t=' + Date.now();
         const image = new Image();
         image.onload = () => {
           img = image;
           baseImageData = null;
+          currentTiles = [{ x: Number(area), y: Number(no) }];
+          currentTileW = image.width;
+          currentTileH = image.height;
+          currentMosaicCols = 1;
+          currentMosaicRows = 1;
           try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
           render();
           updatePixelMarkers();
@@ -2864,6 +2879,11 @@
         const prevTy = state.translateY;
 
         img = image;
+        currentTiles = [{ x: Number(area), y: Number(no) }];
+        currentTileW = image.width;
+        currentTileH = image.height;
+        currentMosaicCols = 1;
+        currentMosaicRows = 1;
         try { baseImageData = null; } catch {}
 
         if (preserveView) {
@@ -4428,7 +4448,7 @@
         const img = new Image();
         img.onload = () => resolve(img);
         img.onerror = reject;
-        img.src = buildUrl(area, no);
+        img.src = buildUrl(area, no) + '?t=' + Date.now();
       });
     }
 
@@ -4447,6 +4467,11 @@
         mctx.drawImage(images[3], tileW, tileH);
       }
       img = mosaicCanvas;
+      currentTiles = coords.slice();
+      currentTileW = tileW;
+      currentTileH = tileH;
+      currentMosaicCols = 2;
+      currentMosaicRows = coords.length === 2 ? 1 : 2;
       try { baseImageData = null; } catch {}
       if (preserveView) {
         render();
@@ -5205,6 +5230,32 @@
       } catch {}
     }
 
+    function groupPixelsByTile(colors, coords) {
+      const tileWidth = currentTileW || (img ? img.width : 0);
+      const tileHeight = currentTileH || (img ? img.height : 0);
+      const cols = currentMosaicCols || 1;
+      const map = new Map();
+      for (let i = 0; i < colors.length; i++) {
+        const wx = coords[i * 2];
+        const wy = coords[i * 2 + 1];
+        const col = Math.floor(wx / tileWidth);
+        const row = Math.floor(wy / tileHeight);
+        const index = row * cols + col;
+        const tile = currentTiles[index] || currentTiles[0] || { x: 0, y: 0 };
+        const localX = wx - col * tileWidth;
+        const localY = wy - row * tileHeight;
+        const key = tile.x + ',' + tile.y;
+        let g = map.get(key);
+        if (!g) {
+          g = { area: tile.x, no: tile.y, coords: [], colors: [] };
+          map.set(key, g);
+        }
+        g.coords.push(localX, localY);
+        g.colors.push(colors[i]);
+      }
+      return Array.from(map.values());
+    }
+
     if (startBtn) {
       startBtn.addEventListener('click', () => {
         const hasToken = !!(readyTokenInput && readyTokenInput.value && readyTokenInput.value.trim().length > 0);
@@ -5219,43 +5270,46 @@
         if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
         const data = buildSelectedExportForItem(sel);
         const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
-        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
-        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        const total = data.colors.length|0;
-        const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+        const groups = groupPixelsByTile(data.colors, data.coords);
         (async () => {
-          let offset = 0;
-          const usedIds = [];
-          let hadRequestError = false;
-          for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
-            const acc = selectedAccounts[i];
-            const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
-            if (cap <= 0) continue;
-            const take = Math.min(cap, total - offset);
-            if (take <= 0) continue;
-            const colorsSlice = data.colors.slice(offset, offset + take);
-            const coordsSlice = data.coords.slice(offset * 2, (offset + take) * 2);
-            const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
-            if (r && r.status === 429) {
-              hadRequestError = true;
-              try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
-              break;
-            }
-            if (!r.ok) {
-              if (r.status >= 500) {
-                try { await loadAccounts(); } catch {}
-                continue;
-              } else {
+          let paintedAny = false;
+          let missingTotal = 0;
+          for (const g of groups) {
+            const total = g.colors.length|0;
+            const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+            let offset = 0;
+            let hadRequestError = false;
+            for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
+              const acc = selectedAccounts[i];
+              const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
+              if (cap <= 0) continue;
+              const take = Math.min(cap, total - offset);
+              if (take <= 0) continue;
+              const colorsSlice = g.colors.slice(offset, offset + take);
+              const coordsSlice = g.coords.slice(offset * 2, (offset + take) * 2);
+              const r = await postBatch(String(g.area), String(g.no), colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+              if (r && r.status === 429) {
                 hadRequestError = true;
-                showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
+                try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
                 break;
               }
+              if (!r.ok) {
+                if (r.status >= 500) {
+                  try { await loadAccounts(); } catch {}
+                  continue;
+                } else {
+                  hadRequestError = true;
+                  showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
+                  break;
+                }
+              }
+              offset += take;
+              try { await refreshAccountById(acc.id); } catch {}
             }
-            usedIds.push(acc.id);
-            offset += take;
-            try { await refreshAccountById(acc.id); } catch {}
+            if (offset > 0) paintedAny = true;
+            if (offset < total && !hadRequestError) missingTotal += (total - offset);
           }
-          if (offset > 0) {
+          if (paintedAny) {
             showToast(t('messages.painted'), 'success', 1800);
             reloadCurrentBackground();
             try { clearAllReadySelections(); } catch {}
@@ -5263,12 +5317,12 @@
             try { readyGlobalMode = false; } catch {}
             try { updateStartEnabled(); } catch {}
           }
-          if (offset < total && !hadRequestError) {
-            showToast(t('messages.insufficientPixelPower', { n: (total - offset) }), 'error', 3000);
+          if (missingTotal > 0) {
+            showToast(t('messages.insufficientPixelPower', { n: missingTotal }), 'error', 3000);
           }
-          
+
           try { await loadAccounts(); } catch {}
-          
+
           try { updateReadySelectionLabel(); } catch {}
           render();
           render();
