@@ -19,7 +19,7 @@
   ---
 
   > [!NOTE]
-  > **Hello, after the new measures were introduced, I decided to develop this bot, and it was completed in just one day. Due to the measures, it seems impossible to create a fully automated bot for now. However, thanks to a current exploit, we can draw from 12 accounts in one second with a single verification. Assuming the accounts are full, we can send 12 * 62 = <strong>744</strong> pixels per second. If you're ready, I've explained how to use it below.**
+  > **Hello, after the new measures were introduced, I decided to develop this bot, and it was completed in just one day. Due to the measures, it seems impossible to create a fully automated bot for now. ~~However, thanks to a current exploit,we can draw from 12 accounts in one second with a single verification. Assuming the accounts are full, we can send 12 * 62 = <strong>744</strong> pixels per second.~~ After the update, this vulnerability has been fixed, so you will need to obtain a token again for each account submission. If you're ready, I've explained how to use it below.**
 
   ---
 
@@ -220,6 +220,7 @@
   </p>
 
   ---
+
 
 
 
