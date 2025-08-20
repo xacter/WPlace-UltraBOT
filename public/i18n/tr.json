@@ -59,7 +59,15 @@
     "fillBackground": "Arka planı doldur",
     "color": "Renk",
     "addToMap": "Haritaya ekle",
-    "maxSizeExceeded": "Maksimum boyut 1000x1000 piksel."
+    "maxSizeExceeded": "Maksimum boyut 1000x1000 piksel.",
+    "alphaThreshold": "Şeffaflık",
+    "colorMetric": "Renk algoritması",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
