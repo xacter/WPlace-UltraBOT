@@ -5065,7 +5065,7 @@
         if (readyLockedItem) { readyLockedItem.lockedByReady = false; updateItemLockUi(readyLockedItem); readyLockedItem = null; }
       } catch {}
       readySelectedAccountIds = [];
-      readyShouldReset = false;
+      readyShouldReset = true;
       readyHoverPixel = { x: null, y: null };
       
       // Ensure no stale drag/ready state remains when resetting
