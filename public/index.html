@@ -3146,6 +3146,34 @@
             await loadAccounts();
           } catch {}
         });
+        const buyMaxBtn = document.createElement('button');
+        buyMaxBtn.type = 'button';
+        buyMaxBtn.className = 'app-btn';
+        buyMaxBtn.textContent = t('buttons.buyMaxCharges');
+        buyMaxBtn.addEventListener('click', async () => {
+          try {
+            await fetch('/api/accounts/' + row.id + '/purchase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ productId: 70 })
+            });
+            await refreshAccountById(row.id);
+          } catch {}
+        });
+        const buyPaintBtn = document.createElement('button');
+        buyPaintBtn.type = 'button';
+        buyPaintBtn.className = 'app-btn';
+        buyPaintBtn.textContent = t('buttons.buyPaintCharges');
+        buyPaintBtn.addEventListener('click', async () => {
+          try {
+            await fetch('/api/accounts/' + row.id + '/purchase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ productId: 80 })
+            });
+            await refreshAccountById(row.id);
+          } catch {}
+        });
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'app-btn';
@@ -3159,6 +3187,8 @@
         rowTop.appendChild(editBtn);
         rowTop.appendChild(delBtn);
         rowBottom.appendChild(checkBtn);
+        rowBottom.appendChild(buyMaxBtn);
+        rowBottom.appendChild(buyPaintBtn);
         actionsWrap.appendChild(rowTop);
         actionsWrap.appendChild(rowBottom);
         tdActions.appendChild(actionsWrap);

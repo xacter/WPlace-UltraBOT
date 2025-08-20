@@ -71,6 +71,8 @@
     "saveSettings": "保存",
     "edit": "编辑",
     "checkPixels": "检查像素",
+    "buyMaxCharges": "+5 最大充能 / 500 droplets",
+    "buyPaintCharges": "+30 上色充能 / 500 droplets",
     "delete": "删除"
   },
   "thumb": {

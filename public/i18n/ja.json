@@ -71,6 +71,8 @@
     "saveSettings": "保存",
     "edit": "編集",
     "checkPixels": "ピクセル確認",
+    "buyMaxCharges": "+5 最大チャージ / 500 droplets",
+    "buyPaintCharges": "+30 ペイントチャージ / 500 droplets",
     "delete": "削除"
   },
   "thumb": {

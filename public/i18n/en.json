@@ -71,6 +71,8 @@
     "saveSettings": "Save",
     "edit": "Edit",
     "checkPixels": "Check pixel",
+    "buyMaxCharges": "+5 max charges / 500 droplets",
+    "buyPaintCharges": "+30 paint charges / 500 droplets",
     "delete": "Delete"
   },
   "thumb": {

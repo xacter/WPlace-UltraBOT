@@ -71,6 +71,8 @@
     "saveSettings": "Сохранить",
     "edit": "Редактировать",
     "checkPixels": "Проверить пиксели",
+    "buyMaxCharges": "+5 макс зарядов / 500 droplets",
+    "buyPaintCharges": "+30 зарядов краски / 500 droplets",
     "delete": "Удалить"
   },
   "thumb": {
