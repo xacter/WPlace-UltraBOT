@@ -34,6 +34,7 @@
   "table": {
     "accountName": "Hesap ismi",
     "accountToken": "Hesap Tokeni",
+    "droplets": "Droplets",
     "pixelRight": "Piksel Hakkı",
     "status": "Durum",
     "actions": "İşlem",
@@ -69,7 +70,8 @@
     "add": "Ekle",
     "saveSettings": "Kaydet",
     "edit": "Düzenle",
-    "checkPixels": "Piksel kontrol et",
+    "checkPixels": "Kontrol",
+    "shop": "Mağaza",
     "delete": "Sil"
   },
   "thumb": {
@@ -82,6 +84,10 @@
   "palette": {
     "transparentTitle": "Transparan (resim rengi)",
     "colorTitle": "Renk #{id}"
+  },
+  "paletteMode": {
+    "premium": "Premium renk kullan",
+    "free": "Ücretsiz renk kullan"
   },
   "controls": {
     "movement": "Hareket"
@@ -106,7 +112,21 @@
     "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin.",
     "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi.",
     "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz.",
-    "cfClearanceChange": "Lütfen cf_clearance değiştirin."
+    "cfClearanceChange": "Lütfen cf_clearance değiştirin.",
+    "purchaseSuccess": "Satın alım başarılı",
+    "purchaseFail": "Satın alım başarısız"
+  },
+  "shop": {
+    "premiumTitle": "Premium Renkler",
+    "purchased": "Satın alınan renkler",
+    "exclusive": "Özel palet",
+    "buyPremium": "💧 2000 Droplets",
+    "itemsTitle": "Ürünler",
+    "itemsSub": "Daha fazla hak al",
+    "maxTitle": "+5 Maks. Hak",
+    "maxDesc": "Maksimum boyama hakkı kapasitesini artır",
+    "recTitle": "+30 Boyama Hakkı",
+    "recDesc": "Boyama haklarını yenile"
   }
 }
 
