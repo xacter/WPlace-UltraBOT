@@ -602,6 +602,8 @@
     .select-mode-track { position: relative; width: 44px; height: 24px; border-radius: 9999px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; padding: 0; }
     .select-mode-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #e5e7eb; transition: transform 0.18s ease; }
     .select-mode-track.on .select-mode-knob { transform: translateX(20px); }
+    /* Auto mode controls reuse select-mode styles */
+    #auto-mode-controls { justify-content: center; }
     .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .toggle .slider { position: absolute; inset: 0; border-radius: 9999px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; }
@@ -779,6 +781,15 @@
           <div class="ready-header">
             <button id="btn-ready-account" class="app-btn" type="button" data-i18n="ready.selectAccount">Hesap seç</button>
             <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
+          </div>
+          <div class="controls-row" id="auto-mode-controls">
+            <div class="select-mode-wrap">
+              <span id="auto-mode-label-left" class="select-mode-label" data-i18n="ready.autoMode.off">Auto mode off</span>
+              <button id="auto-mode-toggle" class="select-mode-track" type="button" role="switch" aria-checked="false" aria-label="Auto mode">
+                <span class="select-mode-knob"></span>
+              </button>
+              <span id="auto-mode-label-right" class="select-mode-label" data-i18n="ready.autoMode.on">Auto mode on</span>
+            </div>
           </div>
           <div id="ready-account-list" hidden></div>
           <div class="controls-row" hidden>
@@ -2839,20 +2850,24 @@
       try {
         const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
         const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        if (!area || !no) return;
-        
+        if (!area || !no) return Promise.resolve(false);
         const url = buildUrl(area, no) + '?t=' + Date.now();
-        const image = new Image();
-        image.onload = () => {
-          img = image;
-          baseImageData = null;
-          try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
-          render();
-          updatePixelMarkers();
-        };
-        image.onerror = () => {};
-        image.src = url;
-      } catch {}
+        return new Promise((resolve) => {
+          try {
+            const image = new Image();
+            image.onload = () => {
+              img = image;
+              baseImageData = null;
+              try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+              render();
+              updatePixelMarkers();
+              resolve(true);
+            };
+            image.onerror = () => { resolve(false); };
+            image.src = url;
+          } catch { resolve(false); }
+        });
+      } catch { return Promise.resolve(false); }
     }
 
     const USE_LOCAL_TILE = false;
@@ -3497,6 +3512,15 @@
           list.push({ name: it.name || 'image.png', dataUrl: durl, worldX: Math.floor(Number(it.worldX || 0)), worldY: Math.floor(Number(it.worldY || 0)), locked: !!it.locked });
         }
         localStorage.setItem('images.list', JSON.stringify(list));
+        // If all images have been removed, also clear legacy keys to prevent fallback restore on refresh
+        if (list.length === 0) {
+          try { localStorage.removeItem('last.image.url'); } catch {}
+          try { localStorage.removeItem('last.image.name'); } catch {}
+          try { localStorage.removeItem('last.image.dataUrl'); } catch {}
+          try { localStorage.removeItem('last.image.worldX'); } catch {}
+          try { localStorage.removeItem('last.image.worldY'); } catch {}
+          try { localStorage.removeItem('selected.index'); } catch {}
+        }
       } catch {}
     }
     function restoreImagesFromStorage(){
@@ -3528,7 +3552,9 @@
           }, 100);
           return;
         }
-        // Fallback to legacy single-image restore
+        // Fallback to legacy single-image restore (skip if images.list existed but is empty)
+        const hadList = !!localStorage.getItem('images.list');
+        if (hadList) return;
         let lastUrl = localStorage.getItem('last.image.url');
         const lastName = localStorage.getItem('last.image.name') || 'image.png';
         const dataUrl = localStorage.getItem('last.image.dataUrl');
@@ -4911,10 +4937,14 @@
     const readyAccountBtn = document.getElementById('btn-ready-account');
     const readyAccountList = document.getElementById('ready-account-list');
     const readyTokenInput = document.getElementById('ready-token-input');
+    const autoModeTrack = document.getElementById('auto-mode-toggle');
+    const autoModeLabelLeft = document.getElementById('auto-mode-label-left');
+    const autoModeLabelRight = document.getElementById('auto-mode-label-right');
     const selectModeTrack = document.getElementById('select-mode-toggle');
     const selectModeLabelLeft = document.getElementById('select-mode-label-left');
     const selectModeLabelRight = document.getElementById('select-mode-label-right');
     let selectMode = 'multi';
+    let autoMode = false;
 
     function updateSelectModeUi(){
       try { if (selectModeTrack) selectModeTrack.classList.toggle('on', selectMode === 'frame'); } catch {}
@@ -4926,6 +4956,24 @@
       selectMode = (mode === 'frame') ? 'frame' : 'multi';
       updateSelectModeUi();
     }
+    function updateAutoModeUi(){
+      try { if (autoModeTrack) autoModeTrack.classList.toggle('on', !!autoMode); } catch {}
+      try { if (autoModeTrack) autoModeTrack.setAttribute('aria-checked', autoMode ? 'true' : 'false'); } catch {}
+      try { if (autoModeLabelLeft) autoModeLabelLeft.classList.toggle('active', !autoMode); } catch {}
+      try { if (autoModeLabelRight) autoModeLabelRight.classList.toggle('active', !!autoMode); } catch {}
+    }
+    try {
+      const savedAuto = localStorage.getItem('ready.autoMode');
+      autoMode = (savedAuto === '1' || savedAuto === 'true');
+      updateAutoModeUi();
+    } catch {}
+    if (autoModeTrack) autoModeTrack.addEventListener('click', () => {
+      autoMode = !autoMode;
+      try { localStorage.setItem('ready.autoMode', autoMode ? '1' : '0'); } catch {}
+      updateAutoModeUi();
+    });
+    if (autoModeLabelLeft) autoModeLabelLeft.addEventListener('click', () => { autoMode = false; try { localStorage.setItem('ready.autoMode','0'); } catch {}; updateAutoModeUi(); });
+    if (autoModeLabelRight) autoModeLabelRight.addEventListener('click', () => { autoMode = true; try { localStorage.setItem('ready.autoMode','1'); } catch {}; updateAutoModeUi(); });
     if (selectModeTrack) selectModeTrack.addEventListener('click', () => setSelectMode(selectMode === 'frame' ? 'multi' : 'frame'));
     if (selectModeLabelLeft) selectModeLabelLeft.addEventListener('click', () => setSelectMode('multi'));
     if (selectModeLabelRight) selectModeLabelRight.addEventListener('click', () => setSelectMode('frame'));
@@ -5053,6 +5101,32 @@
         try { if (readyPixelEl) readyPixelEl.hidden = false; } catch {}
         updateReadyPixelForSelectedAccounts();
       } catch {}
+    }
+
+    function pickNextBestAccountId(excludeIds = []){
+      try {
+        const excludeSet = new Set((excludeIds||[]).map(x => String(x)));
+        const list = [];
+        accountsData.forEach(row => {
+          const isActive = row && row.active !== false && !!row.token;
+          const countRaw = Number(row && row.pixelCount);
+          const maxRaw = Number(row && row.pixelMax);
+          const valid = Number.isFinite(countRaw) && Number.isFinite(maxRaw) && maxRaw > 0;
+          if (!isActive || !valid) return;
+          const idStr = String(row.id);
+          const ratio = (maxRaw > 0 ? (countRaw / maxRaw) : -1);
+          list.push({ id: row.id, idStr, ratio, count: Math.floor(countRaw), max: Math.floor(maxRaw) });
+        });
+        list.sort((a, b) => {
+          if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+          if (b.count !== a.count) return b.count - a.count;
+          return b.max - a.max;
+        });
+        for (let i = 0; i < list.length; i++) {
+          if (!excludeSet.has(list[i].idStr)) return list[i].id;
+        }
+        return null;
+      } catch { return null; }
     }
 
     // Single-account mode: we no longer auto-select on open; user picks explicitly.
@@ -5358,7 +5432,7 @@
         if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
         const data = buildSelectedExportForItem(sel);
         const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
-        // Clear token immediately upon starting
+        // Always clear token immediately upon starting (also in Auto Mode)
         try { if (readyTokenInput) { readyTokenInput.value = ''; } } catch {}
         try { updateStartEnabled(); } catch {}
         const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
@@ -5422,14 +5496,14 @@
           }
           if (assignedCount > 0) {
             showToast(t('messages.painted'), 'success', 1800);
-            reloadCurrentBackground();
+            const didReload = await reloadCurrentBackground();
             try { clearAllReadySelections(); } catch {}
-            try { resetReadyNow(); } catch {}
             try { readyGlobalMode = false; } catch {}
+            if (!autoMode) {
+              try { resetReadyNow(); } catch {}
+            }
             try { updateStartEnabled(); } catch {}
-            // Clear token input after successful start
-            try { if (readyTokenInput) readyTokenInput.value = ''; } catch {}
-            try { updateStartEnabled(); } catch {}
+            // Token remains cleared
           }
           if (assignedCount < total && !hadRequestError) {
             showToast(t('messages.insufficientPixelPower', { n: (total - assignedCount) }), 'error', 3000);
@@ -5440,6 +5514,21 @@
           try { updateReadySelectionLabel(); } catch {}
           render();
           render();
+
+          // Auto mode: after paint success, select next highest account and auto select pixels
+          if (autoMode && assignedCount > 0 && !hadRequestError) {
+            try {
+              const nextId = pickNextBestAccountId(usedIds);
+              if (nextId != null) {
+                readySelectedAccountIds = [nextId];
+                try { renderReadyAccountList(); } catch {}
+                updateReadyPixelForSelectedAccounts();
+                // Ensure background has actually reloaded before auto-selecting
+                try { await new Promise(resolve => setTimeout(resolve, didReload ? 50 : 300)); } catch {}
+                if (autoSelectBtn) { autoSelectDeleteMode = false; autoSelectBtn.click(); }
+              }
+            } catch {}
+          }
         })();
       });
     }
