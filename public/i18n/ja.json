@@ -34,6 +34,7 @@
   "table": {
     "accountName": "アカウント名",
     "accountToken": "アカウントトークン",
+    "droplets": "Droplets",
     "pixelRight": "ピクセル上限",
     "status": "ステータス",
     "actions": "操作",
@@ -69,7 +70,8 @@
     "add": "追加",
     "saveSettings": "保存",
     "edit": "編集",
-    "checkPixels": "ピクセル確認",
+    "checkPixels": "確認",
+    "shop": "ショップ",
     "delete": "削除"
   },
   "thumb": {
@@ -80,8 +82,24 @@
     "colorPalette": "カラーパレット"
   },
   "palette": {
-    "transparentTitle": "透過（画像の色）",
-    "colorTitle": "カラー #{id}"
+    "transparentTitle": "透明（画像色）",
+    "colorTitle": "色 #{id}"
+  },
+  "paletteMode": {
+    "premium": "プレミアム色を使用",
+    "free": "無料色を使用"
+  },
+  "shop": {
+    "premiumTitle": "プレミアムカラー",
+    "purchased": "購入済みの色",
+    "exclusive": "限定パレット",
+    "buyPremium": "💧 2000 ドロップ",
+    "itemsTitle": "アイテム",
+    "itemsSub": "チャージを増やす",
+    "maxTitle": "+5 最大チャージ",
+    "maxDesc": "塗装チャージの最大容量を増やす",
+    "recTitle": "+30 塗装チャージ",
+    "recDesc": "塗装チャージを補充"
   },
   "controls": {
     "movement": "移動"
@@ -94,19 +112,21 @@
     "right": "右へ"
   },
   "messages": {
-    "selectAccountFirst": "最初にアカウントを選択してください。",
+    "selectAccountFirst": "先にアカウントを選択してください。",
     "maxPixelsReached": "最大ピクセル数に達しました: {limit}/{limit}",
     "addCfClearancePrompt": "まず設定で cf_clearance を追加してください（30文字以上）。",
     "max12Accounts": "最大12アカウントまで選択できます。",
-    "startRequirementsMissing": "開始するにはトークンを入力し、アカウントを選択し、少なくとも1ピクセルを選んでください。",
+    "startRequirementsMissing": "開始するにはトークンを入力し、アカウントを選択し、少なくとも1ピクセル選んでください。",
     "noSelectedImage": "選択された画像はありません。",
     "errorGeneric": "エラー",
-    "painted": "塗布しました。",
-    "insufficientPixelPower": "ピクセルパワーが不足しています: {n} ピクセルは送信できませんでした。",
+    "painted": "塗り完了。",
+    "insufficientPixelPower": "ピクセルパワー不足: {n} ピクセルを送れませんでした。",
     "imageLoadFailed": "画像を読み込めませんでした。値を確認してください。",
     "tokenAlreadyExists": "このトークンのアカウントは既に存在します。",
-    "cfCannotBeClearedWithAccounts": "アカウントがある場合、cf_clearance を空にはできません。",
-    "cfClearanceChange": "cf_clearance を変更してください。"
+    "cfCannotBeClearedWithAccounts": "アカウントがある場合、cf_clearance は空にできません。",
+    "cfClearanceChange": "cf_clearance を変更してください。",
+    "purchaseSuccess": "購入に成功しました",
+    "purchaseFail": "購入に失敗しました"
   }
 }
 
