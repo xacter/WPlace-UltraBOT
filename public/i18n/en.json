@@ -34,6 +34,7 @@
   "table": {
     "accountName": "Account name",
     "accountToken": "Account token",
+    "droplets": "Droplets",
     "pixelRight": "Pixel limit",
     "status": "Status",
     "actions": "Action",

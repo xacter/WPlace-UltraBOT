@@ -644,6 +644,7 @@
                 <tr>
                   <th data-i18n="table.accountName">Hesap ismi</th>
                   <th data-i18n="table.accountToken">Hesap Tokeni</th>
+                  <th data-i18n="table.droplets">Droplets</th>
                   <th data-i18n="table.pixelRight">Piksel Hakkı</th>
                   <th data-i18n="table.status">Durum</th>
                   <th data-i18n="table.actions">İşlem</th>
@@ -3106,6 +3107,10 @@
         const shortToken = fullToken.length > 30 ? (fullToken.slice(0, 30) + '…') : fullToken;
         tdToken.textContent = shortToken;
         tdToken.title = fullToken;
+        const tdDroplets = document.createElement('td');
+        const dropletsRaw = (row.droplets == null ? null : Number(row.droplets));
+        const droplets = (Number.isFinite(dropletsRaw) ? Math.floor(dropletsRaw) : null);
+        tdDroplets.textContent = droplets == null ? '-' : String(droplets);
         const tdPixel = document.createElement('td');
         const countRaw = (row.pixelCount == null ? null : Number(row.pixelCount));
         const maxRaw = (row.pixelMax == null ? null : Number(row.pixelMax));
@@ -3159,6 +3164,7 @@
         tdActions.appendChild(actionsWrap);
         tr.appendChild(tdName);
         tr.appendChild(tdToken);
+        tr.appendChild(tdDroplets);
         tr.appendChild(tdPixel);
         tr.appendChild(tdStatus);
         tr.appendChild(tdActions);
