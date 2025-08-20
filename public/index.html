@@ -157,7 +157,6 @@
       position: fixed;
       top: 12px;
       left: 12px;
-      bottom: 12px;
       width: 140px;
       background: rgba(17, 20, 24, 0.85);
       border-right: 1px solid rgba(255,255,255,0.1);
@@ -168,7 +167,8 @@
       flex-direction: column;
       gap: 8px;
       z-index: 900;
-      overflow-y: auto;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
     }
     #thumb-list {
       display: flex;
@@ -276,7 +276,7 @@
       z-index: 1001;
       pointer-events: none;
     }
-    #sound-control { position: relative; display: inline-flex; align-items: center; z-index: 1003; top: -20px; pointer-events: auto; }
+    #sound-control { position: relative; display: inline-flex; align-items: center; z-index: 1003; top: -30px; pointer-events: auto; }
     #sound-toggle { background-color: rgba(0,0,0,0.75); padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); }
     #sound-toggle.muted { opacity: 0.6; }
     #sound-control .sound-slider { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: rgba(17, 20, 24, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; gap: 8px; align-items: center; flex-direction: column; z-index: 1003; min-width: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
@@ -296,6 +296,26 @@
     .movement-grid .dir-btn.kbd-press,
     .movement-grid .dir-btn:active,
     .movement-grid .dir-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(34,211,238,0.35); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.25); }
+
+    #github-link {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 1002;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #e5e7eb;
+      text-decoration: none;
+      pointer-events: auto;
+    }
+    #github-link:hover { background: rgba(0,0,0,0.60); border-color: rgba(34,211,238,0.35); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.25); }
+    #github-link svg { width: 20px; height: 20px; fill: currentColor; display: block; }
     
     #btn-accounts {
       background-color: rgba(0,0,0,0.75);
@@ -498,6 +518,10 @@
     .modal-body { padding-bottom: 56px; min-height: 300px; max-height: 400px; overflow-y: auto; }
     .modal-footer.split { justify-content: space-between; }
     .accounts-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; margin-right: 10px; }
+    .accounts-count { margin: 0 10px 8px 10px; font-size: 18px; font-weight: 600; opacity: 0.95; }
+    .btn-icon { width: 16px; height: 16px; display: inline-block; color: currentColor; opacity: 0.95; }
+    .app-btn .btn-icon { margin-right: 6px; }
+    .tab-button .btn-icon { margin-right: 6px; }
     #btn-check-all { margin-left: 8px; }
     .app-btn .spin-indicator { display: none; margin-left: 6px; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -747,6 +771,8 @@
     }
     .lang-item:hover { background: rgba(255,255,255,0.08); }
     .lang-item[aria-selected="true"] { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.35); }
+  .lang-flag { display: inline-flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; width: 18px; }
+  .lang-label { white-space: nowrap; }
     
   </style>
 </head>
@@ -772,7 +798,7 @@
   </div>
     <div id="control-panel">
       <div class="controls-row">
-        <button id="btn-accounts" class="app-btn" type="button" data-i18n="nav.accounts">Hesaplar</button>
+  <button id="btn-accounts" class="app-btn" type="button"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span data-i18n="nav.accounts">Hesaplar</span></button>
         <div id="pixel-power" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
       </div>
       <div>
@@ -825,12 +851,13 @@
       <button id="accounts-close" class="modal-close app-btn" title="Kapat" type="button" data-i18n-title="modal.closeTitle">×</button>
       <div class="modal-tabs">
         <button id="btn-shop-back" class="app-btn modal-back" type="button" data-i18n="buttons.back" hidden>Geri</button>
-        <button id="tab-accounts" class="tab-button active" type="button" data-i18n="tabs.accounts">Hesaplar</button>
-        <button id="tab-settings" class="tab-button" type="button" data-i18n="tabs.settings">Ayarlar</button>
+        <button id="tab-accounts" class="tab-button active" type="button"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span data-i18n="tabs.accounts">Hesaplar</span></button>
+        <button id="tab-settings" class="tab-button" type="button"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.6-.22l-2.39.96a7.027 7.027 0 00-1.62-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.58.22-1.12.52-1.62.94l-2.39-.96a.5.5 0 00-.6.22L2.71 8.84a.5.5 0 00.12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.14.24.43.34.68.22l2.39-.96c.5.41 1.04.73 1.62.94l.36 2.54c.06.25.26.42.5.42h3.84c.24 0 .45-.17.5-.42l.36-2.54c.58-.22 1.12-.52 1.62-.94l2.39.96c.25.12.54.02.68-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8a3.5 3.5 0 010 7.5z"/></svg><span data-i18n="tabs.settings">Ayarlar</span></button>
         <div id="shop-droplets-info" class="app-btn modal-right-info" hidden>💧 Droplets: -</div>
       </div>
       <div class="modal-body">
         <div id="accounts-section">
+          <div id="accounts-count" class="accounts-count"></div>
           <div class="accounts-actions">
             <button id="btn-account-add" class="app-btn" type="button" data-i18n="accounts.add">Hesap ekle</button>
             <button id="btn-check-all" class="app-btn" type="button" data-i18n-title="accounts.checkAllTitle"><span class="label" data-i18n="accounts.checkAll">Check All Accounts</span> <span class="spin-indicator">⟳</span></button>
@@ -997,20 +1024,26 @@
       </div>
     </div>
   </div>
+
+  <a id="github-link" href="https://github.com/xacter/WPlace-UltraBOT" target="_blank" rel="noopener noreferrer" aria-label="Open project GitHub">
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+  </a>
   <script>
     
     const I18N_DEFAULT_LANG = 'en';
     let I18N_LANG = I18N_DEFAULT_LANG;
     let I18N_STRINGS = {};
     const LANGS = [
-      { value: 'tr', label: 'Türkçe' },
-      { value: 'en', label: 'English' },
-      { value: 'de', label: 'Deutsch' },
-      { value: 'es', label: 'Español' },
-      { value: 'fr', label: 'Français' },
-      { value: 'ru', label: 'Русский' },
-      { value: 'cn', label: '中文' },
-      { value: 'ja', label: '日本語' }
+      { value: 'tr', label: 'Türkçe', flag: '🇹🇷' },
+      { value: 'en', label: 'English', flag: '🇬🇧' },
+      { value: 'de', label: 'Deutsch', flag: '🇩🇪' },
+      { value: 'es', label: 'Español', flag: '🇪🇸' },
+      { value: 'fr', label: 'Français', flag: '🇫🇷' },
+      { value: 'ru', label: 'Русский', flag: '🇷🇺' },
+      { value: 'cn', label: '中文', flag: '🇨🇳' },
+      { value: 'ja', label: '日本語', flag: '🇯🇵' }
     ];
     function getSavedLang(){ try { return localStorage.getItem('lang') || I18N_DEFAULT_LANG; } catch { return I18N_DEFAULT_LANG; } }
     function saveLang(lang){ try { localStorage.setItem('lang', lang); } catch {} }
@@ -1130,7 +1163,13 @@
     function refreshLangDropdown(){
       try {
         const cur = document.getElementById('lang-current');
-        if (cur) cur.textContent = getLangLabel(I18N_LANG);
+        if (cur) {
+          const f = LANGS.find(x => x.value === I18N_LANG);
+          cur.innerHTML = '';
+          const flag = document.createElement('span'); flag.className = 'lang-flag'; flag.textContent = (f && f.flag) ? f.flag : '';
+          const label = document.createElement('span'); label.className = 'lang-label'; label.textContent = getLangLabel(I18N_LANG);
+          cur.appendChild(flag); cur.appendChild(label);
+        }
         document.querySelectorAll('#lang-menu .lang-item').forEach(btn => {
           const v = btn.getAttribute('data-value');
           btn.setAttribute('aria-selected', String(v === I18N_LANG));
@@ -1146,7 +1185,7 @@
         el.id = 'lang-switch';
         const wrap = document.createElement('div');
         wrap.className = 'lang-dropdown';
-        wrap.innerHTML = '<button id="lang-button" class="lang-button" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="lang-current"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg></button><div id="lang-menu" class="lang-menu" role="listbox"></div><select id="lang-select" hidden></select>';
+  wrap.innerHTML = '<button id="lang-button" class="lang-button" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="lang-current"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg></button><div id="lang-menu" class="lang-menu" role="listbox"></div><select id="lang-select" hidden></select>';
         el.appendChild(wrap);
         document.body.appendChild(el);
         const menu = wrap.querySelector('#lang-menu');
@@ -1157,8 +1196,9 @@
           item.className = 'lang-item';
           item.setAttribute('role', 'option');
           item.setAttribute('data-value', l.value);
-          const text = document.createElement('span');
-          text.textContent = l.label;
+          const flag = document.createElement('span'); flag.className = 'lang-flag'; flag.textContent = l.flag || '';
+          const text = document.createElement('span'); text.className = 'lang-label'; text.textContent = l.label;
+          item.appendChild(flag);
           item.appendChild(text);
           menu.appendChild(item);
           const opt = document.createElement('option');
@@ -3313,7 +3353,14 @@
     function updateCounter() {
       const total = signItems.length;
       const selected = selectedIndex >= 0 ? (selectedIndex + 1) : 0;
-      counter.textContent = String(selected) + ' / ' + String(total);
+      const sidebar = document.getElementById('sidebar');
+      if (total === 0) {
+        counter.textContent = '';
+        if (sidebar) sidebar.hidden = true;
+      } else {
+        counter.textContent = String(selected) + ' / ' + String(total);
+        if (sidebar) sidebar.hidden = false;
+      }
       try {
         const btn = document.getElementById('btn-ready');
         if (btn) btn.disabled = !(
@@ -3647,7 +3694,8 @@
     accountsBtn.addEventListener('click', async () => {
       accountsModal.hidden = false;
       setAccountsActiveTab('accounts');
-      try { await loadSettings(); } catch {}
+  try { await loadSettings(); } catch {}
+  try { await loadAccounts(); } catch {}
     });
     function showAccountForm() {
       if (!accountsSection || !accountFormSection) return;
@@ -4296,7 +4344,7 @@
     if (shopBackBtn) {
       shopBackBtn.addEventListener('click', showAccountList);
     }
-    function renderAccountsTable(rows) {
+  function renderAccountsTable(rows) {
       const sortedRows = Array.isArray(rows) ? rows.slice().sort((a, b) => {
         const aActive = a && a.active !== false;
         const bActive = b && b.active !== false;
@@ -4304,6 +4352,13 @@
         return aActive ? 1 : -1; // Inactive first
       }) : [];
       accountsData = sortedRows.slice();
+      try {
+        const el = document.getElementById('accounts-count');
+        if (el) {
+          const n = Array.isArray(accountsData) ? accountsData.length : 0;
+          el.textContent = 'Accounts: ' + String(n);
+        }
+      } catch {}
       try { recomputeActivePalette(); } catch {}
       accountsTbody.innerHTML = '';
       sortedRows.forEach(row => {
@@ -4594,8 +4649,15 @@
     accountsClose.addEventListener('click', () => {
       accountsModal.hidden = true;
     });
-    accountsModal.addEventListener('click', (e) => {
-      if (e.target === accountsModal) accountsModal.hidden = true;
+    let modalMouseDownTarget = null;
+    accountsModal.addEventListener('mousedown', (e) => {
+      modalMouseDownTarget = e.target;
+    });
+    accountsModal.addEventListener('mouseup', (e) => {
+      if (modalMouseDownTarget === accountsModal && e.target === accountsModal) {
+        accountsModal.hidden = true;
+      }
+      modalMouseDownTarget = null;
     });
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') accountsModal.hidden = true;
@@ -4842,6 +4904,21 @@
     function closeImgPreview(){ try { document.body.classList.remove('no-scroll'); } catch {} imgPreviewModal.hidden = true; }
     if (imgPreviewClose) imgPreviewClose.addEventListener('click', closeImgPreview);
     if (imgPreviewCancel) imgPreviewCancel.addEventListener('click', closeImgPreview);
+    
+    let imgPreviewMouseDownTarget = null;
+    if (imgPreviewModal) {
+      imgPreviewModal.addEventListener('mousedown', (event) => {
+        if (event.target === imgPreviewModal) {
+          imgPreviewMouseDownTarget = event.target;
+        }
+      });
+      imgPreviewModal.addEventListener('mouseup', (event) => {
+        if (event.target === imgPreviewModal && imgPreviewMouseDownTarget === imgPreviewModal) {
+          closeImgPreview();
+        }
+        imgPreviewMouseDownTarget = null;
+      });
+    }
     if (imgPreviewApply) imgPreviewApply.addEventListener('click', async () => {
       try {
         if (!previewSourceImage) return;
