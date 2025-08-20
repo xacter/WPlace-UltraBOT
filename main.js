@@ -25,7 +25,7 @@ function maskCookieHeader(cookieHeader) {
   out = out.replace(/\bj=([^;]+)/i, (_, v) => `j=${maskToken(v)}`);
   return out;
 }
-function debugLog(...args) { if (DEBUG) { try { console.log('[debug]', ...args); } catch {} } }
+function debugLog(...args) { if (DEBUG) { try { console.log('[debug]', ...args); } catch { } } }
 
 const HTTPS_AGENT = new https.Agent({ secureProtocol: 'TLSv1_2_method' });
 let axiosClient = null;
@@ -41,7 +41,7 @@ if (axios) {
         headers.cookie = masked;
       }
       debugLog('HTTP GET', { url: config && config.url, headers });
-    } catch {}
+    } catch { }
     return config;
   });
   axiosClient.interceptors.response.use((response) => {
@@ -58,7 +58,7 @@ if (axios) {
         statusText: response && response.statusText,
         bodyPreview: preview
       });
-    } catch {}
+    } catch { }
     return response;
   }, (error) => {
     try {
@@ -77,7 +77,7 @@ if (axios) {
       } else {
         debugLog('HTTP GET network error', { message: error && error.message ? error.message : String(error) });
       }
-    } catch {}
+    } catch { }
     return Promise.reject(error);
   });
 }
@@ -89,7 +89,7 @@ async function getGotScrapingFn() {
   try {
     const mod = await import('got-scraping');
     gotScrapingFn = mod && (mod.gotScraping || (typeof mod.default === 'function' ? mod.default : null));
-  } catch {}
+  } catch { }
   return gotScrapingFn;
 }
 
@@ -99,12 +99,12 @@ const ACCOUNTS_FILE = path.join(DB_DIR, 'accounts.json');
 const SETTINGS_FILE = path.join(DB_DIR, 'settings.json');
 
 function ensureDb() {
-  try { fs.mkdirSync(DB_DIR, { recursive: true }); } catch {}
+  try { fs.mkdirSync(DB_DIR, { recursive: true }); } catch { }
   if (!fs.existsSync(ACCOUNTS_FILE)) {
-    try { fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify([], null, 2)); } catch {}
+    try { fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify([], null, 2)); } catch { }
   }
   if (!fs.existsSync(SETTINGS_FILE)) {
-    try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ cf_clearance: '', worldX: null, worldY: null }, null, 2)); } catch {}
+    try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ cf_clearance: '', worldX: null, worldY: null }, null, 2)); } catch { }
   }
 }
 
@@ -133,7 +133,7 @@ function deactivateAccountByToken(jToken) {
     accounts[idx] = updated;
     writeJson(ACCOUNTS_FILE, accounts);
     console.log('[auto] account deactivated due to 500 when posting pixel:', current && current.name ? current.name : '(unknown)');
-  } catch {}
+  } catch { }
 }
 
 async function readJsonBody(req) {
@@ -142,8 +142,8 @@ async function readJsonBody(req) {
     req.on('data', chunk => {
       body += chunk;
       if (body.length > 1e6) {
-        try { req.socket.destroy(); } catch {}
-        reject(new Error('Payload too large')); 
+        try { req.socket.destroy(); } catch { }
+        reject(new Error('Payload too large'));
       }
     });
     req.on('end', () => {
@@ -184,9 +184,9 @@ async function requestMeLikePython(opts) {
   let bodyBuf = resp.rawBody || Buffer.from(String(resp.body || ''), 'utf8');
   const encoding = ((resp.headers && (resp.headers['content-encoding'] || resp.headers['Content-Encoding'])) || '').toLowerCase();
   if (encoding.includes('gzip')) {
-    try { bodyBuf = zlib.gunzipSync(bodyBuf); } catch {}
+    try { bodyBuf = zlib.gunzipSync(bodyBuf); } catch { }
   } else if (encoding.includes('deflate')) {
-    try { bodyBuf = zlib.inflateRawSync(bodyBuf); } catch { try { bodyBuf = zlib.inflateSync(bodyBuf); } catch {} }
+    try { bodyBuf = zlib.inflateRawSync(bodyBuf); } catch { try { bodyBuf = zlib.inflateSync(bodyBuf); } catch { } }
   }
   const status = resp.statusCode || 0;
   const reason = resp.statusMessage || '';
@@ -236,7 +236,7 @@ async function fetchMePuppeteer(cf_clearance, token) {
     const text = await page.evaluate(() => document.body && document.body.innerText || '');
     try { return JSON.parse(text); } catch { return null; }
   } finally {
-    try { await browser.close(); } catch {}
+    try { await browser.close(); } catch { }
   }
 }
 
@@ -270,7 +270,7 @@ function startServer(port, host) {
         https.get(remoteUrl, { agent: HTTPS_AGENT, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'image/png,image/*;q=0.8,*/*;q=0.5' } }, (r) => {
           const status = r.statusCode || 0;
           if (status !== 200) {
-            try { r.resume(); } catch {}
+            try { r.resume(); } catch { }
             res.writeHead(status === 404 ? 404 : 502, { 'Content-Type': 'text/plain; charset=utf-8' });
             res.end('Tile fetch failed');
             return;
@@ -287,8 +287,8 @@ function startServer(port, host) {
       }
       return;
     }
-    
-    
+
+
     if (parsed.pathname && /^\/api\/pixel\/([^\/]+)\/([^\/]+)$/.test(parsed.pathname) && req.method === 'POST') {
       const m = parsed.pathname.match(/^\/api\/pixel\/([^\/]+)\/([^\/]+)$/);
       const area = m && m[1] ? m[1] : '';
@@ -308,7 +308,7 @@ function startServer(port, host) {
           const cf = settings && typeof settings.cf_clearance === 'string' ? settings.cf_clearance : '';
           const remotePath = `/s0/pixel/${encodeURIComponent(area)}/${encodeURIComponent(no)}`;
           const payload = JSON.stringify({ colors, coords, t });
-          
+
           try {
             const gotScraping = await getGotScrapingFn();
             if (gotScraping) {
@@ -334,13 +334,13 @@ function startServer(port, host) {
               const text = r && (typeof r.body === 'string' ? r.body : (r.body ? String(r.body) : ''));
               debugLog('proxy pixel POST end (got-scraping)', { status, bodyPreview: String(text || '').slice(0, 300) });
               if (status >= 500) {
-                try { deactivateAccountByToken(jToken); } catch {}
+                try { deactivateAccountByToken(jToken); } catch { }
               }
               res.writeHead(status || 502, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(text);
               return;
             }
-          } catch {}
+          } catch { }
           const options = {
             hostname: 'backend.wplace.live',
             port: 443,
@@ -363,13 +363,13 @@ function startServer(port, host) {
             up.on('end', () => {
               const encoding = ((up.headers && (up.headers['content-encoding'] || up.headers['Content-Encoding'])) || '').toLowerCase();
               let buf = Buffer.concat(chunks);
-              if (encoding.includes('gzip')) { try { buf = zlib.gunzipSync(buf); } catch {} }
-              else if (encoding.includes('deflate')) { try { buf = zlib.inflateRawSync(buf); } catch { try { buf = zlib.inflateSync(buf); } catch {} } }
+              if (encoding.includes('gzip')) { try { buf = zlib.gunzipSync(buf); } catch { } }
+              else if (encoding.includes('deflate')) { try { buf = zlib.inflateRawSync(buf); } catch { try { buf = zlib.inflateSync(buf); } catch { } } }
               const text = buf.toString('utf8');
               const statusCode = up.statusCode || 0;
               debugLog('proxy pixel POST end', { status: statusCode, bodyPreview: text.slice(0, 300) });
               if (statusCode >= 500) {
-                try { deactivateAccountByToken(jToken); } catch {}
+                try { deactivateAccountByToken(jToken); } catch { }
               }
               res.writeHead(statusCode || 502, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(text);
@@ -448,7 +448,7 @@ function startServer(port, host) {
               res.end(text);
               return;
             }
-          } catch {}
+          } catch { }
 
           const options = {
             hostname: 'backend.wplace.live',
@@ -472,8 +472,8 @@ function startServer(port, host) {
             up.on('end', () => {
               const encoding = ((up.headers && (up.headers['content-encoding'] || up.headers['Content-Encoding'])) || '').toLowerCase();
               let buf = Buffer.concat(chunks);
-              if (encoding.includes('gzip')) { try { buf = zlib.gunzipSync(buf); } catch {} }
-              else if (encoding.includes('deflate')) { try { buf = zlib.inflateRawSync(buf); } catch { try { buf = zlib.inflateSync(buf); } catch {} } }
+              if (encoding.includes('gzip')) { try { buf = zlib.gunzipSync(buf); } catch { } }
+              else if (encoding.includes('deflate')) { try { buf = zlib.inflateRawSync(buf); } catch { try { buf = zlib.inflateSync(buf); } catch { } } }
               const text = buf.toString('utf8');
               const statusCode = up.statusCode || 0;
               debugLog('proxy purchase POST end', { status: statusCode, bodyPreview: text.slice(0, 300) });
@@ -497,14 +497,14 @@ function startServer(port, host) {
       });
       return;
     }
-    
+
     if (parsed.pathname === '/api/accounts' && req.method === 'GET') {
       const accounts = readJson(ACCOUNTS_FILE, []);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(accounts));
       return;
     }
-    
+
     if (parsed.pathname && parsed.pathname.startsWith('/api/accounts/') && req.method === 'DELETE') {
       const idStr = parsed.pathname.split('/').pop();
       const id = Number(idStr);
@@ -577,7 +577,7 @@ function startServer(port, host) {
         }
         const accounts = readJson(ACCOUNTS_FILE, []);
         const account = { id: Date.now(), name, token, pixelCount: null, pixelMax: null, droplets: null, extraColorsBitmap: null, active: false };
-        
+
         const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
         if (settings.cf_clearance && settings.cf_clearance.length >= 30) {
           try {
@@ -596,7 +596,7 @@ function startServer(port, host) {
               account.extraColorsBitmap = Number.isFinite(b) ? Math.floor(b) : null;
             }
             if (me && me.name && !name) account.name = String(me.name);
-          } catch {}
+          } catch { }
         }
         accounts.push(account);
         writeJson(ACCOUNTS_FILE, accounts);
@@ -639,7 +639,7 @@ function startServer(port, host) {
           } : null
         });
         if (me && me.charges) {
-          
+
           acct.pixelCount = Math.floor(Number(me.charges.count));
           acct.pixelMax = Math.floor(Number(me.charges.max));
           acct.active = true;
@@ -664,7 +664,7 @@ function startServer(port, host) {
       });
       return;
     }
-    
+
     const publicPath = path.resolve(process.cwd(), 'public');
     const tryFile = path.resolve(publicPath, '.' + parsed.pathname);
     if (tryFile.startsWith(publicPath) && fs.existsSync(tryFile) && fs.statSync(tryFile).isFile()) {
@@ -693,7 +693,7 @@ function startServer(port, host) {
 
 function main() {
   const args = process.argv.slice(2);
-  
+
   let port = 3000;
   let host = 'localhost';
   let getMe = false;
@@ -716,7 +716,7 @@ function main() {
 
   if (getMe) {
     requestMeLikePython({ cookie: cookieHeader, cf_clearance: cfOpt, j: jOpt })
-      .then(() => {})
+      .then(() => { })
       .catch((err) => {
         const msg = (err && err.message) ? String(err.message) : String(err);
         const code = (err && err.code) ? String(err.code) : '';
