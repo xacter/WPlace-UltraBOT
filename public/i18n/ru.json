@@ -109,7 +109,9 @@
     "imageLoadFailed": "Не удалось загрузить изображение. Проверьте значения.",
     "tokenAlreadyExists": "Аккаунт с этим токеном уже существует.",
     "cfCannotBeClearedWithAccounts": "cf_clearance не может быть пустым при наличии аккаунтов.",
-    "cfClearanceChange": "Пожалуйста, измените cf_clearance."
+    "cfClearanceChange": "Пожалуйста, измените cf_clearance.",
+    "purchaseFailed": "Покупка не удалась (недостаточно droplets?)",
+    "purchaseSuccess": "Покупка успешна."
   }
 }
 

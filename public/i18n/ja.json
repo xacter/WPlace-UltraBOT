@@ -109,7 +109,9 @@
     "imageLoadFailed": "画像を読み込めませんでした。値を確認してください。",
     "tokenAlreadyExists": "このトークンのアカウントは既に存在します。",
     "cfCannotBeClearedWithAccounts": "アカウントがある場合、cf_clearance を空にはできません。",
-    "cfClearanceChange": "cf_clearance を変更してください。"
+    "cfClearanceChange": "cf_clearance を変更してください。",
+    "purchaseFailed": "購入に失敗しました（ドロップレットが不足しています？）",
+    "purchaseSuccess": "購入に成功しました。"
   }
 }
 

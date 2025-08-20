@@ -109,7 +109,9 @@
     "imageLoadFailed": "L’image n’a pas pu être chargée. Vérifiez les valeurs.",
     "tokenAlreadyExists": "Un compte avec ce jeton existe déjà.",
     "cfCannotBeClearedWithAccounts": "cf_clearance ne peut pas être vide tant que des comptes existent.",
-    "cfClearanceChange": "Veuillez modifier cf_clearance."
+    "cfClearanceChange": "Veuillez modifier cf_clearance.",
+    "purchaseFailed": "Achat échoué (pas assez de droplets ?)",
+    "purchaseSuccess": "Achat réussi."
   }
 }
 

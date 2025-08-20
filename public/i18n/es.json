@@ -109,7 +109,9 @@
     "imageLoadFailed": "No se pudo cargar la imagen. Revisa los valores.",
     "tokenAlreadyExists": "Ya existe una cuenta con este token.",
     "cfCannotBeClearedWithAccounts": "cf_clearance no puede quedar vacío mientras haya cuentas.",
-    "cfClearanceChange": "Cambia el valor de cf_clearance."
+    "cfClearanceChange": "Cambia el valor de cf_clearance.",
+    "purchaseFailed": "Compra fallida (¿no hay suficientes droplets?)",
+    "purchaseSuccess": "Compra realizada."
   }
 }
 
