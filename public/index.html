@@ -4988,15 +4988,26 @@
     function renderReadyAccountList() {
       if (!readyAccountList) return;
       readyAccountList.innerHTML = '';
+      // Sort by fill ratio (count/max) desc, then count desc, then max desc
+      const sortedRows = [];
       accountsData.forEach(row => {
         const isActive = row && row.active !== false;
         const hasToken = !!(row && row.token);
         if (!isActive || !hasToken) return;
+        const count = Number.isFinite(Number(row.pixelCount)) ? Number(row.pixelCount) : 0;
+        const max = Number.isFinite(Number(row.pixelMax)) ? Number(row.pixelMax) : 0;
+        const ratio = (max > 0 ? (count / max) : -1);
+        sortedRows.push({ row, count, max, ratio });
+      });
+      sortedRows.sort((a, b) => {
+        if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+        if (b.count !== a.count) return b.count - a.count;
+        return b.max - a.max;
+      });
+      sortedRows.forEach(({ row, count, max }) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'app-btn';
-        const count = Number.isFinite(Number(row.pixelCount)) ? Number(row.pixelCount) : 0;
-        const max = Number.isFinite(Number(row.pixelMax)) ? Number(row.pixelMax) : 0;
         const isSelected = readySelectedAccountIds.indexOf(row.id) !== -1;
         btn.textContent = (isSelected ? '✓ ' : '') + (row.name || t('ready.accountLabelDefault')) + ' — ' + String(count) + ' / ' + String(max);
         btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
