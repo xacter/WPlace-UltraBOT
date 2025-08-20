@@ -83,7 +83,8 @@
   },
   "palette": {
     "transparentTitle": "Transparent (image color)",
-    "colorTitle": "Color #{id}"
+    "colorTitle": "Color #{id}",
+    "premiumColorTitle": "Premium color (remain {remain}/{total})"
   },
   "paletteMode": {
     "premium": "Use premium color",
@@ -113,6 +114,8 @@
     "tokenAlreadyExists": "An account with this token already exists.",
     "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist.",
     "cfClearanceChange": "Please change cf_clearance.",
+    "premiumColorLimitReached": "Not enough capacity for the selected premium color.",
+    "accountNotFound": "Account not found",
     "purchaseSuccess": "Purchase successful",
     "purchaseFail": "Purchase failed"
   },
