@@ -34,6 +34,7 @@
   "table": {
     "accountName": "账户名称",
     "accountToken": "账户令牌",
+    "droplets": "Droplets",
     "pixelRight": "像素上限",
     "status": "状态",
     "actions": "操作",
@@ -69,7 +70,8 @@
     "add": "添加",
     "saveSettings": "保存",
     "edit": "编辑",
-    "checkPixels": "检查像素",
+    "checkPixels": "检查",
+    "shop": "商店",
     "delete": "删除"
   },
   "thumb": {
@@ -83,6 +85,22 @@
     "transparentTitle": "透明（图片颜色）",
     "colorTitle": "颜色 #{id}"
   },
+  "paletteMode": {
+    "premium": "使用高级颜色",
+    "free": "使用免费颜色"
+  },
+  "shop": {
+    "premiumTitle": "高级颜色",
+    "purchased": "已购买颜色",
+    "exclusive": "专属调色板",
+    "buyPremium": "💧 2000 水滴",
+    "itemsTitle": "物品",
+    "itemsSub": "获取更多次数",
+    "maxTitle": "+5 最大次数",
+    "maxDesc": "提高最大上色次数容量",
+    "recTitle": "+30 上色次数",
+    "recDesc": "充值上色次数"
+  },
   "controls": {
     "movement": "移动"
   },
@@ -94,18 +112,20 @@
     "right": "右移"
   },
   "messages": {
-    "selectAccountFirst": "请先选择一个账户。",
-    "maxPixelsReached": "您已达到最大像素数：{limit}/{limit}",
-    "addCfClearancePrompt": "请先在设置中添加 cf_clearance 值（至少 30 个字符）。",
-    "max12Accounts": "最多可以选择 12 个账户。",
-    "startRequirementsMissing": "请输入令牌，选择账户并至少选择 1 个像素后才能开始。",
+    "selectAccountFirst": "请先选择账号。",
+    "maxPixelsReached": "已达到最大像素数：{limit}/{limit}",
+    "addCfClearancePrompt": "请先在设置中添加 cf_clearance（至少30个字符）。",
+    "max12Accounts": "最多可选择12个账号。",
+    "startRequirementsMissing": "开始前请输入令牌，选择账号并选择至少1个像素。",
     "noSelectedImage": "未选择图片。",
     "errorGeneric": "错误",
-    "painted": "已绘制。",
-    "insufficientPixelPower": "点数不足：有 {n} 个像素无法发送。",
-    "imageLoadFailed": "图片加载失败，请检查数值。",
-    "tokenAlreadyExists": "已存在使用该令牌的账户。",
-    "cfCannotBeClearedWithAccounts": "存在账户时，cf_clearance 不能为空。",
-    "cfClearanceChange": "请更改 cf_clearance。"
+    "painted": "已上色。",
+    "insufficientPixelPower": "像素功率不足：{n} 个像素未发送。",
+    "imageLoadFailed": "图片加载失败。请检查数值。",
+    "tokenAlreadyExists": "该令牌对应的账号已存在。",
+    "cfCannotBeClearedWithAccounts": "存在账号时，cf_clearance 不能为空。",
+    "cfClearanceChange": "请更改 cf_clearance。",
+    "purchaseSuccess": "购买成功",
+    "purchaseFail": "购买失败"
   }
 }
