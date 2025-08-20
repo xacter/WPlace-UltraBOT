@@ -15,7 +15,11 @@
   <p align="center">
     <video src="https://github.com/user-attachments/assets/f655b939-d1a7-4449-b7dc-e50463e53c37" width="720" height="400" controls></video>
   </p>
+    <p align="center"><strong>New feature usage</strong></p>
 
+ <p align="center">
+    <video src="https://github.com/user-attachments/assets/80409e34-79a3-42ab-b298-c062e7ffe1c1" width="720" height="400" controls></video>
+  </p>
   ---
 
   > [!NOTE]
@@ -220,6 +224,7 @@
   </p>
 
   ---
+
 
 
 
