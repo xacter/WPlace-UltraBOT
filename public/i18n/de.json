@@ -34,6 +34,7 @@
   "table": {
     "accountName": "Kontoname",
     "accountToken": "Konto-Token",
+    "droplets": "Droplets",
     "pixelRight": "Pixellimit",
     "status": "Status",
     "actions": "Aktion",
@@ -69,7 +70,8 @@
     "add": "Hinzufügen",
     "saveSettings": "Speichern",
     "edit": "Bearbeiten",
-    "checkPixels": "Pixel prüfen",
+    "checkPixels": "Prüfen",
+    "shop": "Shop",
     "delete": "Löschen"
   },
   "thumb": {
@@ -106,7 +108,25 @@
     "imageLoadFailed": "Bild konnte nicht geladen werden. Werte prüfen.",
     "tokenAlreadyExists": "Ein Konto mit diesem Token existiert bereits.",
     "cfCannotBeClearedWithAccounts": "cf_clearance darf bei vorhandenen Konten nicht leer sein.",
-    "cfClearanceChange": "Bitte cf_clearance ändern."
+    "cfClearanceChange": "Bitte cf_clearance ändern.",
+    "purchaseSuccess": "Kauf erfolgreich",
+    "purchaseFail": "Kauf fehlgeschlagen"
+  },
+  "paletteMode": {
+    "premium": "Premium-Farbe verwenden",
+    "free": "Kostenlose Farbe verwenden"
+  },
+  "shop": {
+    "premiumTitle": "Premiumfarben",
+    "purchased": "Gekaufte Farben",
+    "exclusive": "Exklusive Palette",
+    "buyPremium": "💧 2000 Tropfen",
+    "itemsTitle": "Artikel",
+    "itemsSub": "Weitere Ladungen erhalten",
+    "maxTitle": "+5 Max. Ladungen",
+    "maxDesc": "Kapazität der maximalen Farbladungen erhöhen",
+    "recTitle": "+30 Farbladungen",
+    "recDesc": "Farbladungen aufladen"
   }
 }
 
