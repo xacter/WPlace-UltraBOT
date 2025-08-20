@@ -12,7 +12,7 @@
 ---
 
 > [!NOTE]
-> **Bonjour, après l’introduction de nouvelles mesures, j’ai décidé de développer ce bot et il a été terminé en une seule journée. En raison de ces mesures, il semble pour l’instant impossible de créer un bot entièrement automatisé. Cependant, grâce à une vulnérabilité actuelle, nous pouvons dessiner depuis 12 comptes en une seconde avec une seule vérification. En supposant que les comptes soient pleins, nous pouvons envoyer 12 * 62 = <strong>744</strong> pixels par seconde. Si vous êtes prêt, j’explique ci-dessous comment l’utiliser.**
+> **Bonjour, après l’introduction de nouvelles mesures, j’ai décidé de développer ce bot, terminé en une seule journée. En raison de ces mesures, il semble pour l’instant impossible de créer un bot entièrement automatisé. ~~Grâce à une faille, il était possible de dessiner depuis 12 comptes en une seconde avec une seule vérification (soit 12 * 62 = <strong>744</strong> pixels/s si les comptes étaient pleins).~~ Après une mise à jour, cette faille a été corrigée ; vous devrez donc obtenir un jeton à nouveau pour chaque envoi de compte. Si vous êtes prêt, j’explique ci‑dessous comment l’utiliser.**
 
 ---
 
