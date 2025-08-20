@@ -2016,6 +2016,7 @@
       if (a1 === 0) return false; 
       const a0 = baseId.data[iBase + 3];
       if (a0 === 0) return false; 
+      if (a1 <255 ) return true; // Opaque pixel, no need to compare
       const r1 = itemId.data[iItem],   g1 = itemId.data[iItem+1], b1 = itemId.data[iItem+2];
       const r0 = baseId.data[iBase],   g0 = baseId.data[iBase+1],  b0 = baseId.data[iBase+2];
       return (r0 === r1) && (g0 === g1) && (b0 === b1);
