@@ -2861,8 +2861,9 @@
       image.onload = () => {
         img = image;
         try { baseImageData = null; } catch {}
-        
+
         fitToView();
+        localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
       };
       image.onerror = () => {
         alert(t('messages.imageLoadFailed'));
@@ -4420,6 +4421,25 @@
       });
     }
 
+    async function loadMosaic(coords) {
+      const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
+      const tileW = images[0].width;
+      const tileH = images[0].height;
+      mosaicCanvas.width = tileW * 2;
+      mosaicCanvas.height = tileH * (coords.length === 2 ? 1 : 2);
+      const mctx = mosaicCanvas.getContext('2d');
+      mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
+      mctx.drawImage(images[0], 0, 0);
+      mctx.drawImage(images[1], tileW, 0);
+      if (coords.length === 4) {
+        mctx.drawImage(images[2], 0, tileH);
+        mctx.drawImage(images[3], tileW, tileH);
+      }
+      img = mosaicCanvas;
+      try { baseImageData = null; } catch {}
+      fitToView();
+    }
+
     mosaicFetch.addEventListener('click', async () => {
       const coords = [
         { x: Number(mosaicX1.value), y: Number(mosaicY1.value) },
@@ -4430,22 +4450,8 @@
         coords.push({ x: Number(mosaicX4.value), y: Number(mosaicY4.value) });
       }
       try {
-        const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
-        const tileW = images[0].width;
-        const tileH = images[0].height;
-        mosaicCanvas.width = tileW * 2;
-        mosaicCanvas.height = tileH * (mosaicCount === 2 ? 1 : 2);
-        const mctx = mosaicCanvas.getContext('2d');
-        mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
-        mctx.drawImage(images[0], 0, 0);
-        mctx.drawImage(images[1], tileW, 0);
-        if (mosaicCount === 4) {
-          mctx.drawImage(images[2], 0, tileH);
-          mctx.drawImage(images[3], tileW, tileH);
-        }
-        img = mosaicCanvas;
-        try { baseImageData = null; } catch {}
-        fitToView();
+        await loadMosaic(coords);
+        localStorage.setItem('lastFetch', JSON.stringify({ mode: 'mosaic', coords }));
         mosaicModal.hidden = true;
         document.body.classList.remove('no-scroll');
       } catch (err) {
@@ -5403,7 +5409,14 @@
     (async () => {
       try {
         await loadSettings();
-        if (areaInput.value && noInput.value) {
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (saved && saved.mode === 'mosaic') {
+          await loadMosaic(saved.coords);
+        } else if (saved && saved.mode === 'single') {
+          areaInput.value = String(saved.coords[0].x);
+          noInput.value = String(saved.coords[0].y);
+          loadImage(areaInput.value, noInput.value);
+        } else if (areaInput.value && noInput.value) {
           loadImage(areaInput.value, noInput.value);
         }
       } catch {}
@@ -5411,10 +5424,23 @@
       loadAccounts();
     })();
     updatePixelPowerPosition();
-    
+
     try {
       setInterval(() => { refreshAllAccounts(); }, 20 * 1000);
     } catch {}
+
+    const CANVAS_REFRESH_MS = 30 * 1000;
+    setInterval(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (!saved) return;
+        if (saved.mode === 'mosaic') {
+          loadMosaic(saved.coords);
+        } else if (saved.mode === 'single') {
+          loadImage(saved.coords[0].x, saved.coords[0].y);
+        }
+      } catch {}
+    }, CANVAS_REFRESH_MS);
     
     
     try { setupColorPalette(); } catch {}
