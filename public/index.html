@@ -69,6 +69,17 @@
       transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     }
     button:hover { background: rgba(255,255,255,0.08); }
+    /* Match Fetch button's hover visuals for all primary buttons */
+    .panel .app-btn:hover,
+    #btn-accounts:hover,
+    #btn-ready:hover,
+    #btn-auto-select-accounts:hover,
+    #start:hover,
+    #btn-auto-select:hover,
+    #btn-upload-sign:hover {
+      border-color: rgba(34,211,238,0.45);
+      box-shadow: inset 0 0 0 1px rgba(34,211,238,0.35), 0 0 0 2px rgba(34,211,238,0.15);
+    }
     .app-btn {
       padding: 8px 12px;
       border-radius: 8px;
@@ -83,6 +94,9 @@
       line-height: 1.2;
       display: inline-flex;
       align-items: center;
+      max-width: 100%;
+      white-space: normal;
+      text-align: center;
       transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     }
     .app-btn:hover { background: rgba(255,255,255,0.08); }
@@ -236,18 +250,33 @@
     
     #pixel-power {
       position: static;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       background: rgba(0,0,0,0.45);
       color: #e5e7eb;
       padding: 6px 10px;
       border-radius: 8px;
       font-size: 12px;
       border: 1px solid rgba(255,255,255,0.1);
-      white-space: nowrap;
+      white-space: normal;
+      text-align: center;
+      max-width: 100%;
     }
-    /* Sound control floating (independent left of the panel) */
-    #sound-control { position: fixed; top: 16px; left: 16px; display: inline-flex; align-items: center; z-index: 1003; }
-    #sound-toggle { background-color: rgba(0,0,0,0.75); padding: 6px 10px; }
+    /* CSS-only top toolbar to place sound control left of control panel */
+    #top-toolbar {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 16px;
+      z-index: 1001;
+      pointer-events: none;
+    }
+    #sound-control { position: relative; display: inline-flex; align-items: center; z-index: 1003; top: -20px; pointer-events: auto; }
+    #sound-toggle { background-color: rgba(0,0,0,0.75); padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); }
     #sound-toggle.muted { opacity: 0.6; }
     #sound-control .sound-slider { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: rgba(17, 20, 24, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; gap: 8px; align-items: center; flex-direction: column; z-index: 1003; min-width: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
     #sound-control:hover .sound-slider, #sound-control.open .sound-slider, #sound-control.hover .sound-slider { display: flex; }
@@ -355,6 +384,96 @@
       cursor: pointer;
     }
     .modal-close:hover { background: rgba(0,0,0,0.65); }
+    .modal-back {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 0 0 1px rgba(34,211,238,0.25) inset;
+    }
+    .modal-back:hover { box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 0 1px rgba(34,211,238,0.35) inset; }
+    .modal-right-info {
+      position: absolute;
+      top: 8px;
+      right: 72px;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 0 0 1px rgba(34,211,238,0.25) inset;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+    .shop-header { margin: 6px 0 14px 0; }
+    .shop-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+    .shop-sub { font-size: 12px; opacity: 0.8; }
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .shop-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .shop-icon { font-size: 46px; line-height: 1; opacity: 0.9; margin-bottom: 8px; }
+    .shop-name { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .shop-desc { font-size: 12px; opacity: 0.8; margin-bottom: 14px; }
+    .shop-qty-row { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 14px; }
+    .shop-qty-btn { padding: 6px 10px; }
+    .shop-qty-val { min-width: 34px; text-align: center; font-weight: 700; }
+    .shop-pill { padding: 10px 14px; border-radius: 999px; background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.35); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.25); }
+    #shop-premium-buy { margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; align-self: center; cursor: pointer; }
+    #shop-premium-buy:hover { filter: brightness(1.06); border-color: rgba(34,211,238,0.5); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.35); }
+    #shop-premium-buy[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
+    #shop-max-price[aria-disabled="true"], #shop-rec-price[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
+    #shop-max-price { cursor: pointer; }
+    #shop-max-price:hover { filter: brightness(1.06); border-color: rgba(34,211,238,0.5); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.35); }
+    #shop-rec-price { cursor: pointer; }
+    #shop-rec-price:hover { filter: brightness(1.06); border-color: rgba(34,211,238,0.5); box-shadow: inset 0 0 0 1px rgba(34,211,238,0.35); }
+    /* Premium Colors (Shop) */
+    #shop-card-premium { grid-column: 1 / -1; align-items: center; text-align: center; }
+    .shop-palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: 8px;
+      align-items: start;
+      width: 100%;
+    }
+    .shop-palette-swatch {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    .shop-palette-swatch:hover { filter: brightness(1.06); }
+    .shop-palette-swatch.selected {
+      outline: 2px solid #22d3ee;
+      outline-offset: 0;
+      border-color: #22d3ee;
+      box-shadow: 0 0 0 2px rgba(34,211,238,0.25);
+    }
+    .shop-palette-swatch.disabled { opacity: 0.55; pointer-events: none; }
+    .shop-palette-swatch.transparent {
+      background-color: #bbb;
+      background-image:
+        linear-gradient(45deg, #888 25%, transparent 25%),
+        linear-gradient(-45deg, #888 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #888 75%),
+        linear-gradient(-45deg, transparent 75%, #888 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    }
     .modal-tabs {
       display: flex;
       justify-content: center;
@@ -391,6 +510,7 @@
     .modal-card .form-grid input { width: 100%; }
     .table-actions { display: flex; flex-direction: column; gap: 6px; }
     .table-actions-row { display: flex; gap: 6px; }
+    .table-actions-row .app-btn { flex: 1 1 0; min-width: 0; }
     
     #app-toast-container { position: fixed; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; pointer-events: none; }
     .app-toast { pointer-events: auto; min-width: 260px; max-width: 380px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); color: #fff; display: flex; align-items: center; gap: 10px; animation: toast-in 200ms ease-out; }
@@ -403,15 +523,15 @@
     @keyframes toast-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-8px); opacity: 0; } }
     
     #control-panel {
-      position: fixed;
-      top: 16px;
-      right: 16px;
+      position: relative;
       background: rgba(17, 20, 24, 0.85);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
       backdrop-filter: blur(6px);
       padding: 10px 12px;
-      width: 280px;
+      width: auto;
+      min-width: 280px;
+      max-width: min(90vw, 520px);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -419,11 +539,13 @@
       align-items: center;
       z-index: 1001;
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      pointer-events: auto;
     }
     #control-panel .controls-row {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: center;
+      flex-wrap: wrap;
       gap: 8px;
     }
     #ready-popup {
@@ -440,6 +562,7 @@
       flex-direction: column;
       gap: 10px;
       min-width: 280px;
+      max-width: min(90vw, 520px);
     }
       #ready-popup .ready-header {
         display: flex;
@@ -466,7 +589,8 @@
       padding: 6px 10px;
       border-radius: 8px;
       font-size: 12px;
-      white-space: nowrap;
+      white-space: normal;
+      text-align: center;
     }
     #ready-popup .controls-row { justify-content: center; gap: 10px; }
     #ready-token-input { width: 320px; }
@@ -503,6 +627,14 @@
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
       max-width: min(95vw, 720px);
     }
+    /* Premium/Free switcher next to palette (toggle style) */
+    .palette-mode-wrap { position: fixed; z-index: 1002; display: inline-flex; align-items: center; gap: 10px; pointer-events: auto; padding: 6px 10px; border-radius: 12px; background: rgba(17, 20, 24, 0.85); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
+    @media (max-width: 760px){ .palette-mode-wrap { bottom: 128px !important; } }
+    .palette-mode-label { font-size: 12px; color: #e5e7eb; opacity: 0.95; cursor: pointer; user-select: none; }
+    .palette-mode-label.active { color: #22d3ee; opacity: 1; }
+    .palette-mode-track { position: relative; width: 44px; height: 24px; border-radius: 9999px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; padding: 0; }
+    .palette-mode-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #e5e7eb; transition: transform 0.18s ease; }
+    .palette-mode-track.on .palette-mode-knob { transform: translateX(20px); }
     .palette-swatch {
       width: 18px;
       height: 18px;
@@ -564,6 +696,55 @@
       -webkit-appearance: none;
       -moz-appearance: none;
     }
+    /* Modern custom dropdown for language switch */
+    .lang-dropdown { position: relative; width: 100%; }
+    .lang-button {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #e5e7eb;
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+    .lang-button:focus-visible { outline: 3px solid rgba(59,130,246,0.4); outline-offset: 2px; }
+    .lang-button .chev { width: 12px; height: 12px; opacity: 0.85; transition: transform .12s ease; }
+    .lang-menu {
+      position: absolute; left: 0; right: 0; top: calc(100% + 8px);
+      background: rgba(17, 20, 24, 0.95);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      display: none;
+      max-height: 280px;
+      overflow: auto;
+      z-index: 1002;
+    }
+    .lang-menu.open { display: block; animation: dropdown-in 140ms ease-out; }
+    @keyframes dropdown-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .lang-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: transparent;
+      color: #e5e7eb;
+      border: 0;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+    }
+    .lang-item:hover { background: rgba(255,255,255,0.08); }
+    .lang-item[aria-selected="true"] { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.35); }
+    
   </style>
 </head>
 <body>
@@ -571,6 +752,7 @@
   <img id="sign" alt="sign" draggable="false" hidden />
   <img id="pixel-hover" class="pixel-marker" alt="hover" hidden />
   <div id="pixel-selected-list" hidden></div>
+  <div id="top-toolbar">
   <div id="sound-control">
     <button id="sound-toggle" class="app-btn" type="button" title="" aria-label="">🔊</button>
     <div class="sound-slider" role="group" aria-label="Ses ayarı">
@@ -586,7 +768,6 @@
   </div>
     <div id="control-panel">
       <div class="controls-row">
-        
         <button id="btn-accounts" class="app-btn" type="button" data-i18n="nav.accounts">Hesaplar</button>
         <div id="pixel-power" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
       </div>
@@ -620,6 +801,7 @@
         </div>
       </div>
     </div>
+  </div>
   <div id="sign-layer" hidden>
     <div id="sign-outline"></div>
   </div>
@@ -629,8 +811,10 @@
     <div class="modal-card">
       <button id="accounts-close" class="modal-close app-btn" title="Kapat" type="button" data-i18n-title="modal.closeTitle">×</button>
       <div class="modal-tabs">
+        <button id="btn-shop-back" class="app-btn modal-back" type="button" data-i18n="buttons.back" hidden>Geri</button>
         <button id="tab-accounts" class="tab-button active" type="button" data-i18n="tabs.accounts">Hesaplar</button>
         <button id="tab-settings" class="tab-button" type="button" data-i18n="tabs.settings">Ayarlar</button>
+        <div id="shop-droplets-info" class="app-btn modal-right-info" hidden>💧 Droplets: -</div>
       </div>
       <div class="modal-body">
         <div id="accounts-section">
@@ -644,6 +828,7 @@
                 <tr>
                   <th data-i18n="table.accountName">Hesap ismi</th>
                   <th data-i18n="table.accountToken">Hesap Tokeni</th>
+                  <th data-i18n="table.droplets">Droplets</th>
                   <th data-i18n="table.pixelRight">Piksel Hakkı</th>
                   <th data-i18n="table.status">Durum</th>
                   <th data-i18n="table.actions">İşlem</th>
@@ -664,6 +849,47 @@
           <div class="modal-footer split">
             <button id="btn-account-cancel" class="app-btn" type="button" data-i18n="buttons.back">Geri</button>
             <button id="btn-account-save" class="app-btn" type="button" data-i18n="buttons.add">Ekle</button>
+          </div>
+        </div>
+        <div id="shop-view-section" hidden>
+          <div class="shop-header">
+            <div class="shop-title" data-i18n="shop.itemsTitle">Items</div>
+            <div class="shop-sub" data-i18n="shop.itemsSub">Get more charges</div>
+          </div>
+          <div class="shop-grid">
+            <div class="shop-card" id="shop-card-max">
+              <div class="shop-icon">⬆️</div>
+              <div id="shop-max-name" class="shop-name" data-i18n="shop.maxTitle">+5 Max. Charges</div>
+              <div class="shop-desc" data-i18n="shop.maxDesc">Increase your maximum paint charges capacity</div>
+              <div class="shop-qty-row">
+                <button class="app-btn shop-qty-btn" id="shop-max-dec" type="button">-</button>
+                <div class="shop-qty-val" id="shop-max-qty">1</div>
+                <button class="app-btn shop-qty-btn" id="shop-max-inc" type="button">+</button>
+                <button class="app-btn shop-qty-btn" id="shop-max-max" type="button">MAX</button>
+              </div>
+              <div class="shop-pill" id="shop-max-price" role="button" tabindex="0">💧 500 Droplets</div>
+            </div>
+            <div class="shop-card" id="shop-card-recharge">
+              <div class="shop-icon">🩸</div>
+              <div id="shop-rec-name" class="shop-name" data-i18n="shop.recTitle">+30 Paint Charges</div>
+              <div class="shop-desc" data-i18n="shop.recDesc">Recharge paint charges</div>
+              <div class="shop-qty-row">
+                <button class="app-btn shop-qty-btn" id="shop-rec-dec" type="button">-</button>
+                <div class="shop-qty-val" id="shop-rec-qty">1</div>
+                <button class="app-btn shop-qty-btn" id="shop-rec-inc" type="button">+</button>
+                <button class="app-btn shop-qty-btn" id="shop-rec-max" type="button">MAX</button>
+              </div>
+              <div class="shop-pill" id="shop-rec-price">💧 500 Droplets</div>
+            </div>
+            <div class="shop-card" id="shop-card-premium">
+              <div class="shop-icon">🌈</div>
+              <div class="shop-name" data-i18n="shop.premiumTitle">Premium Colors</div>
+              <div class="shop-desc" data-i18n="shop.purchased">Purchased colors</div>
+              <div id="shop-premium-owned" class="shop-palette-grid" aria-label="Owned premium colors"></div>
+              <div class="shop-desc" style="margin-top:8px;" data-i18n="shop.exclusive">Exclusive palette</div>
+              <div id="shop-premium-palette" class="shop-palette-grid" aria-label="Premium color palette"></div>
+              <div id="shop-premium-buy" class="shop-pill" role="button" tabindex="0" data-i18n="shop.buyPremium">💧 2000 Droplets</div>
+            </div>
           </div>
         </div>
         <div id="settings-section" hidden>
@@ -736,6 +962,11 @@
  
   <div id="app-toast-container" aria-live="polite" aria-atomic="true"></div>
   <div id="color-palette" aria-label="Renk paleti" role="group" data-i18n-aria-label="labels.colorPalette"></div>
+  <div id="palette-mode" class="palette-mode-wrap" aria-label="Palette mode" style="bottom:76px; left:50%; transform:translateX(-50%);">
+    <span id="palette-mode-label-left" class="palette-mode-label active" data-i18n="paletteMode.premium">Use premium color</span>
+    <button id="palette-mode-toggle" class="palette-mode-track" type="button" role="switch" aria-checked="true" aria-label="Palette mode"><span class="palette-mode-knob"></span></button>
+    <span id="palette-mode-label-right" class="palette-mode-label" data-i18n="paletteMode.free">Use free color</span>
+  </div>
 
   <div id="move-control">
     <button id="btn-movement" class="app-btn" type="button" data-i18n="controls.movement">Hareket</button>
@@ -753,12 +984,21 @@
       </div>
     </div>
   </div>
-
   <script>
     
     const I18N_DEFAULT_LANG = 'en';
     let I18N_LANG = I18N_DEFAULT_LANG;
     let I18N_STRINGS = {};
+    const LANGS = [
+      { value: 'tr', label: 'Türkçe' },
+      { value: 'en', label: 'English' },
+      { value: 'de', label: 'Deutsch' },
+      { value: 'es', label: 'Español' },
+      { value: 'fr', label: 'Français' },
+      { value: 'ru', label: 'Русский' },
+      { value: 'cn', label: '中文' },
+      { value: 'ja', label: '日本語' }
+    ];
     function getSavedLang(){ try { return localStorage.getItem('lang') || I18N_DEFAULT_LANG; } catch { return I18N_DEFAULT_LANG; } }
     function saveLang(lang){ try { localStorage.setItem('lang', lang); } catch {} }
     async function loadI18n(lang){
@@ -814,12 +1054,16 @@
           rp.textContent = t('pixel.powerLabel', { count, max });
         }
       } catch {}
+      // Re-layout floating UI elements after text size changes
+      try { layoutSoundControl(); } catch {}
+      try { layoutLangSwitch(); } catch {}
     }
     async function setLanguage(lang){
       I18N_LANG = lang || I18N_DEFAULT_LANG;
       saveLang(I18N_LANG);
       await loadI18n(I18N_LANG);
       applyTranslations();
+      refreshLangDropdown();
       try { if (typeof loadAccounts === 'function') { await loadAccounts(); } } catch {}
     }
     async function initI18n(){
@@ -869,15 +1113,64 @@
       }, { once: true });
     }
     
+    function getLangLabel(code){ const f = LANGS.find(x => x.value === code); return f ? f.label : code; }
+    function refreshLangDropdown(){
+      try {
+        const cur = document.getElementById('lang-current');
+        if (cur) cur.textContent = getLangLabel(I18N_LANG);
+        document.querySelectorAll('#lang-menu .lang-item').forEach(btn => {
+          const v = btn.getAttribute('data-value');
+          btn.setAttribute('aria-selected', String(v === I18N_LANG));
+        });
+        const sel = document.getElementById('lang-select');
+        if (sel) sel.value = I18N_LANG;
+      } catch {}
+    }
     function ensureLangSwitch(){
       let el = document.getElementById('lang-switch');
       if (!el) {
         el = document.createElement('div');
         el.id = 'lang-switch';
-        el.innerHTML = '<select id="lang-select"><option value="tr">Türkçe</option><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option><option value="fr">Français</option><option value="ru">Русский</option><option value="ja">日本語</option></select>';
+        const wrap = document.createElement('div');
+        wrap.className = 'lang-dropdown';
+        wrap.innerHTML = '<button id="lang-button" class="lang-button" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="lang-current"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg></button><div id="lang-menu" class="lang-menu" role="listbox"></div><select id="lang-select" hidden></select>';
+        el.appendChild(wrap);
         document.body.appendChild(el);
+        const menu = wrap.querySelector('#lang-menu');
+        const select = wrap.querySelector('#lang-select');
+        LANGS.forEach(l => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'lang-item';
+          item.setAttribute('role', 'option');
+          item.setAttribute('data-value', l.value);
+          const text = document.createElement('span');
+          text.textContent = l.label;
+          item.appendChild(text);
+          menu.appendChild(item);
+          const opt = document.createElement('option');
+          opt.value = l.value; opt.textContent = l.label; select.appendChild(opt);
+        });
       }
       return el;
+    }
+    function bindLangDropdownEvents(){
+      const btn = document.getElementById('lang-button');
+      const menu = document.getElementById('lang-menu');
+      if (!btn || !menu) return;
+      function open(){ menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+      function close(){ menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+      function toggle(){ if (menu.classList.contains('open')) close(); else open(); }
+      btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+      document.addEventListener('click', () => { if (menu.classList.contains('open')) close(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      menu.querySelectorAll('.lang-item').forEach(elm => {
+        elm.addEventListener('click', async () => {
+          const v = elm.getAttribute('data-value');
+          await setLanguage(v);
+          close();
+        });
+      });
     }
     function layoutLangSwitch(){
       const ls = document.getElementById('lang-switch');
@@ -898,26 +1191,15 @@
     window.addEventListener('resize', layoutLangSwitch);
     window.addEventListener('scroll', layoutLangSwitch, { passive: true });
 
-    function layoutSoundControl(){
-      const el = document.getElementById('sound-control');
-      const accountsBtnLocal = document.getElementById('btn-accounts');
-      const controlPanel = document.getElementById('control-panel');
-      if (!el || !accountsBtnLocal || !controlPanel) return;
-      const ac = accountsBtnLocal.getBoundingClientRect();
-      const cp = controlPanel.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const elWidth = elRect.width || el.offsetWidth || 40;
-      const elHeight = elRect.height || el.offsetHeight || 28;
-      const topPx = Math.round(ac.top + (ac.height - elHeight) / 2);
-      const leftPx = Math.round(cp.left - 12 - elWidth);
-      try { el.style.top = String(topPx) + 'px'; } catch {}
-      try { el.style.left = String(Math.max(8, leftPx)) + 'px'; } catch {}
-    }
+    function layoutSoundControl(){ /* CSS handles positioning now */ }
     window.addEventListener('resize', layoutSoundControl);
     window.addEventListener('scroll', layoutSoundControl, { passive: true });
+    // Re-layout after fonts load to ensure correct measurements
+    if (document.fonts && document.fonts.ready) { try { document.fonts.ready.then(() => layoutSoundControl()); } catch {} }
+    // No JS positioning needed; kept for backward compatibility
 
     
-    try { ensureLangSwitch(); initI18n(); layoutLangSwitch(); } catch {}
+    try { ensureLangSwitch(); bindLangDropdownEvents(); initI18n(); layoutLangSwitch(); } catch {}
     try { layoutSoundControl(); } catch {}
 
     const areaInput = document.getElementById('area-code');
@@ -929,6 +1211,10 @@
     const sign = document.getElementById('sign');
     const pixelHoverEl = document.getElementById('pixel-hover');
     const colorPaletteEl = document.getElementById('color-palette');
+    const paletteModeEl = document.getElementById('palette-mode');
+    const paletteModeToggle = document.getElementById('palette-mode-toggle');
+    const paletteModeLabelLeft = document.getElementById('palette-mode-label-left');
+    const paletteModeLabelRight = document.getElementById('palette-mode-label-right');
     const pixelSelectedList = document.getElementById('pixel-selected-list');
     const signLayer = document.getElementById('sign-layer');
     const signOutline = document.getElementById('sign-outline');
@@ -1296,9 +1582,28 @@
     const tabSettings = document.getElementById('tab-settings');
     const accountsSection = document.getElementById('accounts-section');
     const accountFormSection = document.getElementById('account-form-section');
+    const shopViewSection = document.getElementById('shop-view-section');
     const settingsSection = document.getElementById('settings-section');
     const settingsCfInput = document.getElementById('settings-cf-clearance-input');
     const accountsTbody = document.getElementById('accounts-tbody');
+    const shopDropletsInfo = document.getElementById('shop-droplets-info');
+    // Shop controls
+    const shopMaxDecBtn = document.getElementById('shop-max-dec');
+    const shopMaxIncBtn = document.getElementById('shop-max-inc');
+    const shopMaxMaxBtn = document.getElementById('shop-max-max');
+    const shopMaxQtyEl = document.getElementById('shop-max-qty');
+    const shopMaxPriceEl = document.getElementById('shop-max-price');
+    const shopRecDecBtn = document.getElementById('shop-rec-dec');
+    const shopRecIncBtn = document.getElementById('shop-rec-inc');
+    const shopRecMaxBtn = document.getElementById('shop-rec-max');
+    const shopRecQtyEl = document.getElementById('shop-rec-qty');
+    const shopRecPriceEl = document.getElementById('shop-rec-price');
+    const shopPremiumPaletteWrap = document.getElementById('shop-premium-palette');
+    const shopPremiumOwnedWrap = document.getElementById('shop-premium-owned');
+    const shopPremiumBuyBtn = document.getElementById('shop-premium-buy');
+    let shopCurrentAccount = null;
+    let shopSelectedPremiumColorId = null;
+    let shopExtraColorsBitmap = 0;
     const addAccountBtn = document.getElementById('btn-account-add');
     const checkAllBtn = document.getElementById('btn-check-all');
     const accountNameInput = document.getElementById('account-name-input');
@@ -1306,6 +1611,7 @@
     const accountIdInput = document.getElementById('account-id-input');
     const accountCancelBtn = document.getElementById('btn-account-cancel');
     const accountSaveBtn = document.getElementById('btn-account-save');
+    const shopBackBtn = document.getElementById('btn-shop-back');
     const settingsSaveBtn = document.getElementById('btn-settings-save');
     let signDragging = false;
     let signWorldX = 0;
@@ -1321,10 +1627,11 @@
     let accountsData = [];
     let readySelectedAccountIds = [];
     const MAX_READY_ACCOUNTS = 12;
+    let autoSelecting = false;
+    let ACTIVE_PALETTE = null;
+    let paletteMode = 'premium'; // 'premium' | 'free'
     
     let readyShouldReset = false;
-
-    
     const HOVER_ICON_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAAAAACoWZBhAAAAAXNSR0IArs4c6QAAACpJREFUeNpj+AsEZ86ASIa/DAwMZ84ACRDzDBigMs/AARITq1oUwxBWAADaREUdDMswKwAAAABJRU5ErkJggg==';
     const SELECTED_ICON_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAAXNSR0IArs4c6QAAACVJREFUeNpj+A8FDEAAZwMRBAIBmIYLIgHcgkQDIs3E6SRsjgcABYFLtfTgakEAAAAASUVORK5CYII=';
     try { if (pixelHoverEl) pixelHoverEl.src = HOVER_ICON_SRC; } catch {}
@@ -1346,12 +1653,13 @@
     
     let readyGlobalMode = false;
     const readyGlobalSelected = new Map(); 
-    let readyMouseDownPt = null; 
+    let readyMouseDownPt = null;
     let readyMouseMoved = false;
     let autoSelectDeleteMode = false;
     const READY_CLICK_MOVE_TOLERANCE = 4;
     function getPaletteRgbById(id){
-      for (let i = 0; i < PALETTE.length; i++) { if (PALETTE[i].id === id) return PALETTE[i].rgb; }
+      const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+      for (let i = 0; i < arr.length; i++) { if (arr[i].id === id) return arr[i].rgb; }
       return [255,255,255];
     }
     const COLORED_MARKER_CACHE = new Map();
@@ -1382,6 +1690,14 @@
     function addPixelSelection(item, x, y, colorIdOverride = null){
       const map = getSelectedMap(item); if (!map) return false;
       const k = keyFor(x,y); if (map.has(k)) return false;
+      let effectiveColorId = colorIdOverride;
+      if (effectiveColorId == null) {
+        try { effectiveColorId = getItemPixelPaletteId(item, x, y); } catch {}
+      }
+      if (effectiveColorId != null && effectiveColorId !== 0 && isPremiumColorId(effectiveColorId)){
+        const remain = getPremiumColorRemainingLimit(effectiveColorId);
+        if (!(remain > 0)) { try { showToast(t('messages.premiumColorLimitReached'), 'error', 2000); } catch {} return false; }
+      }
       const el = document.createElement('img');
       el.className = 'pixel-marker';
       el.alt = 'selected';
@@ -1394,7 +1710,7 @@
         try { fillEl.style.zIndex = '1299'; } catch {}
         fillEl.src = getMarkerSrcForColorId(colorIdOverride);
       }
-      map.set(k, { x, y, el, fillEl, colorId: colorIdOverride });
+      map.set(k, { x, y, el, fillEl, colorId: effectiveColorId });
       try { item._lastManualSelected = { x, y }; } catch {}
       if (pixelSelectedList) {
         if (fillEl) pixelSelectedList.appendChild(fillEl);
@@ -1403,6 +1719,7 @@
       if (fillEl) positionPixelMarker(fillEl, item, x, y);
       positionPixelMarker(el, item, x, y);
       if (pixelSelectedList) pixelSelectedList.hidden = false;
+      try { refreshPaletteTooltips(); } catch {}
       return true;
     }
     function removePixelSelection(item, x, y){
@@ -1411,6 +1728,7 @@
       try { if (rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
       try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
       map.delete(k);
+      try { refreshPaletteTooltips(); } catch {}
       return true;
     }
     function clearSelectionsForItem(item){
@@ -1424,6 +1742,7 @@
       } catch {}
       map.clear();
       try { item._lastManualSelected = null; } catch {}
+      try { refreshPaletteTooltips(); } catch {}
     }
     function clearAllReadySelections(){
       try { if (pixelHoverEl) pixelHoverEl.hidden = true; } catch {}
@@ -1451,6 +1770,7 @@
       try { updateReadySelectionLabel(); } catch {}
       try { updateStartEnabled(); } catch {}
       try { updateAutoSelectButtonLabel(); } catch {}
+      try { refreshPaletteTooltips(); } catch {}
     }
     function ensureRenderedSelectedForItem(item){
       if (!pixelSelectedList || !item) return;
@@ -1864,6 +2184,7 @@
       { id: 30, rgb: [149, 104, 42] },
       { id: 31, rgb: [248, 178, 119] }
     ];
+    if (!ACTIVE_PALETTE) { ACTIVE_PALETTE = PALETTE.slice(); }
     function setupColorPalette(){
       if (!colorPaletteEl) return;
       colorPaletteEl.innerHTML = '';
@@ -1909,12 +2230,13 @@
       });
       colorPaletteEl.appendChild(swT);
       
-      for (let i = 0; i < PALETTE.length; i++){
-        const p = PALETTE[i];
+      const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+      for (let i = 0; i < arr.length; i++){
+        const p = arr[i];
         const el = document.createElement('div');
         el.className = 'palette-swatch';
         el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
-        el.title = t('palette.colorTitle', { id: p.id });
+        setPaletteSwatchTitle(el, p);
         el.setAttribute('data-id', String(p.id));
         el.setAttribute('role', 'button');
         el.addEventListener('click', () => {
@@ -1959,6 +2281,7 @@
       });
       colorPaletteEl.appendChild(swB);
       updatePaletteSelectionUi();
+      try { refreshPaletteTooltips(); } catch {}
     }
     function updateReadyButtonEnabled(){
       try {
@@ -1999,44 +2322,46 @@
       const B = 0.0259040371*l + 0.7827717662*m - 0.8086757660*s;
       return [L, A, B];
     }
-    const PALETTE_OKLAB = (() => {
-      const arr = [];
-      for (let i = 0; i < PALETTE.length; i++){
-        const p = PALETTE[i];
-        const lab = srgbToOklab(p.rgb[0], p.rgb[1], p.rgb[2]);
-        arr.push({ id: p.id, lab });
-      }
-      return arr;
-    })();
+    let PALETTE_OKLAB = [];
+    let EXACT_PALETTE_MAP = new Map();
+    function recomputePaletteCaches(){
+      try {
+        const arrActive = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+        const arr = [];
+        const m = new Map();
+        for (let i = 0; i < arrActive.length; i++){
+          const p = arrActive[i];
+          const lab = srgbToOklab(p.rgb[0], p.rgb[1], p.rgb[2]);
+          arr.push({ id: p.id, lab });
+          m.set(String(p.rgb[0]) + ',' + String(p.rgb[1]) + ',' + String(p.rgb[2]), p.id);
+        }
+        PALETTE_OKLAB = arr;
+        EXACT_PALETTE_MAP = m;
+      } catch {}
+    }
+    try { recomputePaletteCaches(); } catch {}
     function nearestPaletteRgb(r,g,b){
       const lab = srgbToOklab(r,g,b);
-      let best = PALETTE[0].rgb, bestD = Infinity;
+      const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+      let best = arr[0].rgb, bestD = Infinity;
       for (let i = 0; i < PALETTE_OKLAB.length; i++){
         const q = PALETTE_OKLAB[i].lab;
         const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
         const d = dL*dL + dA*dA + dB*dB;
-        if (d < bestD){ bestD = d; best = PALETTE[i].rgb; if (d === 0) break; }
+        if (d < bestD){ bestD = d; best = arr[i].rgb; if (d === 0) break; }
       }
       return best;
     }
-    
-    const EXACT_PALETTE_MAP = (() => {
-      const m = new Map();
-      for (let i = 0; i < PALETTE.length; i++) {
-        const p = PALETTE[i];
-        m.set(String(p.rgb[0]) + ',' + String(p.rgb[1]) + ',' + String(p.rgb[2]), p.id);
-      }
-      return m;
-    })();
     function nearestPaletteId(r,g,b){
       const lab = srgbToOklab(r,g,b);
-      let bestId = PALETTE[0].id;
+      const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+      let bestId = arr[0].id;
       let bestD = Infinity;
       for (let i = 0; i < PALETTE_OKLAB.length; i++){
         const q = PALETTE_OKLAB[i].lab;
         const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
         const d = dL*dL + dA*dA + dB*dB;
-        if (d < bestD){ bestD = d; bestId = PALETTE[i].id; if (d === 0) break; }
+        if (d < bestD){ bestD = d; bestId = arr[i].id; if (d === 0) break; }
       }
       return bestId;
     }
@@ -2567,7 +2892,6 @@
         updatePixelMarkers();
       }
     });
-    
     canvas.addEventListener('contextmenu', (e) => { if (isReadyOpen()) { e.preventDefault(); } });
     window.addEventListener('mousemove', (e) => {
       if (isReadyOpen()) {
@@ -2718,6 +3042,7 @@
                 readyGlobalSelected.set(key, rec);
                 if (pixelSelectedList) pixelSelectedList.hidden = false;
                 try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+                try { refreshPaletteTooltips(); } catch {}
               }
             }
           } else {
@@ -2761,6 +3086,7 @@
                 try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
                 readyGlobalSelected.delete(key);
                 try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+                try { refreshPaletteTooltips(); } catch {}
               }
             }
           } else {
@@ -3029,6 +3355,7 @@
         accountsSection.hidden = !isAccounts;
         settingsSection.hidden = isAccounts;
         if (accountFormSection) accountFormSection.hidden = true;
+        if (shopViewSection) shopViewSection.hidden = true;
       }
       try { if (!isAccounts) { loadSettings(); } } catch {}
     }
@@ -3047,6 +3374,7 @@
       if (!accountsSection || !accountFormSection) return;
       accountsSection.hidden = true;
       accountFormSection.hidden = false;
+      if (shopViewSection) shopViewSection.hidden = true;
       try {
         accountNameInput.value = '';
         accountTokenInput.value = '';
@@ -3068,12 +3396,563 @@
       
       try { accountSaveBtn.textContent = t('buttons.save'); } catch {}
     }
+    const PREMIUM_PALETTE = [
+      { id: 1, label: 'Black', rgb: [0, 0, 0] },
+      { id: 2, label: 'Dark Gray', rgb: [60, 60, 60] },
+      { id: 3, label: 'Gray', rgb: [120, 120, 120] },
+      { id: 32, label: 'Medium Gray', rgb: [170, 170, 170] },
+      { id: 4, label: 'Light Gray', rgb: [210, 210, 210] },
+      { id: 5, label: 'White', rgb: [255, 255, 255] },
+      { id: 6, label: 'Deep Red', rgb: [96, 0, 24] },
+      { id: 33, label: 'Dark Red', rgb: [165, 14, 30] },
+      { id: 7, label: 'Red', rgb: [237, 28, 36] },
+      { id: 34, label: 'Light Red', rgb: [250, 128, 114] },
+      { id: 35, label: 'Dark Orange', rgb: [228, 92, 26] },
+      { id: 8, label: 'Orange', rgb: [255, 127, 39] },
+      { id: 9, label: 'Gold', rgb: [246, 170, 9] },
+      { id: 10, label: 'Yellow', rgb: [249, 221, 59] },
+      { id: 11, label: 'Light Yellow', rgb: [255, 250, 188] },
+      { id: 37, label: 'Dark Goldenrod', rgb: [156, 132, 49] },
+      { id: 38, label: 'Goldenrod', rgb: [197, 173, 49] },
+      { id: 39, label: 'Light Goldenrod', rgb: [232, 212, 95] },
+      { id: 40, label: 'Dark Olive', rgb: [74, 107, 58] },
+      { id: 41, label: 'Olive', rgb: [90, 148, 74] },
+      { id: 42, label: 'Light Olive', rgb: [132, 197, 115] },
+      { id: 12, label: 'Dark Green', rgb: [14, 185, 104] },
+      { id: 13, label: 'Green', rgb: [19, 230, 123] },
+      { id: 14, label: 'Light Green', rgb: [135, 255, 94] },
+      { id: 15, label: 'Dark Teal', rgb: [12, 129, 110] },
+      { id: 16, label: 'Teal', rgb: [16, 174, 166] },
+      { id: 17, label: 'Light Teal', rgb: [19, 225, 190] },
+      { id: 43, label: 'Dark Cyan', rgb: [15, 121, 159] },
+      { id: 20, label: 'Cyan', rgb: [96, 247, 242] },
+      { id: 44, label: 'Light Cyan', rgb: [187, 250, 242] },
+      { id: 18, label: 'Dark Blue', rgb: [40, 80, 158] },
+      { id: 19, label: 'Blue', rgb: [64, 147, 228] },
+      { id: 45, label: 'Light Blue', rgb: [125, 199, 255] },
+      { id: 46, label: 'Dark Indigo', rgb: [77, 49, 184] },
+      { id: 21, label: 'Indigo', rgb: [107, 80, 246] },
+      { id: 22, label: 'Light Indigo', rgb: [153, 177, 251] },
+      { id: 47, label: 'Dark Slate Blue', rgb: [74, 66, 132] },
+      { id: 48, label: 'Slate Blue', rgb: [122, 113, 196] },
+      { id: 49, label: 'Light Slate Blue', rgb: [181, 174, 241] },
+      { id: 23, label: 'Dark Purple', rgb: [120, 12, 153] },
+      { id: 24, label: 'Purple', rgb: [170, 56, 185] },
+      { id: 25, label: 'Light Purple', rgb: [224, 159, 249] },
+      { id: 26, label: 'Dark Pink', rgb: [203, 0, 122] },
+      { id: 27, label: 'Pink', rgb: [236, 31, 128] },
+      { id: 28, label: 'Light Pink', rgb: [243, 141, 169] },
+      { id: 53, label: 'Dark Peach', rgb: [155, 82, 73] },
+      { id: 54, label: 'Peach', rgb: [209, 128, 120] },
+      { id: 55, label: 'Light Peach', rgb: [250, 182, 164] },
+      { id: 29, label: 'Dark Brown', rgb: [104, 70, 52] },
+      { id: 30, label: 'Brown', rgb: [149, 104, 42] },
+      { id: 50, label: 'Light Brown', rgb: [219, 164, 99] },
+      { id: 56, label: 'Dark Tan', rgb: [123, 99, 82] },
+      { id: 57, label: 'Tan', rgb: [156, 132, 107] },
+      { id: 36, label: 'Light Tan', rgb: [214, 181, 148] },
+      { id: 51, label: 'Dark Beige', rgb: [209, 128, 81] },
+      { id: 31, label: 'Beige', rgb: [248, 178, 119] },
+      { id: 52, label: 'Light Beige', rgb: [255, 197, 165] },
+      { id: 61, label: 'Dark Stone', rgb: [109, 100, 63] },
+      { id: 62, label: 'Stone', rgb: [148, 140, 107] },
+      { id: 63, label: 'Light Stone', rgb: [205, 197, 158] },
+      { id: 58, label: 'Dark Slate', rgb: [51, 57, 65] },
+      { id: 59, label: 'Slate', rgb: [109, 117, 141] },
+      { id: 60, label: 'Light Slate', rgb: [179, 185, 209] }
+    ];
+    // Only allow premium colors with id > 32
+    const SHOP_PREMIUM_PALETTE = PREMIUM_PALETTE.filter(p => p && typeof p.id === 'number' && p.id > 31);
+
+    function computeUnionExtraColorsBitmapAllAccounts(){
+      let union = 0;
+      try {
+        if (Array.isArray(accountsData)) {
+          for (let i = 0; i < accountsData.length; i++) {
+            const r = accountsData[i];
+            const v = Number(r && r.extraColorsBitmap != null ? r.extraColorsBitmap : 0) || 0;
+            union = (union | v) >>> 0;
+          }
+        }
+      } catch {}
+      return union;
+    }
+    function getPremiumColorsFromBitmap(bitmap){
+      const res = [];
+      const arr = Array.isArray(PREMIUM_PALETTE) ? PREMIUM_PALETTE : [];
+      const b = Number(bitmap) || 0;
+      for (let i = 0; i < arr.length; i++) {
+        const p = arr[i];
+        if (!p || typeof p.id !== 'number' || p.id <= 31) continue;
+        const idx = p.id - 32;
+        if (idx < 0) continue;
+        const mask = 1 << idx;
+        if ((b & mask) !== 0) res.push({ id: p.id, rgb: p.rgb });
+      }
+      return res;
+    }
+    function recomputeActivePalette(){
+      try {
+        const base = PALETTE.slice();
+        if (paletteMode === 'premium') {
+          const union = computeUnionExtraColorsBitmapAllAccounts();
+          const extra = getPremiumColorsFromBitmap(union);
+          const byId = new Map();
+          for (let i = 0; i < base.length; i++) byId.set(base[i].id, base[i]);
+          for (let i = 0; i < extra.length; i++) byId.set(extra[i].id, extra[i]);
+          const combined = Array.from(byId.values());
+          combined.sort((a, b) => a.id - b.id);
+          ACTIVE_PALETTE = combined;
+        } else {
+          ACTIVE_PALETTE = base;
+        }
+      } catch {
+        ACTIVE_PALETTE = PALETTE.slice();
+      }
+      try { recomputePaletteCaches(); } catch {}
+      try { setupColorPalette(); } catch {}
+      try { buildFillPaletteUi(); } catch {}
+      try { updatePaletteSelectionUi(); } catch {}
+    }
+
+    function isPremiumColorId(id){ return Number(id) > 31; }
+    function accountProvidesColor(acc, colorId){
+      if (!acc) return false;
+      if (acc.active === false) return false;
+      if (!acc.token) return false;
+      if (!isPremiumColorId(colorId)) return true;
+      const b = Number(acc.extraColorsBitmap || 0);
+      const idx = Number(colorId) - 32;
+      if (idx < 0) return false;
+      const mask = 1 << idx;
+      return (b & mask) !== 0;
+    }
+    function getAccountsProvidingColor(colorId){
+      const rows = Array.isArray(accountsData) ? accountsData : [];
+      const restrictToSelected = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+      const selectedSet = new Set(readySelectedAccountIds || []);
+      const out = [];
+      for (let i = 0; i < rows.length; i++){
+        const r = rows[i];
+        if (restrictToSelected && !selectedSet.has(r.id)) continue;
+        if (accountProvidesColor(r, colorId)) out.push(r);
+      }
+      return out;
+    }
+    function getPremiumColorTotalLimit(colorId){
+      if (!isPremiumColorId(colorId)) return Infinity;
+      const rows = getAccountsProvidingColor(colorId);
+      let total = 0;
+      for (let i = 0; i < rows.length; i++){
+        const cRaw = Number(rows[i] && rows[i].pixelCount);
+        if (Number.isFinite(cRaw)) total += Math.max(0, Math.floor(cRaw));
+      }
+      return total;
+    }
+    function getSelectedPremiumColorIds(){
+      const out = [];
+      try {
+        if (readyGlobalSelected && typeof readyGlobalSelected.forEach === 'function'){
+          readyGlobalSelected.forEach(rec => { if (rec && isPremiumColorId(rec.colorId)) out.push(rec.colorId); });
+        }
+      } catch {}
+      try {
+        for (let i = 0; i < signItems.length; i++){
+          const it = signItems[i];
+          const map = getSelectedMap(it);
+          if (!map) continue;
+          map.forEach(rec => { if (rec && isPremiumColorId(rec.colorId)) out.push(rec.colorId); });
+        }
+      } catch {}
+      return out;
+    }
+    function computePremiumAssignmentUsedPerAccount(){
+      // Capacity by account (selected accounts if any)
+      const restrictToSelected = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
+      const selectedSet = new Set(readySelectedAccountIds || []);
+      const capacity = new Map();
+      const rows = Array.isArray(accountsData) ? accountsData : [];
+      for (let i = 0; i < rows.length; i++){
+        const r = rows[i];
+        if (r && r.active !== false && r.token && (!restrictToSelected || selectedSet.has(r.id))){
+          const cRaw = Number(r.pixelCount);
+          const cap = Number.isFinite(cRaw) ? Math.max(0, Math.floor(cRaw)) : 0;
+          capacity.set(r.id, cap);
+        }
+      }
+      const used = new Map();
+      const remainingOf = (accId) => (capacity.get(accId)||0) - (used.get(accId)||0);
+      const list = getSelectedPremiumColorIds();
+      for (let k = 0; k < list.length; k++){
+        const colorId = list[k];
+        const providers = getAccountsProvidingColor(colorId);
+        let bestId = null, bestRemain = 0;
+        for (let i = 0; i < providers.length; i++){
+          const acc = providers[i];
+          if (!capacity.has(acc.id)) continue;
+          const rem = remainingOf(acc.id);
+          if (rem > bestRemain){ bestRemain = rem; bestId = acc.id; }
+        }
+        if (bestId != null && bestRemain > 0){ used.set(bestId, (used.get(bestId)||0) + 1); }
+      }
+      return { capacity, used };
+    }
+    function getPremiumColorRemainingLimit(colorId){
+      if (!isPremiumColorId(colorId)) return Infinity;
+      const { capacity, used } = computePremiumAssignmentUsedPerAccount();
+      const providers = getAccountsProvidingColor(colorId);
+      let remain = 0;
+      for (let i = 0; i < providers.length; i++){
+        const acc = providers[i];
+        if (!capacity.has(acc.id)) continue;
+        const rem = Math.max(0, (capacity.get(acc.id)||0) - (used.get(acc.id)||0));
+        remain += rem;
+      }
+      return Math.max(0, remain);
+    }
+    function setPaletteSwatchTitle(el, p){
+      try {
+        if (!el || !p) return;
+        if (isPremiumColorId(p.id)){
+          const total = getPremiumColorTotalLimit(p.id);
+          const remain = getPremiumColorRemainingLimit(p.id);
+          el.title = t('palette.premiumColorTitle', { remain, total });
+        } else {
+          el.title = t('palette.colorTitle', { id: p.id });
+        }
+      } catch {}
+    }
+    function refreshPaletteTooltips(){
+      try {
+        if (!colorPaletteEl) return;
+        const swatches = Array.from(colorPaletteEl.querySelectorAll('.palette-swatch'));
+        swatches.forEach(sw => {
+          const idAttr = sw.getAttribute('data-id');
+          if (idAttr == null) return;
+          const id = Number(idAttr);
+          const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+          const p = arr.find(x => x && x.id === id);
+          if (p) setPaletteSwatchTitle(sw, p);
+        });
+      } catch {}
+    }
+
+    // Checks whether a given color id is available for the current shop account
+    function hasShopColor(e) {
+      if (e < 32) {
+        return true;
+      }
+      const b = Number(shopExtraColorsBitmap) || 0;
+      const colorMask = 1 << (e - 32);
+      return (b & colorMask) !== 0;
+    }
+    function updatePremiumPaletteSelectionUi(){
+      try {
+        if (!shopPremiumPaletteWrap) return;
+        const swatches = Array.from(shopPremiumPaletteWrap.querySelectorAll('.shop-palette-swatch'));
+        swatches.forEach(sw => {
+          const idAttr = sw.getAttribute('data-id');
+          const id = idAttr == null ? null : Number(idAttr);
+          const isSel = (id != null && id === shopSelectedPremiumColorId);
+          sw.classList.toggle('selected', !!isSel);
+          if (isSel) {
+            sw.setAttribute('aria-selected', 'true');
+          } else {
+            sw.removeAttribute('aria-selected');
+          }
+        });
+        try {
+          const hasSelection = (shopSelectedPremiumColorId != null);
+          if (shopPremiumBuyBtn) shopPremiumBuyBtn.setAttribute('aria-disabled', hasSelection ? 'false' : 'true');
+        } catch {}
+      } catch {}
+    }
+
+    function renderPremiumPalette(){
+      try {
+        if (!shopPremiumPaletteWrap) return;
+        // Build once per open; simple re-render
+        shopPremiumPaletteWrap.innerHTML = '';
+        if (shopPremiumOwnedWrap) shopPremiumOwnedWrap.innerHTML = '';
+        // Add filtered premium colors (show when bitmap says false, hide when true)
+        const palette = SHOP_PREMIUM_PALETTE.filter(p => !hasShopColor(p.id));
+        for (let i = 0; i < palette.length; i++) {
+          const p = palette[i];
+          const el = document.createElement('div');
+          el.className = 'shop-palette-swatch';
+          el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
+          el.title = p.label + ' (ID ' + p.id + ')';
+          el.setAttribute('role', 'button');
+          el.setAttribute('data-id', String(p.id));
+          el.id = 'premium-color-' + String(p.id);
+          el.addEventListener('click', () => {
+            shopSelectedPremiumColorId = p.id;
+            updatePremiumPaletteSelectionUi();
+            try {
+              window.dispatchEvent(new CustomEvent('premiumColorSelected', { detail: { id: p.id } }));
+            } catch {}
+          });
+          shopPremiumPaletteWrap.appendChild(el);
+        }
+        // Owned section: show colors that current account already has (disabled)
+        if (shopPremiumOwnedWrap) {
+          const owned = SHOP_PREMIUM_PALETTE.filter(p => hasShopColor(p.id));
+          for (let i = 0; i < owned.length; i++) {
+            const p = owned[i];
+            const el = document.createElement('div');
+            el.className = 'shop-palette-swatch disabled';
+            el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
+            el.title = p.label + ' (ID ' + p.id + ')';
+            shopPremiumOwnedWrap.appendChild(el);
+          }
+        }
+        updatePremiumPaletteSelectionUi();
+      } catch {}
+    }
+
+    function openShopAccount(row) {
+      if (!row) return;
+      if (!accountsSection || !shopViewSection) return;
+      shopCurrentAccount = row;
+      accountsSection.hidden = true;
+      if (accountFormSection) accountFormSection.hidden = true;
+      shopViewSection.hidden = false;
+      try { if (shopBackBtn) shopBackBtn.hidden = false; } catch {}
+      try {
+        if (shopDropletsInfo) {
+          const dRaw = (row && row.droplets != null) ? Number(row.droplets) : null;
+          const label = Number.isFinite(dRaw) ? String(Math.floor(dRaw)) : '-';
+          shopDropletsInfo.textContent = '💧 Droplets: ' + label;
+          shopDropletsInfo.hidden = false;
+        }
+      } catch {}
+      try {
+        const dRaw = (row && row.droplets != null) ? Number(row.droplets) : null;
+        shopCurrentDroplets = Number.isFinite(dRaw) ? Math.floor(dRaw) : 0;
+      } catch { shopCurrentDroplets = 0; }
+      // initialize shop quantities/prices
+      try {
+        if (shopMaxQtyEl) shopMaxQtyEl.textContent = '1';
+        if (shopRecQtyEl) shopRecQtyEl.textContent = '1';
+        const unitMax = 500, unitRec = 500;
+        if (shopMaxPriceEl) shopMaxPriceEl.textContent = '💧 ' + (unitMax * 1) + ' Droplets';
+        if (shopRecPriceEl) shopRecPriceEl.textContent = '💧 ' + (unitRec * 1) + ' Droplets';
+      } catch {}
+      // set account-specific premium colors bitmap for filtering
+      try { shopExtraColorsBitmap = Number(row && row.extraColorsBitmap != null ? row.extraColorsBitmap : 0) || 0; } catch { shopExtraColorsBitmap = 0; }
+      try { renderPremiumPalette(); } catch {}
+      try { updateShopButtonsDisabled(); } catch {}
+      try { shopSelectedPremiumColorId = null; updatePremiumPaletteSelectionUi(); } catch {}
+      try {
+        if (shopPremiumBuyBtn) {
+          shopPremiumBuyBtn.setAttribute('aria-disabled', 'true');
+          shopPremiumBuyBtn.onclick = null;
+          shopPremiumBuyBtn.onclick = () => {
+            const hasSelection = (shopSelectedPremiumColorId != null);
+            if (!hasSelection) return;
+            const account = shopCurrentAccount;
+            const token = account && account.token ? String(account.token) : '';
+            if (!token) return;
+            // Premium color purchase: productId 100, amount 1, variant = selected color id
+            const amount = 1;
+            const variant = Number(shopSelectedPremiumColorId);
+            (async () => {
+              try {
+                const res = await fetch('/api/purchase', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ productId: 100, amount, variant, j: token })
+                });
+                const data = await res.json();
+                if (res.ok && data && data.success === true) {
+                  showToast(t('messages.purchaseSuccess'), 'success', 2000);
+                  try { await refreshAccountById(account.id); } catch {}
+                  try {
+                    if (shopDropletsInfo) {
+                      const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+                      const dRaw = updated && updated.droplets != null ? Number(updated.droplets) : null;
+                      const label = Number.isFinite(dRaw) ? String(Math.floor(dRaw)) : '-';
+                      shopDropletsInfo.textContent = '💧 Droplets: ' + label;
+                    }
+                  } catch {}
+                  try {
+                    const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+                    const dRaw2 = updated && updated.droplets != null ? Number(updated.droplets) : null;
+                    shopCurrentDroplets = Number.isFinite(dRaw2) ? Math.floor(dRaw2) : 0;
+                    updateShopButtonsDisabled();
+                  } catch {}
+                  // Refresh premium palette based on updated extraColorsBitmap without page reload
+                  try {
+                    const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+                    if (updated) {
+                      shopCurrentAccount = updated;
+                      shopExtraColorsBitmap = Number(updated.extraColorsBitmap != null ? updated.extraColorsBitmap : 0) || 0;
+                    }
+                    shopSelectedPremiumColorId = null;
+                    renderPremiumPalette();
+                    updatePremiumPaletteSelectionUi();
+                  } catch {}
+                } else {
+                  const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
+                  showToast(msg, 'error', 2500);
+                }
+              } catch (e) {
+                showToast(t('messages.purchaseFail'), 'error', 2500);
+              }
+            })();
+          };
+        }
+      } catch {}
+    }
     function showAccountList() {
       if (!accountsSection || !accountFormSection) return;
       accountFormSection.hidden = true;
+      if (shopViewSection) shopViewSection.hidden = true;
       accountsSection.hidden = false;
+      try { if (shopBackBtn) shopBackBtn.hidden = true; } catch {}
+      try { if (shopDropletsInfo) shopDropletsInfo.hidden = true; } catch {}
       try { accountSaveBtn.textContent = t('buttons.add'); } catch {}
     }
+
+    // Shop interactions
+    const SHOP_PRICE_MAX = 500;
+    const SHOP_PRICE_REC = 500;
+    let shopCurrentDroplets = 0;
+
+    function parseQty(el){
+      const n = parseInt((el && el.textContent) ? el.textContent.trim() : '1', 10);
+      return Number.isFinite(n) && n >= 1 ? n : 1;
+    }
+    function updatePrice(which){
+      if (which === 'max') {
+        const qty = parseQty(shopMaxQtyEl);
+        if (shopMaxPriceEl) shopMaxPriceEl.textContent = '💧 ' + (SHOP_PRICE_MAX * qty) + ' Droplets';
+        try {
+          const nameEl = document.getElementById('shop-max-name');
+          if (nameEl) nameEl.textContent = '+'+5*qty + ' Max. Charges';
+        } catch {}
+      } else {
+        const qty = parseQty(shopRecQtyEl);
+        if (shopRecPriceEl) shopRecPriceEl.textContent = '💧 ' + (SHOP_PRICE_REC * qty) + ' Droplets';
+        try {
+          const nameEl = document.getElementById('shop-rec-name');
+          if (nameEl) nameEl.textContent = '+'+30*qty+ ' Paint Charges';
+        } catch {}
+      }
+      try { updateShopButtonsDisabled(); } catch {}
+    }
+    function changeQty(which, delta){
+      if (which === 'max') {
+        const next = Math.max(1, parseQty(shopMaxQtyEl) + delta);
+        if (shopMaxQtyEl) shopMaxQtyEl.textContent = String(next);
+        updatePrice('max');
+      } else {
+        const next = Math.max(1, parseQty(shopRecQtyEl) + delta);
+        if (shopRecQtyEl) shopRecQtyEl.textContent = String(next);
+        updatePrice('rec');
+      }
+    }
+    function setMaxAffordable(which){
+      const unit = which === 'max' ? SHOP_PRICE_MAX : SHOP_PRICE_REC;
+      const able = Math.max(1, Math.floor((shopCurrentDroplets || 0) / unit));
+      if (which === 'max') {
+        if (shopMaxQtyEl) shopMaxQtyEl.textContent = String(able);
+        updatePrice('max');
+      } else {
+        if (shopRecQtyEl) shopRecQtyEl.textContent = String(able);
+        updatePrice('rec');
+      }
+    }
+
+    function updateShopButtonsDisabled(){
+      try {
+        const maxQty = parseQty(shopMaxQtyEl);
+        const recQty = parseQty(shopRecQtyEl);
+        const costMax = SHOP_PRICE_MAX * maxQty;
+        const costRec = SHOP_PRICE_REC * recQty;
+        if (shopMaxPriceEl) shopMaxPriceEl.setAttribute('aria-disabled', (shopCurrentDroplets < costMax) ? 'true' : 'false');
+        if (shopRecPriceEl) shopRecPriceEl.setAttribute('aria-disabled', (shopCurrentDroplets < costRec) ? 'true' : 'false');
+      } catch {}
+      try {
+        const disabled = !(shopSelectedPremiumColorId != null);
+        if (shopSelectedPremiumColorId != null && shopPremiumBuyBtn) {
+          const cost = 2000; // premium color price
+          shopPremiumBuyBtn.setAttribute('aria-disabled', (shopCurrentDroplets < cost) ? 'true' : 'false');
+        }
+      } catch {}
+    }
+
+    // Wire buttons
+    if (shopMaxDecBtn) shopMaxDecBtn.addEventListener('click', () => changeQty('max', -1));
+    if (shopMaxIncBtn) shopMaxIncBtn.addEventListener('click', () => changeQty('max', +1));
+    if (shopMaxMaxBtn) shopMaxMaxBtn.addEventListener('click', () => setMaxAffordable('max'));
+    if (shopMaxPriceEl) shopMaxPriceEl.addEventListener('click', async () => {
+      // Make purchase for +5 Max. Charges using amount from qty
+      try {
+        const qty = parseQty(shopMaxQtyEl);
+        const account = shopCurrentAccount;
+        const token = account && account.token ? String(account.token) : '';
+        if (!token) { showToast(t('messages.accountNotFound'), 'error', 2000); return; }
+        const res = await fetch('/api/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: 70, amount: Math.max(1, Number(qty || 1)), j: token })
+        });
+        const data = await res.json();
+        if (res.ok && data && data.success === true) {
+          showToast(t('messages.purchaseSuccess'), 'success', 2000);
+          try { await refreshAccountById(account.id); } catch {}
+          try {
+            if (shopDropletsInfo) {
+              const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+              const dRaw = updated && updated.droplets != null ? Number(updated.droplets) : null;
+              const label = Number.isFinite(dRaw) ? String(Math.floor(dRaw)) : '-';
+              shopDropletsInfo.textContent = '💧 Droplets: ' + label;
+            }
+          } catch {}
+        } else {
+          const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
+          showToast(msg, 'error', 2500);
+        }
+      } catch {
+        showToast(t('messages.purchaseFail'), 'error', 2500);
+      }
+    });
+    if (shopRecDecBtn) shopRecDecBtn.addEventListener('click', () => changeQty('rec', -1));
+    if (shopRecIncBtn) shopRecIncBtn.addEventListener('click', () => changeQty('rec', +1));
+    if (shopRecMaxBtn) shopRecMaxBtn.addEventListener('click', () => setMaxAffordable('rec'));
+    if (shopRecPriceEl) shopRecPriceEl.addEventListener('click', async () => {
+      // Purchase +30 Paint Charges (product id 80) using rec qty
+      try {
+        const qty = parseQty(shopRecQtyEl);
+        const account = shopCurrentAccount;
+        const token = account && account.token ? String(account.token) : '';
+        if (!token) { showToast(t('messages.accountNotFound'), 'error', 2000); return; }
+        const res = await fetch('/api/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: 80, amount: Math.max(1, Number(qty || 1)), j: token })
+        });
+        const data = await res.json();
+        if (res.ok && data && data.success === true) {
+          showToast(t('messages.purchaseSuccess'), 'success', 2000);
+          try { await refreshAccountById(account.id); } catch {}
+          try {
+            if (shopDropletsInfo) {
+              const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === account.id) : null;
+              const dRaw = updated && updated.droplets != null ? Number(updated.droplets) : null;
+              const label = Number.isFinite(dRaw) ? String(Math.floor(dRaw)) : '-';
+              shopDropletsInfo.textContent = '💧 Droplets: ' + label;
+            }
+          } catch {}
+        } else {
+          const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
+          showToast(msg, 'error', 2500);
+        }
+      } catch {
+        showToast(t('messages.purchaseFail'), 'error', 2500);
+      }
+    });
     if (addAccountBtn) {
       addAccountBtn.addEventListener('click', async () => {
         try { await loadSettings(); } catch {}
@@ -3089,6 +3968,9 @@
     if (accountCancelBtn) {
       accountCancelBtn.addEventListener('click', showAccountList);
     }
+    if (shopBackBtn) {
+      shopBackBtn.addEventListener('click', showAccountList);
+    }
     function renderAccountsTable(rows) {
       const sortedRows = Array.isArray(rows) ? rows.slice().sort((a, b) => {
         const aActive = a && a.active !== false;
@@ -3097,15 +3979,21 @@
         return aActive ? 1 : -1; // Inactive first
       }) : [];
       accountsData = sortedRows.slice();
+      try { recomputeActivePalette(); } catch {}
       accountsTbody.innerHTML = '';
       sortedRows.forEach(row => {
         const tr = document.createElement('tr');
         const tdName = document.createElement('td'); tdName.textContent = row.name || '';
         const tdToken = document.createElement('td');
         const fullToken = row.token || '';
-        const shortToken = fullToken.length > 30 ? (fullToken.slice(0, 30) + '…') : fullToken;
+        const shortToken = (fullToken && fullToken.length > 12)
+          ? (fullToken.slice(0, 6) + '…' + fullToken.slice(-6))
+          : fullToken;
         tdToken.textContent = shortToken;
         tdToken.title = fullToken;
+        const tdDroplets = document.createElement('td');
+        const dRaw = (row && row.droplets != null) ? Number(row.droplets) : null;
+        tdDroplets.textContent = Number.isFinite(dRaw) ? String(Math.floor(dRaw)) : '-';
         const tdPixel = document.createElement('td');
         const countRaw = (row.pixelCount == null ? null : Number(row.pixelCount));
         const maxRaw = (row.pixelMax == null ? null : Number(row.pixelMax));
@@ -3141,6 +4029,31 @@
             await loadAccounts();
           } catch {}
         });
+        const shopBtn = document.createElement('button');
+        shopBtn.type = 'button';
+        shopBtn.className = 'app-btn';
+        shopBtn.textContent = t('buttons.shop');
+        // Disable shop for inactive accounts
+        try { shopBtn.disabled = !isActive; } catch {}
+        shopBtn.addEventListener('click', async () => {
+          if (shopBtn.disabled) return;
+          try { shopBtn.disabled = true; } catch {}
+          try {
+            const res = await fetch('/api/accounts/' + row.id + '/refresh', { method: 'POST' });
+            if (!res.ok) {
+              try {
+                if (res.status === 400) { showToast(t('messages.addCfClearancePrompt'), 'error', 2500); setAccountsActiveTab('settings'); }
+              } catch {}
+            }
+          } catch {}
+          try { await loadAccounts(); } catch {}
+          try {
+            const updated = Array.isArray(accountsData) ? accountsData.find(r => r && r.id === row.id) : null;
+            const isActive = updated && updated.active !== false;
+            if (!isActive) { return; }
+            openShopAccount(updated);
+          } finally { try { shopBtn.disabled = false; } catch {} }
+        });
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'app-btn';
@@ -3154,11 +4067,13 @@
         rowTop.appendChild(editBtn);
         rowTop.appendChild(delBtn);
         rowBottom.appendChild(checkBtn);
+        rowBottom.appendChild(shopBtn);
         actionsWrap.appendChild(rowTop);
         actionsWrap.appendChild(rowBottom);
         tdActions.appendChild(actionsWrap);
         tr.appendChild(tdName);
         tr.appendChild(tdToken);
+        tr.appendChild(tdDroplets);
         tr.appendChild(tdPixel);
         tr.appendChild(tdStatus);
         tr.appendChild(tdActions);
@@ -3288,8 +4203,6 @@
         } catch {}
       });
     }
-    
-    
     let accountTokenInputDebounce = null;
     if (accountTokenInput) {
       accountTokenInput.addEventListener('input', () => {
@@ -3558,12 +4471,13 @@
         drawPreview();
       });
       imgFillColorWrap.appendChild(swNone);
-      for (let i = 0; i < PALETTE.length; i++){
-        const p = PALETTE[i];
+      const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
+      for (let i = 0; i < arr.length; i++){
+        const p = arr[i];
         const el = document.createElement('div');
         el.className = 'palette-swatch';
         el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
-        el.title = t('palette.colorTitle', { id: p.id });
+        setPaletteSwatchTitle(el, p);
         el.setAttribute('data-id', String(p.id));
         el.setAttribute('role','button');
         el.addEventListener('click', () => {
@@ -3942,6 +4856,7 @@
             }
           }
           try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+          try { refreshPaletteTooltips(); } catch {}
           return;
         }
 
@@ -3969,6 +4884,7 @@
         let addedCount = 0;
         
         if (selectMode === 'frame') {
+          const prev = autoSelectDeleteMode; // unused placeholder
           addedCount = autoSelectFrameFirst(selItem, need);
         } else {
         let sx = start.x|0, sy = start.y|0;
@@ -3976,8 +4892,19 @@
         let traversed = 0;
         while (addedCount < need && traversed < totalCells) {
           if (isOpaquePixel(selItem, sx, sy) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, sx, sy))) {
-            const didAdd = addPixelSelection(selItem, sx, sy, selectedOverrideColorId != null ? selectedOverrideColorId : null);
-            if (didAdd) addedCount++;
+            const pid = (selectedOverrideColorId != null && selectedOverrideColorId !== 0)
+              ? selectedOverrideColorId
+              : getItemPixelPaletteId(selItem, sx, sy);
+            if (pid != null && pid !== 0 && isPremiumColorId(pid)){
+              const remainNow = getPremiumColorRemainingLimit(pid);
+              if (remainNow > 0) {
+                const didAdd = addPixelSelection(selItem, sx, sy, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+                if (didAdd) addedCount++;
+              }
+            } else {
+              const didAdd = addPixelSelection(selItem, sx, sy, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+              if (didAdd) addedCount++;
+            }
           }
           sx += 1;
           if (sx >= w) { sx = 0; sy += 1; }
@@ -3989,6 +4916,7 @@
         updatePixelMarkers();
         render();
         try { updateStartEnabled(); } catch {}
+        try { refreshPaletteTooltips(); } catch {}
       });
     }
 
@@ -4028,7 +4956,12 @@
         if (boundary.length === 0) break;
         for (let k = 0; k < boundary.length && added < need; k++) {
           const p = boundary[k];
-          if (addPixelSelection(selItem, p.x, p.y, selectedOverrideColorId != null ? selectedOverrideColorId : null)) added++;
+          if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)){
+            const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+            if (!(remain > 0)) { added = need; break; }
+          }
+          const did = addPixelSelection(selItem, p.x, p.y, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+          if (did) added++;
         }
         for (let k = 0; k < boundary.length; k++) {
           const p = boundary[k];
@@ -4183,6 +5116,10 @@
         const el = document.createElement('img');
         el.className = 'pixel-marker'; el.alt = 'selected'; el.src = SELECTED_ICON_SRC;
         const rec = { wx, wy, el, fillEl: null, colorId: selectedOverrideColorId };
+        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)){
+          const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+          if (!(remain > 0)) { showMaxReachedToastOnceForSpace(remain || 0); return false; }
+        }
         if (selectedOverrideColorId != null) {
           const f = document.createElement('img'); f.className = 'pixel-marker'; f.alt = 'fill';
           try { f.style.zIndex = '1299'; } catch {}
@@ -4196,6 +5133,7 @@
         readyGlobalSelected.set(key, rec);
         if (pixelSelectedList) pixelSelectedList.hidden = false;
         try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+        try { refreshPaletteTooltips(); } catch {}
         return true;
       } else {
         const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
@@ -4208,9 +5146,14 @@
         const map = getSelectedMap(selItem);
         const already = map ? map.size : 0;
         if (limit > 0 && already >= limit) { showMaxReachedToastOnceForSpace(limit); return false; }
+        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)){
+          const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+          if (!(remain > 0)) { showMaxReachedToastOnceForSpace(remain || 0); return false; }
+        }
         const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
         if (didAdd) {
           try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+          try { refreshPaletteTooltips(); } catch {}
           return true;
         }
         return false;
@@ -4232,6 +5175,7 @@
         try { if (rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
         readyGlobalSelected.delete(key);
         try { updateReadySelectionLabel(); updateStartEnabled(); } catch {}
+        try { refreshPaletteTooltips(); } catch {}
         return true;
       } else {
         const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
@@ -4297,6 +5241,22 @@
     
     
     try { setupColorPalette(); } catch {}
+    if (paletteModeEl && paletteModeToggle && paletteModeLabelLeft && paletteModeLabelRight) {
+      const updateToggleUi = () => {
+        try {
+          const isPremium = (paletteMode === 'premium');
+          paletteModeToggle.classList.toggle('on', !isPremium ? true : false);
+          paletteModeToggle.setAttribute('aria-checked', isPremium ? 'true' : 'false');
+          paletteModeLabelLeft.classList.toggle('active', isPremium);
+          paletteModeLabelRight.classList.toggle('active', !isPremium);
+        } catch {}
+      };
+      const setMode = (mode) => { paletteMode = (mode === 'free') ? 'free' : 'premium'; recomputeActivePalette(); updateToggleUi(); };
+      paletteModeToggle.addEventListener('click', () => setMode(paletteMode === 'premium' ? 'free' : 'premium'));
+      paletteModeLabelLeft.addEventListener('click', () => setMode('premium'));
+      paletteModeLabelRight.addEventListener('click', () => setMode('free'));
+      updateToggleUi();
+    }
 
     function getItemPixelPaletteId(item, sx, sy){
       const c = getItemPixelColor(item, sx, sy);
