@@ -379,7 +379,7 @@
       align-items: start;
       width: 100%;
     }
-    #img-fill-color .palette-swatch {
+    #img-fill-color .modal-palette-swatch {
       cursor: pointer;
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -4822,7 +4822,7 @@
       try { imgFillColorWrap.innerHTML = ''; } catch {}
       // Transparent option (none)
       const swNone = document.createElement('div');
-      swNone.className = 'palette-swatch transparent selected';
+      swNone.className = 'palette-swatch modal-palette-swatch transparent selected';
       swNone.title = t('palette.transparentTitle');
       swNone.setAttribute('role','button');
       swNone.addEventListener('click', () => {
@@ -4835,7 +4835,7 @@
       for (let i = 0; i < arr.length; i++){
         const p = arr[i];
         const el = document.createElement('div');
-        el.className = 'palette-swatch';
+        el.className = 'palette-swatch modal-palette-swatch';
         el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
         setPaletteSwatchTitle(el, p);
         el.setAttribute('data-id', String(p.id));
@@ -4851,7 +4851,7 @@
     }
     function updateFillPaletteSelectionUi(){
       if (!imgFillColorWrap) return;
-      const swatches = Array.from(imgFillColorWrap.querySelectorAll('.palette-swatch'));
+      const swatches = Array.from(imgFillColorWrap.querySelectorAll('.modal-palette-swatch'));
       swatches.forEach(sw => {
         const idAttr = sw.getAttribute('data-id');
         const id = idAttr == null ? null : Number(idAttr);
