@@ -639,14 +639,14 @@
       border-radius: 12px;
       backdrop-filter: blur(6px);
       padding: 8px;
-      display: grid;
-      grid-template-columns: repeat(6, 18px);
+      display: flex;
+      flex-wrap: wrap;
       gap: 6px;
       align-items: center;
       justify-content: center;
-      width: fit-content;
       z-index: 1001;
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      max-width: min(95vw, 720px);
     }
     /* Premium/Free switcher next to palette (toggle style) */
     .palette-mode-wrap { position: fixed; z-index: 1002; display: inline-flex; align-items: center; gap: 10px; pointer-events: auto; padding: 6px 10px; border-radius: 12px; background: rgba(17, 20, 24, 0.85); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
