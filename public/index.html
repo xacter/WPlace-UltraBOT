@@ -341,15 +341,6 @@
       align-items: center;
     }
     #mosaic-modal .button-row { grid-template-columns: repeat(3, 1fr); }
-    #mosaic-canvas {
-      display: block;
-      margin-top: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      background: rgba(0,0,0,0.25);
-      image-rendering: pixelated;
-      max-width: 100%;
-    }
     body.no-scroll { overflow: hidden; }
     #img-preview-canvas {
       width: min(540px, 85vw);
@@ -1010,7 +1001,6 @@
           <button class="app-btn" type="button" id="mosaic-use4" data-i18n="mosaic.use4">Use 4 coords</button>
           <button class="app-btn" type="button" id="mosaic-fetch" data-i18n="mosaic.fetch">Fetch</button>
         </div>
-        <canvas id="mosaic-canvas" width="0" height="0"></canvas>
       </div>
     </div>
   </div>
@@ -1303,7 +1293,7 @@
     const mosaicUse2 = document.getElementById('mosaic-use2');
     const mosaicUse4 = document.getElementById('mosaic-use4');
     const mosaicFetch = document.getElementById('mosaic-fetch');
-    const mosaicCanvas = document.getElementById('mosaic-canvas');
+    const mosaicCanvas = document.createElement('canvas');
     const sidebar = document.getElementById('sidebar');
     const thumbList = document.getElementById('thumb-list');
     const counter = document.getElementById('counter');
