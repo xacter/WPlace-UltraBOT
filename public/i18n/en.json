@@ -49,7 +49,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "Fetch",
-    "uploadImage": "Upload image"
+    "uploadImage": "Upload image",
+    "mosaicButton": "Mosaic"
   },
   "preview": {
     "scale": "Scale (%)",
@@ -63,6 +64,12 @@
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "Mosaic",
+    "use2": "Use 2 coords",
+    "use4": "Use 4 coords",
+    "fetch": "Fetch"
   },
   "buttons": {
     "back": "Back",

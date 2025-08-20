@@ -49,7 +49,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "取得",
-    "uploadImage": "画像をアップロード"
+    "uploadImage": "画像をアップロード",
+    "mosaicButton": "モザイク"
   },
   "preview": {
     "scale": "スケール (%)",
@@ -63,6 +64,12 @@
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "モザイク",
+    "use2": "2座標を使用",
+    "use4": "4座標を使用",
+    "fetch": "取得"
   },
   "buttons": {
     "back": "戻る",

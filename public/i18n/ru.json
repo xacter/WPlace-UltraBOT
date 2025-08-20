@@ -49,7 +49,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "Получить",
-    "uploadImage": "Загрузить изображение"
+    "uploadImage": "Загрузить изображение",
+    "mosaicButton": "Мозаика"
   },
   "preview": {
     "scale": "Масштаб (%)",
@@ -63,6 +64,12 @@
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "Мозаика",
+    "use2": "Исп. 2 коорд",
+    "use4": "Исп. 4 коорд",
+    "fetch": "Получить"
   },
   "buttons": {
     "back": "Назад",

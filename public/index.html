@@ -323,6 +323,33 @@
       z-index: 1100;
     }
     #img-preview-modal[hidden] { display: none; }
+    #mosaic-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 1100;
+    }
+    #mosaic-modal[hidden] { display: none; }
+    #mosaic-modal .coords-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    #mosaic-modal .button-row { grid-template-columns: repeat(3, 1fr); }
+    #mosaic-canvas {
+      display: block;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      image-rendering: pixelated;
+      max-width: 100%;
+    }
     body.no-scroll { overflow: hidden; }
     #img-preview-canvas {
       width: min(540px, 85vw);
@@ -949,6 +976,45 @@
     </div>
   </div>
 
+  <div id="mosaic-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header" data-i18n="mosaic.title">Mosaic</div>
+      <button id="mosaic-close" class="modal-close" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-body">
+        <div class="coords-row">
+          <label for="mosaic-x1">X1</label>
+          <input id="mosaic-x1" type="number" />
+          <label for="mosaic-y1">Y1</label>
+          <input id="mosaic-y1" type="number" />
+        </div>
+        <div class="coords-row">
+          <label for="mosaic-x2">X2</label>
+          <input id="mosaic-x2" type="number" disabled />
+          <label for="mosaic-y2">Y2</label>
+          <input id="mosaic-y2" type="number" disabled />
+        </div>
+        <div class="coords-row" id="mosaic-row-3" hidden>
+          <label for="mosaic-x3">X3</label>
+          <input id="mosaic-x3" type="number" disabled />
+          <label for="mosaic-y3">Y3</label>
+          <input id="mosaic-y3" type="number" disabled />
+        </div>
+        <div class="coords-row" id="mosaic-row-4" hidden>
+          <label for="mosaic-x4">X4</label>
+          <input id="mosaic-x4" type="number" disabled />
+          <label for="mosaic-y4">Y4</label>
+          <input id="mosaic-y4" type="number" disabled />
+        </div>
+        <div class="coords-row button-row">
+          <button class="app-btn" type="button" id="mosaic-use2" data-i18n="mosaic.use2">Use 2 coords</button>
+          <button class="app-btn" type="button" id="mosaic-use4" data-i18n="mosaic.use4">Use 4 coords</button>
+          <button class="app-btn" type="button" id="mosaic-fetch" data-i18n="mosaic.fetch">Fetch</button>
+        </div>
+        <canvas id="mosaic-canvas" width="0" height="0"></canvas>
+      </div>
+    </div>
+  </div>
+
   <form class="panel" id="form">
     <label for="area-code" data-i18n="form.worldXLabel">World X</label>
     <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
@@ -957,6 +1023,7 @@
     <input id="no" name="no" type="number" min="0" step="1" inputmode="numeric" />
 
     <button class="app-btn" type="submit" data-i18n="form.fetchButton">Getir</button>
+    <button class="app-btn" type="button" id="btn-mosaic" data-i18n="form.mosaicButton">Mosaic</button>
     <button class="app-btn" type="button" id="btn-upload-sign" data-i18n="form.uploadImage">Resim yükle</button>
   </form>
  
@@ -1220,6 +1287,23 @@
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
     const uploadBtn = document.getElementById('btn-upload-sign');
+    const mosaicBtn = document.getElementById('btn-mosaic');
+    const mosaicModal = document.getElementById('mosaic-modal');
+    const mosaicClose = document.getElementById('mosaic-close');
+    const mosaicX1 = document.getElementById('mosaic-x1');
+    const mosaicY1 = document.getElementById('mosaic-y1');
+    const mosaicX2 = document.getElementById('mosaic-x2');
+    const mosaicY2 = document.getElementById('mosaic-y2');
+    const mosaicX3 = document.getElementById('mosaic-x3');
+    const mosaicY3 = document.getElementById('mosaic-y3');
+    const mosaicX4 = document.getElementById('mosaic-x4');
+    const mosaicY4 = document.getElementById('mosaic-y4');
+    const mosaicRow3 = document.getElementById('mosaic-row-3');
+    const mosaicRow4 = document.getElementById('mosaic-row-4');
+    const mosaicUse2 = document.getElementById('mosaic-use2');
+    const mosaicUse4 = document.getElementById('mosaic-use4');
+    const mosaicFetch = document.getElementById('mosaic-fetch');
+    const mosaicCanvas = document.getElementById('mosaic-canvas');
     const sidebar = document.getElementById('sidebar');
     const thumbList = document.getElementById('thumb-list');
     const counter = document.getElementById('counter');
@@ -4274,6 +4358,99 @@
     });
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') accountsModal.hidden = true;
+    });
+
+    // Mosaic modal logic
+    let mosaicCount = 2;
+    function updateMosaicCoords(){
+      const x1 = Number(mosaicX1.value) || 0;
+      const y1 = Number(mosaicY1.value) || 0;
+      mosaicX2.value = x1 + 1;
+      mosaicY2.value = y1;
+      mosaicX3.value = x1;
+      mosaicY3.value = y1 + 1;
+      mosaicX4.value = x1 + 1;
+      mosaicY4.value = y1 + 1;
+    }
+    mosaicX1.addEventListener('input', updateMosaicCoords);
+    mosaicY1.addEventListener('input', updateMosaicCoords);
+
+    mosaicBtn.addEventListener('click', () => {
+      mosaicModal.hidden = false;
+      document.body.classList.add('no-scroll');
+      mosaicCount = 2;
+      mosaicRow3.hidden = true;
+      mosaicRow4.hidden = true;
+      updateMosaicCoords();
+    });
+    mosaicClose.addEventListener('click', () => {
+      mosaicModal.hidden = true;
+      document.body.classList.remove('no-scroll');
+    });
+    mosaicModal.addEventListener('click', (e) => {
+      if (e.target === mosaicModal) {
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !mosaicModal.hidden) {
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      }
+    });
+
+    mosaicUse2.addEventListener('click', () => {
+      mosaicCount = 2;
+      mosaicRow3.hidden = true;
+      mosaicRow4.hidden = true;
+    });
+    mosaicUse4.addEventListener('click', () => {
+      mosaicCount = 4;
+      mosaicRow3.hidden = false;
+      mosaicRow4.hidden = false;
+    });
+
+    function fetchTile(area, no) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = buildUrl(area, no);
+      });
+    }
+
+    mosaicFetch.addEventListener('click', async () => {
+      const coords = [
+        { x: Number(mosaicX1.value), y: Number(mosaicY1.value) },
+        { x: Number(mosaicX2.value), y: Number(mosaicY2.value) }
+      ];
+      if (mosaicCount === 4) {
+        coords.push({ x: Number(mosaicX3.value), y: Number(mosaicY3.value) });
+        coords.push({ x: Number(mosaicX4.value), y: Number(mosaicY4.value) });
+      }
+      try {
+        const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
+        const tileW = images[0].width;
+        const tileH = images[0].height;
+        mosaicCanvas.width = tileW * 2;
+        mosaicCanvas.height = tileH * (mosaicCount === 2 ? 1 : 2);
+        const mctx = mosaicCanvas.getContext('2d');
+        mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
+        mctx.drawImage(images[0], 0, 0);
+        mctx.drawImage(images[1], tileW, 0);
+        if (mosaicCount === 4) {
+          mctx.drawImage(images[2], 0, tileH);
+          mctx.drawImage(images[3], tileW, tileH);
+        }
+        img = mosaicCanvas;
+        try { baseImageData = null; } catch {}
+        fitToView();
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      } catch (err) {
+        alert(t('messages.imageLoadFailed'));
+      }
     });
 
     
