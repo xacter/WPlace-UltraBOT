@@ -368,13 +368,10 @@
       height: auto;
     }
     #img-fill-color[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
-    #img-preview-modal .range-wrap { display: grid; grid-template-columns: 1fr 40px; gap: 8px; align-items: center; justify-self: end; width: 140px; }
-    #img-preview-modal .range-wrap input[type="range"] { width: 100%; }
-    #img-preview-modal .range-wrap input[type="number"] { width: 40px; }
     #img-preview-modal .img-preview-grid select,
     #img-preview-modal .img-preview-grid button {
-      justify-self: end;
-      width: 140px;
+      justify-self: start;
+      width: 100px;
     }
     .modal-card {
       background: rgba(17, 20, 24, 0.95);
@@ -949,11 +946,8 @@
               <input id="img-width" type="number" min="1" max="1000" step="1" />
               <label for="img-height" data-i18n="preview.height">Yükseklik</label>
               <input id="img-height" type="number" min="1" max="1000" step="1" />
-              <label for="img-alpha-range" data-i18n="preview.alphaThreshold">Transparency</label>
-              <div class="range-wrap">
-                <input id="img-alpha-range" type="range" min="0" max="255" step="1" value="5" />
-                <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" />
-              </div>
+              <label for="img-alpha-input" data-i18n="preview.alphaThreshold">Transparency</label>
+              <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" />
               <label for="img-color-metric" data-i18n="preview.colorMetric">Color algorithm</label>
               <select id="img-color-metric">
                 <option value="rgb" data-i18n="preview.metricRgb">RGB (fast)</option>
@@ -4407,7 +4401,6 @@
     const imgHeightInput = document.getElementById('img-height');
     const imgFillToggle = document.getElementById('img-fill-toggle');
     const imgFillColorWrap = document.getElementById('img-fill-color');
-    const imgAlphaRange = document.getElementById('img-alpha-range');
     const imgAlphaInput = document.getElementById('img-alpha-input');
     const imgColorMetricSelect = document.getElementById('img-color-metric');
     const imgDitherToggle = document.getElementById('img-dither-toggle');
@@ -4433,7 +4426,7 @@
       imgFillColorId = null;
       buildFillPaletteUi();
       try { if (imgFillColorWrap) imgFillColorWrap.setAttribute('aria-disabled', 'true'); } catch {}
-      try { imgAlphaRange.value = '5'; imgAlphaInput.value = '5'; } catch {}
+      try { imgAlphaInput.value = '5'; } catch {}
       try { imgColorMetricSelect.value = 'rgb'; } catch {}
       imgDitherEnabled = false;
       updateDitherButtonUi();
@@ -4600,14 +4593,12 @@
     if (imgWidthInput) imgWidthInput.addEventListener('change', updateHeightFromWidth);
     if (imgHeightInput) imgHeightInput.addEventListener('change', updateWidthFromHeight);
     if (imgKeepRatioInput) imgKeepRatioInput.addEventListener('change', () => { drawPreview(); });
-    if (imgAlphaRange && imgAlphaInput) {
-      imgAlphaRange.addEventListener('input', () => { imgAlphaInput.value = imgAlphaRange.value; drawPreview(); });
+    if (imgAlphaInput) {
       imgAlphaInput.addEventListener('input', () => {
-        let v = parseInt(imgAlphaInput.value||'0',10);
+        let v = parseInt(imgAlphaInput.value || '0', 10);
         if (isNaN(v)) v = 0;
         if (v < 0) v = 0; else if (v > 255) v = 255;
         imgAlphaInput.value = String(v);
-        imgAlphaRange.value = String(v);
         drawPreview();
       });
     }
