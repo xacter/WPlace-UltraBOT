@@ -323,6 +323,24 @@
       z-index: 1100;
     }
     #img-preview-modal[hidden] { display: none; }
+    #mosaic-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 1100;
+    }
+    #mosaic-modal[hidden] { display: none; }
+    #mosaic-modal .coords-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    #mosaic-modal .button-row { grid-template-columns: repeat(3, 1fr); }
     body.no-scroll { overflow: hidden; }
     #img-preview-canvas {
       width: min(540px, 85vw);
@@ -639,14 +657,14 @@
       border-radius: 12px;
       backdrop-filter: blur(6px);
       padding: 8px;
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(6, 18px);
       gap: 6px;
       align-items: center;
       justify-content: center;
+      width: fit-content;
       z-index: 1001;
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
-      max-width: min(95vw, 720px);
     }
     /* Premium/Free switcher next to palette (toggle style) */
     .palette-mode-wrap { position: fixed; z-index: 1002; display: inline-flex; align-items: center; gap: 10px; pointer-events: auto; padding: 6px 10px; border-radius: 12px; background: rgba(17, 20, 24, 0.85); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
@@ -980,6 +998,44 @@
     </div>
   </div>
 
+  <div id="mosaic-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header" data-i18n="mosaic.title">Mosaic</div>
+      <button id="mosaic-close" class="modal-close" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-body">
+        <div class="coords-row">
+          <label for="mosaic-x1">X1</label>
+          <input id="mosaic-x1" type="number" />
+          <label for="mosaic-y1">Y1</label>
+          <input id="mosaic-y1" type="number" />
+        </div>
+        <div class="coords-row">
+          <label for="mosaic-x2">X2</label>
+          <input id="mosaic-x2" type="number" disabled />
+          <label for="mosaic-y2">Y2</label>
+          <input id="mosaic-y2" type="number" disabled />
+        </div>
+        <div class="coords-row" id="mosaic-row-3" hidden>
+          <label for="mosaic-x3">X3</label>
+          <input id="mosaic-x3" type="number" disabled />
+          <label for="mosaic-y3">Y3</label>
+          <input id="mosaic-y3" type="number" disabled />
+        </div>
+        <div class="coords-row" id="mosaic-row-4" hidden>
+          <label for="mosaic-x4">X4</label>
+          <input id="mosaic-x4" type="number" disabled />
+          <label for="mosaic-y4">Y4</label>
+          <input id="mosaic-y4" type="number" disabled />
+        </div>
+        <div class="coords-row button-row">
+          <button class="app-btn" type="button" id="mosaic-use2" data-i18n="mosaic.use2">Use 2 coords</button>
+          <button class="app-btn" type="button" id="mosaic-use4" data-i18n="mosaic.use4">Use 4 coords</button>
+          <button class="app-btn" type="button" id="mosaic-fetch" data-i18n="mosaic.fetch">Fetch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <form class="panel" id="form">
     <label for="area-code" data-i18n="form.worldXLabel">World X</label>
     <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
@@ -988,6 +1044,7 @@
     <input id="no" name="no" type="number" min="0" step="1" inputmode="numeric" />
 
     <button class="app-btn" type="submit" data-i18n="form.fetchButton">Getir</button>
+    <button class="app-btn" type="button" id="btn-mosaic" data-i18n="form.mosaicButton">Mosaic</button>
     <button class="app-btn" type="button" id="btn-upload-sign" data-i18n="form.uploadImage">Resim yükle</button>
   </form>
  
@@ -1251,6 +1308,23 @@
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
     const uploadBtn = document.getElementById('btn-upload-sign');
+    const mosaicBtn = document.getElementById('btn-mosaic');
+    const mosaicModal = document.getElementById('mosaic-modal');
+    const mosaicClose = document.getElementById('mosaic-close');
+    const mosaicX1 = document.getElementById('mosaic-x1');
+    const mosaicY1 = document.getElementById('mosaic-y1');
+    const mosaicX2 = document.getElementById('mosaic-x2');
+    const mosaicY2 = document.getElementById('mosaic-y2');
+    const mosaicX3 = document.getElementById('mosaic-x3');
+    const mosaicY3 = document.getElementById('mosaic-y3');
+    const mosaicX4 = document.getElementById('mosaic-x4');
+    const mosaicY4 = document.getElementById('mosaic-y4');
+    const mosaicRow3 = document.getElementById('mosaic-row-3');
+    const mosaicRow4 = document.getElementById('mosaic-row-4');
+    const mosaicUse2 = document.getElementById('mosaic-use2');
+    const mosaicUse4 = document.getElementById('mosaic-use4');
+    const mosaicFetch = document.getElementById('mosaic-fetch');
+    const mosaicCanvas = document.createElement('canvas');
     const sidebar = document.getElementById('sidebar');
     const thumbList = document.getElementById('thumb-list');
     const counter = document.getElementById('counter');
@@ -2704,6 +2778,11 @@
 
     let img = null;
     let baseImageData = null;
+    let currentTiles = [];
+    let currentTileW = 0;
+    let currentTileH = 0;
+    let currentMosaicCols = 1;
+    let currentMosaicRows = 1;
     const state = {
       scale: 1,
       minScale: 0.1,
@@ -2851,15 +2930,25 @@
 
     function reloadCurrentBackground() {
       try {
-        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
-        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        if (!area || !no) return;
-        
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (!saved) return;
+        if (saved.mode === 'mosaic') {
+          loadMosaic(saved.coords, true);
+          return;
+        }
+        if (saved.mode !== 'single') return;
+        const area = saved.coords[0].x;
+        const no = saved.coords[0].y;
         const url = buildUrl(area, no) + '?t=' + Date.now();
         const image = new Image();
         image.onload = () => {
           img = image;
           baseImageData = null;
+          currentTiles = [{ x: Number(area), y: Number(no) }];
+          currentTileW = image.width;
+          currentTileH = image.height;
+          currentMosaicCols = 1;
+          currentMosaicRows = 1;
           try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
           render();
           updatePixelMarkers();
@@ -2876,15 +2965,32 @@
       return '/tiles/' + encodeURIComponent(area) + '/' + encodeURIComponent(no) + '.png';
     }
 
-    function loadImage(area, no) {
+    function loadImage(area, no, preserveView = false) {
       const url = buildUrl(area, no);
       const image = new Image();
-      
+
       image.onload = () => {
+        const prevScale = state.scale;
+        const prevTx = state.translateX;
+        const prevTy = state.translateY;
+
         img = image;
+        currentTiles = [{ x: Number(area), y: Number(no) }];
+        currentTileW = image.width;
+        currentTileH = image.height;
+        currentMosaicCols = 1;
+        currentMosaicRows = 1;
         try { baseImageData = null; } catch {}
-        
-        fitToView();
+
+        if (preserveView) {
+          state.scale = prevScale;
+          state.translateX = prevTx;
+          state.translateY = prevTy;
+          render();
+        } else {
+          fitToView();
+        }
+        localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
       };
       image.onerror = () => {
         alert(t('messages.imageLoadFailed'));
@@ -4382,6 +4488,113 @@
       if (e.key === 'Escape') accountsModal.hidden = true;
     });
 
+    // Mosaic modal logic
+    let mosaicCount = 2;
+    function updateMosaicCoords(){
+      const x1 = Number(mosaicX1.value) || 0;
+      const y1 = Number(mosaicY1.value) || 0;
+      mosaicX2.value = x1 + 1;
+      mosaicY2.value = y1;
+      mosaicX3.value = x1;
+      mosaicY3.value = y1 + 1;
+      mosaicX4.value = x1 + 1;
+      mosaicY4.value = y1 + 1;
+    }
+    mosaicX1.addEventListener('input', updateMosaicCoords);
+    mosaicY1.addEventListener('input', updateMosaicCoords);
+
+    mosaicBtn.addEventListener('click', () => {
+      mosaicModal.hidden = false;
+      document.body.classList.add('no-scroll');
+      mosaicCount = 2;
+      mosaicRow3.hidden = true;
+      mosaicRow4.hidden = true;
+      updateMosaicCoords();
+    });
+    mosaicClose.addEventListener('click', () => {
+      mosaicModal.hidden = true;
+      document.body.classList.remove('no-scroll');
+    });
+    mosaicModal.addEventListener('click', (e) => {
+      if (e.target === mosaicModal) {
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !mosaicModal.hidden) {
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      }
+    });
+
+    mosaicUse2.addEventListener('click', () => {
+      mosaicCount = 2;
+      mosaicRow3.hidden = true;
+      mosaicRow4.hidden = true;
+    });
+    mosaicUse4.addEventListener('click', () => {
+      mosaicCount = 4;
+      mosaicRow3.hidden = false;
+      mosaicRow4.hidden = false;
+    });
+
+    function fetchTile(area, no) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = buildUrl(area, no) + '?t=' + Date.now();
+      });
+    }
+
+    async function loadMosaic(coords, preserveView = false) {
+      const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
+      const tileW = images[0].width;
+      const tileH = images[0].height;
+      mosaicCanvas.width = tileW * 2;
+      mosaicCanvas.height = tileH * (coords.length === 2 ? 1 : 2);
+      const mctx = mosaicCanvas.getContext('2d');
+      mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
+      mctx.drawImage(images[0], 0, 0);
+      mctx.drawImage(images[1], tileW, 0);
+      if (coords.length === 4) {
+        mctx.drawImage(images[2], 0, tileH);
+        mctx.drawImage(images[3], tileW, tileH);
+      }
+      img = mosaicCanvas;
+      currentTiles = coords.slice();
+      currentTileW = tileW;
+      currentTileH = tileH;
+      currentMosaicCols = 2;
+      currentMosaicRows = coords.length === 2 ? 1 : 2;
+      try { baseImageData = null; } catch {}
+      if (preserveView) {
+        render();
+      } else {
+        fitToView();
+      }
+    }
+
+    mosaicFetch.addEventListener('click', async () => {
+      const coords = [
+        { x: Number(mosaicX1.value), y: Number(mosaicY1.value) },
+        { x: Number(mosaicX2.value), y: Number(mosaicY2.value) }
+      ];
+      if (mosaicCount === 4) {
+        coords.push({ x: Number(mosaicX3.value), y: Number(mosaicY3.value) });
+        coords.push({ x: Number(mosaicX4.value), y: Number(mosaicY4.value) });
+      }
+      try {
+        await loadMosaic(coords);
+        localStorage.setItem('lastFetch', JSON.stringify({ mode: 'mosaic', coords }));
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      } catch (err) {
+        alert(t('messages.imageLoadFailed'));
+      }
+    });
+
     
     sign.addEventListener('load', () => {});
 
@@ -5161,6 +5374,32 @@
       } catch {}
     }
 
+    function groupPixelsByTile(colors, coords) {
+      const tileWidth = currentTileW || (img ? img.width : 0);
+      const tileHeight = currentTileH || (img ? img.height : 0);
+      const cols = currentMosaicCols || 1;
+      const map = new Map();
+      for (let i = 0; i < colors.length; i++) {
+        const wx = coords[i * 2];
+        const wy = coords[i * 2 + 1];
+        const col = Math.floor(wx / tileWidth);
+        const row = Math.floor(wy / tileHeight);
+        const index = row * cols + col;
+        const tile = currentTiles[index] || currentTiles[0] || { x: 0, y: 0 };
+        const localX = wx - col * tileWidth;
+        const localY = wy - row * tileHeight;
+        const key = tile.x + ',' + tile.y;
+        let g = map.get(key);
+        if (!g) {
+          g = { area: tile.x, no: tile.y, coords: [], colors: [] };
+          map.set(key, g);
+        }
+        g.coords.push(localX, localY);
+        g.colors.push(colors[i]);
+      }
+      return Array.from(map.values());
+    }
+
     if (startBtn) {
       startBtn.addEventListener('click', () => {
         const hasToken = !!(readyTokenInput && readyTokenInput.value && readyTokenInput.value.trim().length > 0);
@@ -5175,43 +5414,46 @@
         if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
         const data = buildSelectedExportForItem(sel);
         const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
-        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
-        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        const total = data.colors.length|0;
-        const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+        const groups = groupPixelsByTile(data.colors, data.coords);
         (async () => {
-          let offset = 0;
-          const usedIds = [];
-          let hadRequestError = false;
-          for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
-            const acc = selectedAccounts[i];
-            const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
-            if (cap <= 0) continue;
-            const take = Math.min(cap, total - offset);
-            if (take <= 0) continue;
-            const colorsSlice = data.colors.slice(offset, offset + take);
-            const coordsSlice = data.coords.slice(offset * 2, (offset + take) * 2);
-            const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
-            if (r && r.status === 429) {
-              hadRequestError = true;
-              try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
-              break;
-            }
-            if (!r.ok) {
-              if (r.status >= 500) {
-                try { await loadAccounts(); } catch {}
-                continue;
-              } else {
+          let paintedAny = false;
+          let missingTotal = 0;
+          for (const g of groups) {
+            const total = g.colors.length|0;
+            const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+            let offset = 0;
+            let hadRequestError = false;
+            for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
+              const acc = selectedAccounts[i];
+              const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
+              if (cap <= 0) continue;
+              const take = Math.min(cap, total - offset);
+              if (take <= 0) continue;
+              const colorsSlice = g.colors.slice(offset, offset + take);
+              const coordsSlice = g.coords.slice(offset * 2, (offset + take) * 2);
+              const r = await postBatch(String(g.area), String(g.no), colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+              if (r && r.status === 429) {
                 hadRequestError = true;
-                showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
+                try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
                 break;
               }
+              if (!r.ok) {
+                if (r.status >= 500) {
+                  try { await loadAccounts(); } catch {}
+                  continue;
+                } else {
+                  hadRequestError = true;
+                  showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
+                  break;
+                }
+              }
+              offset += take;
+              try { await refreshAccountById(acc.id); } catch {}
             }
-            usedIds.push(acc.id);
-            offset += take;
-            try { await refreshAccountById(acc.id); } catch {}
+            if (offset > 0) paintedAny = true;
+            if (offset < total && !hadRequestError) missingTotal += (total - offset);
           }
-          if (offset > 0) {
+          if (paintedAny) {
             showToast(t('messages.painted'), 'success', 1800);
             reloadCurrentBackground();
             try { clearAllReadySelections(); } catch {}
@@ -5219,12 +5461,12 @@
             try { readyGlobalMode = false; } catch {}
             try { updateStartEnabled(); } catch {}
           }
-          if (offset < total && !hadRequestError) {
-            showToast(t('messages.insufficientPixelPower', { n: (total - offset) }), 'error', 3000);
+          if (missingTotal > 0) {
+            showToast(t('messages.insufficientPixelPower', { n: missingTotal }), 'error', 3000);
           }
-          
+
           try { await loadAccounts(); } catch {}
-          
+
           try { updateReadySelectionLabel(); } catch {}
           render();
           render();
@@ -5380,7 +5622,14 @@
     (async () => {
       try {
         await loadSettings();
-        if (areaInput.value && noInput.value) {
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (saved && saved.mode === 'mosaic') {
+          await loadMosaic(saved.coords);
+        } else if (saved && saved.mode === 'single') {
+          areaInput.value = String(saved.coords[0].x);
+          noInput.value = String(saved.coords[0].y);
+          loadImage(areaInput.value, noInput.value);
+        } else if (areaInput.value && noInput.value) {
           loadImage(areaInput.value, noInput.value);
         }
       } catch {}
@@ -5388,10 +5637,23 @@
       loadAccounts();
     })();
     updatePixelPowerPosition();
-    
+
     try {
       setInterval(() => { refreshAllAccounts(); }, 20 * 1000);
     } catch {}
+
+    const CANVAS_REFRESH_MS = 30 * 1000;
+    setInterval(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (!saved) return;
+        if (saved.mode === 'mosaic') {
+          loadMosaic(saved.coords, true);
+        } else if (saved.mode === 'single') {
+          loadImage(saved.coords[0].x, saved.coords[0].y, true);
+        }
+      } catch {}
+    }, CANVAS_REFRESH_MS);
     
     
     try { setupColorPalette(); } catch {}
