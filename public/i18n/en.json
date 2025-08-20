@@ -34,6 +34,7 @@
   "table": {
     "accountName": "Account name",
     "accountToken": "Account token",
+    "droplets": "Droplets",
     "pixelRight": "Pixel limit",
     "status": "Status",
     "actions": "Action",
@@ -69,7 +70,8 @@
     "add": "Add",
     "saveSettings": "Save",
     "edit": "Edit",
-    "checkPixels": "Check pixel",
+    "checkPixels": "Check",
+    "shop": "Shop",
     "delete": "Delete"
   },
   "thumb": {
@@ -82,6 +84,10 @@
   "palette": {
     "transparentTitle": "Transparent (image color)",
     "colorTitle": "Color #{id}"
+  },
+  "paletteMode": {
+    "premium": "Use premium color",
+    "free": "Use free color"
   },
   "controls": {
     "movement": "Movement"
@@ -106,7 +112,21 @@
     "imageLoadFailed": "Image could not be loaded. Check the values.",
     "tokenAlreadyExists": "An account with this token already exists.",
     "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist.",
-    "cfClearanceChange": "Please change cf_clearance."
+    "cfClearanceChange": "Please change cf_clearance.",
+    "purchaseSuccess": "Purchase successful",
+    "purchaseFail": "Purchase failed"
+  },
+  "shop": {
+    "premiumTitle": "Premium Colors",
+    "purchased": "Purchased colors",
+    "exclusive": "Exclusive palette",
+    "buyPremium": "💧 2000 Droplets",
+    "itemsTitle": "Items",
+    "itemsSub": "Get more charges",
+    "maxTitle": "+5 Max. Charges",
+    "maxDesc": "Increase your maximum paint charges capacity",
+    "recTitle": "+30 Paint Charges",
+    "recDesc": "Recharge paint charges"
   }
 }
 
