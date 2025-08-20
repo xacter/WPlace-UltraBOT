@@ -939,6 +939,23 @@
               <label for="img-fill-color" data-i18n="preview.color">Renk</label>
               <div id="img-fill-color" aria-disabled="true"></div>
             </div>
+           <div class="row">
+             <label for="img-alpha-range" data-i18n="preview.alphaThreshold" style="margin-right:8px;">Transparency threshold</label>
+             <input id="img-alpha-range" type="range" min="0" max="255" step="1" value="5" />
+             <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" style="width:60px;" />
+           </div>
+           <div class="row">
+             <label for="img-color-metric" data-i18n="preview.colorMetric" style="margin-right:8px;">Color metric</label>
+             <select id="img-color-metric">
+               <option value="rgb" data-i18n="preview.metricRgb">RGB (fast)</option>
+               <option value="lab" data-i18n="preview.metricLab">Lab (CIE76)</option>
+               <option value="ciede2000" data-i18n="preview.metricCiede2000">CIEDE2000 (more accurate, slower)</option>
+             </select>
+           </div>
+           <div class="row">
+             <label for="img-dither-toggle" data-i18n="preview.dithering" style="margin-right:8px;">Dithering</label>
+             <button id="img-dither-toggle" class="app-btn" type="button" data-state="off" data-i18n="preview.ditheringOff">Dithering: OFF</button>
+           </div>
           </div>
         </div>
       </div>
@@ -2308,21 +2325,56 @@
     function squaredDistance(r1,g1,b1, r2,g2,b2){
       const dr=r1-r2, dg=g1-g2, db=b1-b2; return dr*dr+dg*dg+db*db;
     }
-    
-    function srgbToOklab(r, g, b){
-      const sr = r / 255, sg = g / 255, sb = b / 255;
-      const toLin = (u) => (u <= 0.04045) ? (u / 12.92) : Math.pow((u + 0.055) / 1.055, 2.4);
-      const lr = toLin(sr), lg = toLin(sg), lb = toLin(sb);
-      const l_ = 0.4122214708*lr + 0.5363325363*lg + 0.0514459929*lb;
-      const m_ = 0.2119034982*lr + 0.6806995451*lg + 0.1073969566*lb;
-      const s_ = 0.0883024619*lr + 0.2817188376*lg + 0.6299787005*lb;
-      const l = Math.cbrt(l_), m = Math.cbrt(m_), s = Math.cbrt(s_);
-      const L = 0.2104542553*l + 0.7936177850*m - 0.0040720468*s;
-      const A = 1.9779984951*l - 2.4285922050*m + 0.4505937099*s;
-      const B = 0.0259040371*l + 0.7827717662*m - 0.8086757660*s;
-      return [L, A, B];
+    function srgbToXyz(r,g,b){
+      let sr=r/255, sg=g/255, sb=b/255;
+      const toLin=(u)=> (u<=0.04045)?(u/12.92):Math.pow((u+0.055)/1.055,2.4);
+      sr=toLin(sr); sg=toLin(sg); sb=toLin(sb);
+      const x=sr*0.4124 + sg*0.3576 + sb*0.1805;
+      const y=sr*0.2126 + sg*0.7152 + sb*0.0722;
+      const z=sr*0.0193 + sg*0.1192 + sb*0.9505;
+      return [x,y,z];
     }
-    let PALETTE_OKLAB = [];
+    function xyzToLab(x,y,z){
+      const xn=0.95047, yn=1.0, zn=1.08883;
+      x/=xn; y/=yn; z/=zn;
+      const f=(t)=> t>0.008856?Math.cbrt(t):(7.787*t + 16/116);
+      const fx=f(x), fy=f(y), fz=f(z);
+      return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+    }
+    function srgbToLab(r,g,b){
+      const xyz=srgbToXyz(r,g,b); return xyzToLab(xyz[0],xyz[1],xyz[2]);
+    }
+    function ciede2000(lab1, lab2){
+      const [L1,a1,b1]=lab1; const [L2,a2,b2]=lab2;
+      const avgLp=(L1+L2)/2;
+      const C1=Math.hypot(a1,b1); const C2=Math.hypot(a2,b2);
+      const avgC=(C1+C2)/2;
+      const G=0.5*(1-Math.sqrt(Math.pow(avgC,7)/(Math.pow(avgC,7)+Math.pow(25,7))));
+      const a1p=(1+G)*a1; const a2p=(1+G)*a2;
+      const C1p=Math.hypot(a1p,b1); const C2p=Math.hypot(a2p,b2);
+      const avgCp=(C1p+C2p)/2;
+      let h1p=Math.atan2(b1,a1p); if (h1p<0) h1p+=2*Math.PI;
+      let h2p=Math.atan2(b2,a2p); if (h2p<0) h2p+=2*Math.PI;
+      let deltahp;
+      const diffh=h2p-h1p;
+      if (isNaN(h1p) || isNaN(h2p)) deltahp=0;
+      else if (Math.abs(diffh)<=Math.PI) deltahp=diffh;
+      else if (diffh>Math.PI) deltahp=diffh-2*Math.PI;
+      else deltahp=diffh+2*Math.PI;
+      const deltaLp=L2-L1;
+      const deltaCp=C2p-C1p;
+      const deltaHp=2*Math.sqrt(C1p*C2p)*Math.sin(deltahp/2);
+      const avgLpMinus50Sq=Math.pow(avgLp-50,2);
+      const Sl=1+(0.015*avgLpMinus50Sq)/Math.sqrt(20+avgLpMinus50Sq);
+      const Sc=1+0.045*avgCp;
+      const T=1-0.17*Math.cos((h1p+h2p)/2 - Math.PI/6) + 0.24*Math.cos(2*(h1p+h2p)/2) + 0.32*Math.cos(3*(h1p+h2p)/2 + Math.PI/30) - 0.20*Math.cos(4*(h1p+h2p)/2 - 63*Math.PI/180);
+      const Sh=1+0.015*avgCp*T;
+      const deltaTheta=30*Math.PI/180*Math.exp(-Math.pow(((h1p+h2p)/2 - 275*Math.PI/180)/(25*Math.PI/180),2));
+      const Rc=2*Math.sqrt(Math.pow(avgCp,7)/(Math.pow(avgCp,7)+Math.pow(25,7)));
+      const Rt=-Rc*Math.sin(2*deltaTheta);
+      return Math.sqrt(Math.pow(deltaLp/Sl,2)+Math.pow(deltaCp/Sc,2)+Math.pow(deltaHp/Sh,2)+Rt*(deltaCp/Sc)*(deltaHp/Sh));
+    }
+    let PALETTE_LAB = [];
     let EXACT_PALETTE_MAP = new Map();
     function recomputePaletteCaches(){
       try {
@@ -2331,44 +2383,74 @@
         const m = new Map();
         for (let i = 0; i < arrActive.length; i++){
           const p = arrActive[i];
-          const lab = srgbToOklab(p.rgb[0], p.rgb[1], p.rgb[2]);
-          arr.push({ id: p.id, lab });
+          const lab = srgbToLab(p.rgb[0], p.rgb[1], p.rgb[2]);
+          arr.push({ id: p.id, lab, rgb: p.rgb });
           m.set(String(p.rgb[0]) + ',' + String(p.rgb[1]) + ',' + String(p.rgb[2]), p.id);
         }
-        PALETTE_OKLAB = arr;
+        PALETTE_LAB = arr;
         EXACT_PALETTE_MAP = m;
       } catch {}
     }
     try { recomputePaletteCaches(); } catch {}
-    function nearestPaletteRgb(r,g,b){
-      const lab = srgbToOklab(r,g,b);
+    function nearestPaletteColor(r,g,b, metric){
       const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
-      let best = arr[0].rgb, bestD = Infinity;
-      for (let i = 0; i < PALETTE_OKLAB.length; i++){
-        const q = PALETTE_OKLAB[i].lab;
-        const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
-        const d = dL*dL + dA*dA + dB*dB;
-        if (d < bestD){ bestD = d; best = arr[i].rgb; if (d === 0) break; }
+      if (metric === 'lab' || metric === 'ciede2000'){
+        const lab = srgbToLab(r,g,b);
+        let best = arr[0].rgb, bestD = Infinity;
+        for (let i = 0; i < PALETTE_LAB.length; i++){
+          const q = PALETTE_LAB[i];
+          let d;
+          if (metric === 'lab'){
+            const dL = lab[0]-q.lab[0], dA = lab[1]-q.lab[1], dB = lab[2]-q.lab[2];
+            d = dL*dL + dA*dA + dB*dB;
+          } else {
+            d = ciede2000(lab, q.lab);
+          }
+          if (d < bestD){ bestD = d; best = q.rgb; if (d === 0) break; }
+        }
+        return best;
+      } else {
+        let best = arr[0].rgb, bestD = Infinity;
+        for (let i = 0; i < arr.length; i++){
+          const p = arr[i].rgb;
+          const d = squaredDistance(r,g,b,p[0],p[1],p[2]);
+          if (d < bestD){ bestD = d; best = p; if (d === 0) break; }
+        }
+        return best;
       }
-      return best;
     }
-    function nearestPaletteId(r,g,b){
-      const lab = srgbToOklab(r,g,b);
+    function nearestPaletteId(r,g,b, metric){
       const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
-      let bestId = arr[0].id;
-      let bestD = Infinity;
-      for (let i = 0; i < PALETTE_OKLAB.length; i++){
-        const q = PALETTE_OKLAB[i].lab;
-        const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
-        const d = dL*dL + dA*dA + dB*dB;
-        if (d < bestD){ bestD = d; bestId = arr[i].id; if (d === 0) break; }
+      if (metric === 'lab' || metric === 'ciede2000'){
+        const lab = srgbToLab(r,g,b);
+        let bestId = arr[0].id, bestD = Infinity;
+        for (let i = 0; i < PALETTE_LAB.length; i++){
+          const q = PALETTE_LAB[i];
+          let d;
+          if (metric === 'lab'){
+            const dL = lab[0]-q.lab[0], dA = lab[1]-q.lab[1], dB = lab[2]-q.lab[2];
+            d = dL*dL + dA*dA + dB*dB;
+          } else {
+            d = ciede2000(lab, q.lab);
+          }
+          if (d < bestD){ bestD = d; bestId = q.id; if (d === 0) break; }
+        }
+        return bestId;
+      } else {
+        let bestId = arr[0].id, bestD = Infinity;
+        for (let i = 0; i < arr.length; i++){
+          const p = arr[i].rgb;
+          const d = squaredDistance(r,g,b,p[0],p[1],p[2]);
+          if (d < bestD){ bestD = d; bestId = arr[i].id; if (d === 0) break; }
+        }
+        return bestId;
       }
-      return bestId;
     }
     function rgbToPaletteId(r,g,b){
       const key = String(r) + ',' + String(g) + ',' + String(b);
       if (EXACT_PALETTE_MAP.has(key)) return EXACT_PALETTE_MAP.get(key);
-      return nearestPaletteId(r,g,b);
+      const metric = imgColorMetricSelect ? imgColorMetricSelect.value : 'rgb';
+      return nearestPaletteId(r,g,b, metric);
     }
     function quantizeImageToPalette(image){
       const w=image.naturalWidth|0, h=image.naturalHeight|0;
@@ -2378,60 +2460,70 @@
       octx.drawImage(image,0,0);
       const id=octx.getImageData(0,0,w,h);
       const data=id.data;
-      
-      const w2 = w + 2;
-      const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
-      const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
-      for (let y = 0; y < h; y++) {
-        const leftToRight = (y % 2 === 0);
-        
-        for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
-        
-        if (leftToRight) {
-          for (let x = 0; x < w; x++) {
-            const idx = (y * w + x) * 4;
-            const a = data[idx + 3]; if (a === 0) continue;
-            let r = data[idx] + errCurrR[x+1];
-            let g = data[idx+1] + errCurrG[x+1];
-            let b = data[idx+2] + errCurrB[x+1];
-            r = r < 0 ? 0 : (r > 255 ? 255 : r);
-            g = g < 0 ? 0 : (g > 255 ? 255 : g);
-            b = b < 0 ? 0 : (b > 255 ? 255 : b);
-            const nn = nearestPaletteRgb(r, g, b);
-            data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-            const er = r - nn[0];
-            const eg = g - nn[1];
-            const eb = b - nn[2];
-            
-            errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-            errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-            errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+      const alphaTh = imgAlphaInput ? parseInt(imgAlphaInput.value||'0',10) : 0;
+      for (let i=0;i<data.length;i+=4){
+        data[i+3] = (data[i+3] <= alphaTh) ? 0 : 255;
+      }
+      const metric = imgColorMetricSelect ? imgColorMetricSelect.value : 'rgb';
+      if (imgDitherEnabled){
+        const w2 = w + 2;
+        const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+        const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+        for (let y = 0; y < h; y++){
+          const leftToRight = (y % 2 === 0);
+          for (let i = 0; i < w2; i++){ errCurrR[i]+=0; errCurrG[i]+=0; errCurrB[i]+=0; }
+          if (leftToRight){
+            for (let x = 0; x < w; x++){
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteColor(r,g,b,metric);
+              data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+            }
+          } else {
+            for (let x = w - 1; x >= 0; x--){
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteColor(r,g,b,metric);
+              data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+            }
           }
-        } else {
-          for (let x = w - 1; x >= 0; x--) {
+          for (let i = 0; i < w2; i++){ errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+        }
+      } else {
+        for (let y = 0; y < h; y++){
+          for (let x = 0; x < w; x++){
             const idx = (y * w + x) * 4;
-            const a = data[idx + 3]; if (a === 0) continue;
-            let r = data[idx] + errCurrR[x+1];
-            let g = data[idx+1] + errCurrG[x+1];
-            let b = data[idx+2] + errCurrB[x+1];
-            r = r < 0 ? 0 : (r > 255 ? 255 : r);
-            g = g < 0 ? 0 : (g > 255 ? 255 : g);
-            b = b < 0 ? 0 : (b > 255 ? 255 : b);
-            const nn = nearestPaletteRgb(r, g, b);
-            data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-            const er = r - nn[0];
-            const eg = g - nn[1];
-            const eb = b - nn[2];
-            
-            errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
-            errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
-            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-            errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+            if (data[idx + 3] === 0) continue;
+            const nn = nearestPaletteColor(data[idx], data[idx+1], data[idx+2], metric);
+            data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
           }
         }
-        
-        for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
       }
       octx.putImageData(id,0,0);
       return new Promise((resolve)=>{ off.toBlob((blob)=>resolve(blob), 'image/png'); });
@@ -4295,8 +4387,20 @@
     const imgHeightInput = document.getElementById('img-height');
     const imgFillToggle = document.getElementById('img-fill-toggle');
     const imgFillColorWrap = document.getElementById('img-fill-color');
+    const imgAlphaRange = document.getElementById('img-alpha-range');
+    const imgAlphaInput = document.getElementById('img-alpha-input');
+    const imgColorMetricSelect = document.getElementById('img-color-metric');
+    const imgDitherToggle = document.getElementById('img-dither-toggle');
+    let imgDitherEnabled = false;
     let imgFillColorId = null; // null => none, number => palette id
     let previewSourceImage = null;
+
+    function updateDitherButtonUi(){
+      if (!imgDitherToggle) return;
+      const key = imgDitherEnabled ? 'preview.ditheringOn' : 'preview.ditheringOff';
+      imgDitherToggle.textContent = t(key);
+      imgDitherToggle.dataset.state = imgDitherEnabled ? 'on' : 'off';
+    }
 
     function openImagePreview(image, filename){
       previewSourceImage = image;
@@ -4309,6 +4413,10 @@
       imgFillColorId = null;
       buildFillPaletteUi();
       try { if (imgFillColorWrap) imgFillColorWrap.setAttribute('aria-disabled', 'true'); } catch {}
+      try { imgAlphaRange.value = '5'; imgAlphaInput.value = '5'; } catch {}
+      try { imgColorMetricSelect.value = 'rgb'; } catch {}
+      imgDitherEnabled = false;
+      updateDitherButtonUi();
       drawPreview();
       imgPreviewModal.hidden = false;
       try { document.body.classList.add('no-scroll'); } catch {}
@@ -4328,59 +4436,70 @@
       try {
         const id = octx.getImageData(0, 0, targetW, targetH);
         const data = id.data;
-        const w2 = targetW + 2;
-        const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
-        const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
-        for (let y = 0; y < targetH; y++) {
-          const leftToRight = (y % 2 === 0);
-          for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
-          if (leftToRight) {
+        const alphaTh = imgAlphaInput ? parseInt(imgAlphaInput.value||'0',10) : 0;
+        for (let i = 0; i < data.length; i += 4) {
+          data[i+3] = (data[i+3] <= alphaTh) ? 0 : 255;
+        }
+        const metric = imgColorMetricSelect ? imgColorMetricSelect.value : 'rgb';
+        if (imgDitherEnabled) {
+          const w2 = targetW + 2;
+          const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+          const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+          for (let y = 0; y < targetH; y++) {
+            const leftToRight = (y % 2 === 0);
+            for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
+            if (leftToRight) {
+              for (let x = 0; x < targetW; x++) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteColor(r, g, b, metric);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = r - nn[0];
+                const eg = g - nn[1];
+                const eb = b - nn[2];
+                errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+                errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+              }
+            } else {
+              for (let x = targetW - 1; x >= 0; x--) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteColor(r, g, b, metric);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = r - nn[0];
+                const eg = g - nn[1];
+                const eb = b - nn[2];
+                errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+                errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+              }
+            }
+            for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+          }
+        } else {
+          for (let y = 0; y < targetH; y++) {
             for (let x = 0; x < targetW; x++) {
               const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3];
-              if (a === 0) {
-                // already filled by background above if enabled; skip quantization for speed
-                continue;
-              }
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
-              const nn = nearestPaletteRgb(r, g, b);
+              if (data[idx + 3] === 0) continue;
+              const nn = nearestPaletteColor(data[idx], data[idx+1], data[idx+2], metric);
               data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
-            }
-          } else {
-            for (let x = targetW - 1; x >= 0; x--) {
-              const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3];
-              if (a === 0) { continue; }
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
-              const nn = nearestPaletteRgb(r, g, b);
-              data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
-              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
             }
           }
-          for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
         }
         octx.putImageData(id, 0, 0);
       } catch {}
@@ -4457,6 +4576,19 @@
     if (imgWidthInput) imgWidthInput.addEventListener('change', updateHeightFromWidth);
     if (imgHeightInput) imgHeightInput.addEventListener('change', updateWidthFromHeight);
     if (imgKeepRatioInput) imgKeepRatioInput.addEventListener('change', () => { drawPreview(); });
+    if (imgAlphaRange && imgAlphaInput) {
+      imgAlphaRange.addEventListener('input', () => { imgAlphaInput.value = imgAlphaRange.value; drawPreview(); });
+      imgAlphaInput.addEventListener('input', () => {
+        let v = parseInt(imgAlphaInput.value||'0',10);
+        if (isNaN(v)) v = 0;
+        if (v < 0) v = 0; else if (v > 255) v = 255;
+        imgAlphaInput.value = String(v);
+        imgAlphaRange.value = String(v);
+        drawPreview();
+      });
+    }
+    if (imgColorMetricSelect) imgColorMetricSelect.addEventListener('change', () => { drawPreview(); });
+    if (imgDitherToggle) imgDitherToggle.addEventListener('click', () => { imgDitherEnabled = !imgDitherEnabled; updateDitherButtonUi(); drawPreview(); });
     function buildFillPaletteUi(){
       if (!imgFillColorWrap) return;
       try { imgFillColorWrap.innerHTML = ''; } catch {}

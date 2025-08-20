@@ -59,7 +59,15 @@
     "fillBackground": "填充背景",
     "color": "颜色",
     "addToMap": "添加到地图",
-    "maxSizeExceeded": "最大尺寸为 1000x1000 像素。"
+    "maxSizeExceeded": "最大尺寸为 1000x1000 像素。",
+    "alphaThreshold": "Transparency threshold (α ≤ N → transparent)",
+    "colorMetric": "Color distance metric",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
