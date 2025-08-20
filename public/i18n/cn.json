@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "从头选择",
       "frame": "从轮廓选择"
+    },
+    "autoMode": {
+      "on": "自动模式 开",
+      "off": "自动模式 关"
+    },
+    "autoStart": {
+      "on": "自动开始 开",
+      "off": "自动开始 关"
     }
   },
   "modal": {
@@ -126,6 +134,7 @@
     "cfCannotBeClearedWithAccounts": "存在账号时，cf_clearance 不能为空。",
     "cfClearanceChange": "请更改 cf_clearance。",
     "purchaseSuccess": "购买成功",
-    "purchaseFail": "购买失败"
+    "purchaseFail": "购买失败",
+    "tokenPastedFromExtension": "已从扩展粘贴 token"
   }
 }

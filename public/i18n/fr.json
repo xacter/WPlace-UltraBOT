@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Sélection depuis le départ",
       "frame": "Sélection depuis le cadre"
+    },
+    "autoMode": {
+      "on": "Mode auto activé",
+      "off": "Mode auto désactivé"
+    },
+    "autoStart": {
+      "on": "Démarrage auto activé",
+      "off": "Démarrage auto désactivé"
     }
   },
   "modal": {
@@ -126,7 +134,8 @@
     "cfCannotBeClearedWithAccounts": "cf_clearance ne peut pas être vide si des comptes existent.",
     "cfClearanceChange": "Veuillez changer cf_clearance.",
     "purchaseSuccess": "Achat réussi",
-    "purchaseFail": "Échec de l'achat"
+    "purchaseFail": "Échec de l'achat",
+    "tokenPastedFromExtension": "Jeton collé depuis l’extension"
   }
 }
 

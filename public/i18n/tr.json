@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Önce başlangıçtan seç",
       "frame": "Önce çerçeveden seç"
+    },
+    "autoMode": {
+      "on": "Auto mode açık",
+      "off": "Auto mode kapalı"
+    },
+    "autoStart": {
+      "on": "Oto başlat açık",
+      "off": "Oto başlat kapalı"
     }
   },
   "modal": {
@@ -117,7 +125,8 @@
     "premiumColorLimitReached": "Seçilen premium renk için yeterli kapasite yok.",
     "accountNotFound": "Hesap bulunamadı",
     "purchaseSuccess": "Satın alım başarılı",
-    "purchaseFail": "Satın alım başarısız"
+    "purchaseFail": "Satın alım başarısız",
+    "tokenPastedFromExtension": "Token eklentiden yapıştırıldı"
   },
   "shop": {
     "premiumTitle": "Premium Renkler",

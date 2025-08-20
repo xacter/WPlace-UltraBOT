@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Выбрать с начала",
       "frame": "Выбрать по рамке"
+    },
+    "autoMode": {
+      "on": "Авторежим включен",
+      "off": "Авторежим выключен"
+    },
+    "autoStart": {
+      "on": "Автостарт включен",
+      "off": "Автостарт выключен"
     }
   },
   "modal": {
@@ -126,7 +134,8 @@
     "cfCannotBeClearedWithAccounts": "cf_clearance не может быть пустым при наличии аккаунтов.",
     "cfClearanceChange": "Пожалуйста, смените cf_clearance.",
     "purchaseSuccess": "Покупка успешна",
-    "purchaseFail": "Покупка не удалась"
+    "purchaseFail": "Покупка не удалась",
+    "tokenPastedFromExtension": "Токен вставлен из расширения"
   }
 }
 

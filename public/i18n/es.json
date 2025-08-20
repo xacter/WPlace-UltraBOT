@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Seleccionar desde inicio",
       "frame": "Seleccionar desde contorno"
+    },
+    "autoMode": {
+      "on": "Modo automático activado",
+      "off": "Modo automático desactivado"
+    },
+    "autoStart": {
+      "on": "Inicio automático activado",
+      "off": "Inicio automático desactivado"
     }
   },
   "modal": {
@@ -126,7 +134,8 @@
     "cfCannotBeClearedWithAccounts": "cf_clearance no puede estar vacío mientras existan cuentas.",
     "cfClearanceChange": "Por favor cambia cf_clearance.",
     "purchaseSuccess": "Compra exitosa",
-    "purchaseFail": "Compra fallida"
+    "purchaseFail": "Compra fallida",
+    "tokenPastedFromExtension": "Token pegado desde la extensión"
   }
 }
 
