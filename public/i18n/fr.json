@@ -59,7 +59,15 @@
     "fillBackground": "Remplir l’arrière-plan",
     "color": "Couleur",
     "addToMap": "Ajouter à la carte",
-    "maxSizeExceeded": "La taille maximale est de 1000x1000 pixels."
+    "maxSizeExceeded": "La taille maximale est de 1000x1000 pixels.",
+    "alphaThreshold": "Transparence",
+    "colorMetric": "Algorithme couleur",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
