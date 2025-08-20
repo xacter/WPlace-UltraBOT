@@ -352,6 +352,9 @@
     #img-fill-color { display: grid; grid-template-columns: repeat(auto-fill, minmax(22px, 1fr)); gap: 6px; align-items: start; width: 100%; }
     #img-fill-color .palette-swatch { cursor: pointer; width: 100%; aspect-ratio: 1 / 1; height: auto; min-width: 18px; }
     #img-fill-color[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+    #img-preview-modal .range-wrap { display: grid; grid-template-columns: 1fr 60px; gap: 8px; align-items: center; }
+    #img-preview-modal .range-wrap input[type="range"] { width: 100%; }
+    #img-preview-modal .range-wrap input[type="number"] { width: 60px; }
     .modal-card {
       background: rgba(17, 20, 24, 0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -925,6 +928,19 @@
               <input id="img-width" type="number" min="1" max="1000" step="1" />
               <label for="img-height" data-i18n="preview.height">Yükseklik</label>
               <input id="img-height" type="number" min="1" max="1000" step="1" />
+              <label for="img-alpha-range" data-i18n="preview.alphaThreshold">Transparency threshold</label>
+              <div class="range-wrap">
+                <input id="img-alpha-range" type="range" min="0" max="255" step="1" value="5" />
+                <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" />
+              </div>
+              <label for="img-color-metric" data-i18n="preview.colorMetric">Color metric</label>
+              <select id="img-color-metric">
+                <option value="rgb" data-i18n="preview.metricRgb">RGB (fast)</option>
+                <option value="lab" data-i18n="preview.metricLab">Lab (CIE76)</option>
+                <option value="ciede2000" data-i18n="preview.metricCiede2000">CIEDE2000 (more accurate, slower)</option>
+              </select>
+              <label for="img-dither-toggle" data-i18n="preview.dithering">Dithering</label>
+              <button id="img-dither-toggle" class="app-btn" type="button" data-state="off" data-i18n="preview.ditheringOff">Dithering: OFF</button>
             </div>
           </div>
           <div id="img-fill-side">
@@ -939,23 +955,6 @@
               <label for="img-fill-color" data-i18n="preview.color">Renk</label>
               <div id="img-fill-color" aria-disabled="true"></div>
             </div>
-           <div class="row">
-             <label for="img-alpha-range" data-i18n="preview.alphaThreshold" style="margin-right:8px;">Transparency threshold</label>
-             <input id="img-alpha-range" type="range" min="0" max="255" step="1" value="5" />
-             <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" style="width:60px;" />
-           </div>
-           <div class="row">
-             <label for="img-color-metric" data-i18n="preview.colorMetric" style="margin-right:8px;">Color metric</label>
-             <select id="img-color-metric">
-               <option value="rgb" data-i18n="preview.metricRgb">RGB (fast)</option>
-               <option value="lab" data-i18n="preview.metricLab">Lab (CIE76)</option>
-               <option value="ciede2000" data-i18n="preview.metricCiede2000">CIEDE2000 (more accurate, slower)</option>
-             </select>
-           </div>
-           <div class="row">
-             <label for="img-dither-toggle" data-i18n="preview.dithering" style="margin-right:8px;">Dithering</label>
-             <button id="img-dither-toggle" class="app-btn" type="button" data-state="off" data-i18n="preview.ditheringOff">Dithering: OFF</button>
-           </div>
           </div>
         </div>
       </div>
