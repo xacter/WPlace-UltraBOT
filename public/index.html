@@ -368,9 +368,14 @@
       height: auto;
     }
     #img-fill-color[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
-    #img-preview-modal .range-wrap { display: grid; grid-template-columns: 1fr 60px; gap: 8px; align-items: center; }
+    #img-preview-modal .range-wrap { display: grid; grid-template-columns: 1fr 40px; gap: 8px; align-items: center; justify-self: end; width: 140px; }
     #img-preview-modal .range-wrap input[type="range"] { width: 100%; }
-    #img-preview-modal .range-wrap input[type="number"] { width: 60px; }
+    #img-preview-modal .range-wrap input[type="number"] { width: 40px; }
+    #img-preview-modal .img-preview-grid select,
+    #img-preview-modal .img-preview-grid button {
+      justify-self: end;
+      width: 140px;
+    }
     .modal-card {
       background: rgba(17, 20, 24, 0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -944,12 +949,12 @@
               <input id="img-width" type="number" min="1" max="1000" step="1" />
               <label for="img-height" data-i18n="preview.height">Yükseklik</label>
               <input id="img-height" type="number" min="1" max="1000" step="1" />
-              <label for="img-alpha-range" data-i18n="preview.alphaThreshold">Transparency threshold</label>
+              <label for="img-alpha-range" data-i18n="preview.alphaThreshold">Transparency</label>
               <div class="range-wrap">
                 <input id="img-alpha-range" type="range" min="0" max="255" step="1" value="5" />
                 <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" />
               </div>
-              <label for="img-color-metric" data-i18n="preview.colorMetric">Color metric</label>
+              <label for="img-color-metric" data-i18n="preview.colorMetric">Color algorithm</label>
               <select id="img-color-metric">
                 <option value="rgb" data-i18n="preview.metricRgb">RGB (fast)</option>
                 <option value="lab" data-i18n="preview.metricLab">Lab (CIE76)</option>
