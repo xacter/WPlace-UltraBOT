@@ -198,6 +198,43 @@ async function requestMeLikePython(opts) {
   return { status, reason, body: bodyBuf.toString('utf8') };
 }
 
+async function requestPurchaseLikePython(cf_clearance, token, productId) {
+  const cookieHeader = `cf_clearance=${cf_clearance || ''}; j=${token || ''}`;
+  const gotScraping = await getGotScrapingFn();
+  if (!gotScraping) {
+    throw new Error('got-scraping is not available');
+  }
+  const options = {
+    url: 'https://backend.wplace.live/purchase',
+    method: 'POST',
+    headers: {
+      'Cookie': cookieHeader,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ product: { id: productId, amount: 1 } }),
+    decompress: false,
+    timeout: { request: 30000 },
+    agent: { https: HTTPS_AGENT }
+  };
+  debugLog('HTTP POST begin', {
+    host: 'backend.wplace.live',
+    path: '/purchase',
+    headers: { Cookie: maskCookieHeader(cookieHeader) },
+    productId
+  });
+  const resp = await gotScraping(options);
+  let bodyBuf = resp.rawBody || Buffer.from(String(resp.body || ''), 'utf8');
+  const encoding = ((resp.headers && (resp.headers['content-encoding'] || resp.headers['Content-Encoding'])) || '').toLowerCase();
+  if (encoding.includes('gzip')) {
+    try { bodyBuf = zlib.gunzipSync(bodyBuf); } catch {}
+  } else if (encoding.includes('deflate')) {
+    try { bodyBuf = zlib.inflateRawSync(bodyBuf); } catch { try { bodyBuf = zlib.inflateSync(bodyBuf); } catch {} }
+  }
+  const status = resp.statusCode || 0;
+  const reason = resp.statusMessage || '';
+  debugLog('HTTP POST end', { status, reason, bodyPreview: bodyBuf.toString('utf8').slice(0, 300) });
+  return { status, reason, body: bodyBuf.toString('utf8') };
+}
 
 async function fetchMeAxios(cf_clearance, token) {
   if (!axios) return null;
@@ -540,6 +577,32 @@ function startServer(port, host) {
       })().catch(() => {
         res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({ error: 'upstream error' }));
+      });
+      return;
+    }
+
+    if (parsed.pathname && /^\/api\/accounts\/\d+\/purchase$/.test(parsed.pathname) && req.method === 'POST') {
+      const parts = parsed.pathname.split('/');
+      const id = Number(parts[3]);
+      readJsonBody(req).then((body) => {
+        const productId = body && body.productId ? Number(body.productId) : 0;
+        const accounts = readJson(ACCOUNTS_FILE, []);
+        const acct = accounts.find(a => a.id === id);
+        if (!acct) { res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'not found' })); return; }
+        const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
+        if (!settings.cf_clearance || settings.cf_clearance.length < 30) { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'cf_clearance missing' })); return; }
+        if (!productId) { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'productId required' })); return; }
+        (async () => {
+          const r = await requestPurchaseLikePython(settings.cf_clearance, acct.token, productId);
+          res.writeHead(r.status || 500, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(r.body || '');
+        })().catch(() => {
+          res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'upstream error' }));
+        });
+      }).catch(() => {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'invalid json' }));
       });
       return;
     }

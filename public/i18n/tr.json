@@ -71,6 +71,8 @@
     "saveSettings": "Kaydet",
     "edit": "Düzenle",
     "checkPixels": "Piksel kontrol et",
+    "buyMaxCharges": "+5 max hak / 500 droplets",
+    "buyPaintCharges": "+30 boya hakkı / 500 droplets",
     "delete": "Sil"
   },
   "thumb": {
@@ -107,7 +109,9 @@
     "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin.",
     "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi.",
     "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz.",
-    "cfClearanceChange": "Lütfen cf_clearance değiştirin."
+    "cfClearanceChange": "Lütfen cf_clearance değiştirin.",
+    "purchaseFailed": "Satın alma başarısız (yeterli droplets yok mu?)",
+    "purchaseSuccess": "Satın alma başarılı."
   }
 }
 

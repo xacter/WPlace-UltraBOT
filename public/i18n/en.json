@@ -71,6 +71,8 @@
     "saveSettings": "Save",
     "edit": "Edit",
     "checkPixels": "Check pixel",
+    "buyMaxCharges": "+5 max charges / 500 droplets",
+    "buyPaintCharges": "+30 paint charges / 500 droplets",
     "delete": "Delete"
   },
   "thumb": {
@@ -107,7 +109,9 @@
     "imageLoadFailed": "Image could not be loaded. Check the values.",
     "tokenAlreadyExists": "An account with this token already exists.",
     "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist.",
-    "cfClearanceChange": "Please change cf_clearance."
+    "cfClearanceChange": "Please change cf_clearance.",
+    "purchaseFailed": "Purchase failed (not enough droplets?)",
+    "purchaseSuccess": "Purchase successful."
   }
 }
 

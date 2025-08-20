@@ -389,8 +389,8 @@
     }
     .modal-card .form-grid label { font-size: 14px; align-self: center; }
     .modal-card .form-grid input { width: 100%; }
-    .table-actions { display: flex; flex-direction: column; gap: 6px; }
-    .table-actions-row { display: flex; gap: 6px; }
+    .table-actions { display: flex; flex-direction: column; gap: 6px; max-width: 260px; }
+    .table-actions-row { display: flex; gap: 6px; flex-wrap: wrap; }
     
     #app-toast-container { position: fixed; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; pointer-events: none; }
     .app-toast { pointer-events: auto; min-width: 260px; max-width: 380px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); color: #fff; display: flex; align-items: center; gap: 10px; animation: toast-in 200ms ease-out; }
@@ -3125,6 +3125,8 @@
         actionsWrap.className = 'table-actions';
         const rowTop = document.createElement('div');
         rowTop.className = 'table-actions-row';
+        const rowMid = document.createElement('div');
+        rowMid.className = 'table-actions-row';
         const rowBottom = document.createElement('div');
         rowBottom.className = 'table-actions-row';
         const editBtn = document.createElement('button');
@@ -3142,9 +3144,50 @@
           try {
             const res = await fetch('/api/accounts/' + row.id + '/refresh', { method: 'POST' });
             if (!res.ok) return;
-            const updated = await res.json();
             await loadAccounts();
           } catch {}
+        });
+        const buyMaxBtn = document.createElement('button');
+        buyMaxBtn.type = 'button';
+        buyMaxBtn.className = 'app-btn';
+        buyMaxBtn.textContent = t('buttons.buyMaxCharges');
+        buyMaxBtn.addEventListener('click', async () => {
+          try {
+            const res = await fetch('/api/accounts/' + row.id + '/purchase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ productId: 70 })
+            });
+            if (res.ok) {
+              await refreshAccountById(row.id);
+              showToast(t('messages.purchaseSuccess'), 'success');
+            } else {
+              showToast(t('messages.purchaseFailed'));
+            }
+          } catch {
+            showToast(t('messages.purchaseFailed'));
+          }
+        });
+        const buyPaintBtn = document.createElement('button');
+        buyPaintBtn.type = 'button';
+        buyPaintBtn.className = 'app-btn';
+        buyPaintBtn.textContent = t('buttons.buyPaintCharges');
+        buyPaintBtn.addEventListener('click', async () => {
+          try {
+            const res = await fetch('/api/accounts/' + row.id + '/purchase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ productId: 80 })
+            });
+            if (res.ok) {
+              await refreshAccountById(row.id);
+              showToast(t('messages.purchaseSuccess'), 'success');
+            } else {
+              showToast(t('messages.purchaseFailed'));
+            }
+          } catch {
+            showToast(t('messages.purchaseFailed'));
+          }
         });
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
@@ -3158,8 +3201,11 @@
         });
         rowTop.appendChild(editBtn);
         rowTop.appendChild(delBtn);
-        rowBottom.appendChild(checkBtn);
+        rowMid.appendChild(checkBtn);
+        rowMid.appendChild(buyMaxBtn);
+        rowBottom.appendChild(buyPaintBtn);
         actionsWrap.appendChild(rowTop);
+        actionsWrap.appendChild(rowMid);
         actionsWrap.appendChild(rowBottom);
         tdActions.appendChild(actionsWrap);
         tr.appendChild(tdName);

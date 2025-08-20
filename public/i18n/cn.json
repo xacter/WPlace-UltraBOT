@@ -71,6 +71,8 @@
     "saveSettings": "保存",
     "edit": "编辑",
     "checkPixels": "检查像素",
+    "buyMaxCharges": "+5 最大充能 / 500 droplets",
+    "buyPaintCharges": "+30 上色充能 / 500 droplets",
     "delete": "删除"
   },
   "thumb": {
@@ -107,6 +109,8 @@
     "imageLoadFailed": "图片加载失败，请检查数值。",
     "tokenAlreadyExists": "已存在使用该令牌的账户。",
     "cfCannotBeClearedWithAccounts": "存在账户时，cf_clearance 不能为空。",
-    "cfClearanceChange": "请更改 cf_clearance。"
+    "cfClearanceChange": "请更改 cf_clearance。",
+    "purchaseFailed": "购买失败（droplets 不足？）",
+    "purchaseSuccess": "购买成功。"
   }
 }
