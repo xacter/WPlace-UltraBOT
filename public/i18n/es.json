@@ -60,7 +60,15 @@
     "fillBackground": "Rellenar fondo",
     "color": "Color",
     "addToMap": "Añadir al mapa",
-    "maxSizeExceeded": "El tamaño máximo es 1000x1000 píxeles."
+    "maxSizeExceeded": "El tamaño máximo es 1000x1000 píxeles.",
+    "alphaThreshold": "Transparencia",
+    "colorMetric": "Algoritmo color",
+    "metricRgb": "RGB (rápido, \"seguro\")",
+    "metricLab": "Lab (CIE76)",
+    "metricCiede2000": "CIEDE2000 (más preciso, más lento)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
