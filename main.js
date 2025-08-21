@@ -97,6 +97,7 @@ async function getGotScrapingFn() {
 const DB_DIR = path.resolve(process.cwd(), 'db');
 const ACCOUNTS_FILE = path.join(DB_DIR, 'accounts.json');
 const SETTINGS_FILE = path.join(DB_DIR, 'settings.json');
+const FAVS_FILE = path.join(DB_DIR, 'favs.json');
 
 function ensureDb() {
   try { fs.mkdirSync(DB_DIR, { recursive: true }); } catch {}
@@ -105,6 +106,9 @@ function ensureDb() {
   }
   if (!fs.existsSync(SETTINGS_FILE)) {
     try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ cf_clearance: '', worldX: null, worldY: null }, null, 2)); } catch {}
+  }
+  if (!fs.existsSync(FAVS_FILE)) {
+    try { fs.writeFileSync(FAVS_FILE, JSON.stringify([], null, 2)); } catch {}
   }
 }
 
@@ -312,6 +316,51 @@ function startServer(port, host) {
       sseClients.add(res);
       const ping = setInterval(() => { try { res.write('event: ping\ndata: {}\n\n'); } catch {} }, 15000);
       req.on('close', () => { try { clearInterval(ping); } catch {}; sseClients.delete(res); });
+      return;
+    }
+
+    // Favorites storage endpoints
+    if (parsed.pathname === '/api/favorites' && req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '600'
+      });
+      res.end();
+      return;
+    }
+    if (parsed.pathname === '/api/favorites' && req.method === 'GET') {
+      const favs = readJson(FAVS_FILE, []);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(favs));
+      return;
+    }
+    if (parsed.pathname === '/api/favorites' && req.method === 'POST') {
+      readJsonBody(req).then((body) => {
+        const name = body && typeof body.name === 'string' ? body.name : '';
+        const mode = body && body.mode === 'mosaic' ? 'mosaic' : 'single';
+        const coords = Array.isArray(body && body.coords) ? body.coords : [];
+        const favs = readJson(FAVS_FILE, []);
+        const idx = favs.findIndex(f => f && f.mode === mode && JSON.stringify(f.coords) === JSON.stringify(coords));
+        const entry = { name, mode, coords };
+        if (idx >= 0) favs[idx] = entry; else favs.push(entry);
+        writeJson(FAVS_FILE, favs);
+        res.writeHead(204, { 'Access-Control-Allow-Origin': '*' });
+        res.end();
+      }).catch(() => { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); });
+      return;
+    }
+    if (parsed.pathname === '/api/favorites' && req.method === 'DELETE') {
+      readJsonBody(req).then((body) => {
+        const mode = body && body.mode === 'mosaic' ? 'mosaic' : 'single';
+        const coords = Array.isArray(body && body.coords) ? body.coords : [];
+        let favs = readJson(FAVS_FILE, []);
+        favs = favs.filter(f => !(f && f.mode === mode && JSON.stringify(f.coords) === JSON.stringify(coords)));
+        writeJson(FAVS_FILE, favs);
+        res.writeHead(204, { 'Access-Control-Allow-Origin': '*' });
+        res.end();
+      }).catch(() => { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); });
       return;
     }
 

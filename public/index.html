@@ -1422,11 +1422,37 @@
   const sidebar = document.getElementById('sidebar');
   const thumbList = document.getElementById('thumb-list');
 
-  function getFavorites(){
-    try { return JSON.parse(localStorage.getItem('favorites') || '[]'); } catch { return []; }
+  let favoritesCache = [];
+  async function refreshFavorites(){
+    try {
+      const res = await fetch('/api/favorites');
+      favoritesCache = await res.json();
+    } catch {
+      favoritesCache = [];
+    }
   }
-  function saveFavorites(list){
-    try { localStorage.setItem('favorites', JSON.stringify(list)); } catch {}
+  function getFavorites(){
+    return favoritesCache;
+  }
+  async function addFavorite(entry){
+    try {
+      await fetch('/api/favorites', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(entry)
+      });
+    } catch {}
+    await refreshFavorites();
+  }
+  async function removeFavorite(entry){
+    try {
+      await fetch('/api/favorites', {
+        method:'DELETE',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(entry)
+      });
+    } catch {}
+    await refreshFavorites();
   }
   function currentLocation(){
     try { return JSON.parse(localStorage.getItem('lastFetch') || 'null'); } catch { return null; }
@@ -1460,7 +1486,8 @@
     });
   }
 
-  openFavsBtn.addEventListener('click', () => {
+  openFavsBtn.addEventListener('click', async () => {
+    await refreshFavorites();
     renderFavoritesList();
     favoritesModal.hidden = false;
     document.body.classList.add('no-scroll');
@@ -1494,12 +1521,17 @@
     }
   });
 
-  favStarBtn.addEventListener('click', () => {
+  favStarBtn.addEventListener('click', async () => {
     const cur = currentLocation();
     if (!cur) return;
-    const favs = getFavorites();
-    const existing = favs.find(f => sameLocation(f, cur));
-    favNameInput.value = existing ? existing.name : '';
+    if (isCurrentLocationSaved()){
+      if (confirm('¿Desea eliminar la ubicación guardada?')){
+        await removeFavorite(cur);
+        updateFavStar();
+      }
+      return;
+    }
+    favNameInput.value = '';
     saveFavModal.hidden = false;
     document.body.classList.add('no-scroll');
   });
@@ -1513,7 +1545,7 @@
       document.body.classList.remove('no-scroll');
     }
   });
-  favSaveBtn.addEventListener('click', () => {
+  favSaveBtn.addEventListener('click', async () => {
     const name = favNameInput.value.trim();
     if (!name){
       saveFavModal.hidden = true;
@@ -1522,19 +1554,12 @@
     }
     const cur = currentLocation();
     if (!cur) return;
-    const favs = getFavorites();
-    const idx = favs.findIndex(f => sameLocation(f, cur));
-    if (idx >= 0){
-      favs[idx].name = name;
-    } else {
-      favs.push({ ...cur, name });
-    }
-    saveFavorites(favs);
+    await addFavorite({ ...cur, name });
     saveFavModal.hidden = true;
     document.body.classList.remove('no-scroll');
     updateFavStar();
   });
-  updateFavStar();
+  refreshFavorites().then(updateFavStar);
 
   const counter = document.getElementById('counter');
   const accountsBtn = document.getElementById('btn-accounts');
