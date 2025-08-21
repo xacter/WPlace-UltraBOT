@@ -582,7 +582,7 @@
       border-radius: 8px;
       background: rgba(0,0,0,0.35);
     }
-    #ready-pixel {
+    #ready-pixel, #eta-estimate {
       display: inline-block;
       background: rgba(0,0,0,0.35);
       border: 1px solid rgba(255,255,255,0.15);
@@ -781,6 +781,7 @@
           <div class="ready-header">
             <button id="btn-ready-account" class="app-btn" type="button" data-i18n="ready.selectAccount">Hesap seç</button>
             <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
+            <div id="eta-estimate" aria-live="polite" title="Estimated time to finish current image">ETA: -</div>
           </div>
           <div class="controls-row" id="auto-mode-controls">
             <div class="select-mode-wrap">
@@ -945,6 +946,22 @@
               <input id="img-width" type="number" min="1" max="1000" step="1" />
               <label for="img-height" data-i18n="preview.height">Yükseklik</label>
               <input id="img-height" type="number" min="1" max="1000" step="1" />
+              <label for="img-dither" data-i18n="preview.dither">Dithering</label>
+              <select id="img-dither">
+                <option value="none" data-i18n="preview.ditherNone">None</option>
+                <option value="floyd" selected data-i18n="preview.ditherFloyd">Floyd–Steinberg</option>
+                <option value="bayer" data-i18n="preview.ditherBayer">Ordered (Bayer)</option>
+              </select>
+              <label for="img-dither-strength" data-i18n="preview.strength">Strength</label>
+              <div>
+                <input id="img-dither-strength" type="range" min="0" max="100" step="1" value="100" />
+                <span id="img-dither-strength-val">100%</span>
+              </div>
+              <label for="img-alpha-threshold" data-i18n="preview.alphaThreshold">Alpha threshold</label>
+              <div>
+                <input id="img-alpha-threshold" type="range" min="0" max="255" step="1" value="0" />
+                <span id="img-alpha-threshold-val">0</span>
+              </div>
             </div>
           </div>
           <div id="img-fill-side">
@@ -1624,6 +1641,7 @@
     const settingsCfInput = document.getElementById('settings-cf-clearance-input');
     const accountsTbody = document.getElementById('accounts-tbody');
     const shopDropletsInfo = document.getElementById('shop-droplets-info');
+    const etaEstimateEl = document.getElementById('eta-estimate');
     // Shop controls
     const shopMaxDecBtn = document.getElementById('shop-max-dec');
     const shopMaxIncBtn = document.getElementById('shop-max-inc');
@@ -3328,6 +3346,7 @@
           (selectedOverrideColorId != null)
         );
       } catch {}
+      try { updateEtaEstimate(); } catch {}
     }
 
     function updateThumbSelection() {
@@ -4430,8 +4449,86 @@
           try { pixelPowerEl.setAttribute('data-count', String(totalCount)); pixelPowerEl.setAttribute('data-max', String(totalMax)); } catch {}
           pixelPowerEl.textContent = t('pixel.powerLabel', { count: totalCount, max: totalMax });
           try { checkFullnessNotify(); } catch {}
+          try { updateEtaEstimate(); } catch {}
         }
       } catch {}
+    }
+
+    function formatEta(ms){
+      if (!Number.isFinite(ms) || ms <= 0) return '-';
+      const sec = Math.ceil(ms / 1000);
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h > 0) return String(h) + 'h ' + String(m).padStart(2,'0') + 'm';
+      if (m > 0) return String(m) + 'm ' + String(s).padStart(2,'0') + 's';
+      return String(s) + 's';
+    }
+
+    function estimateTotalPixelsNeeded(){
+      try {
+        // Sum of opaque pixels in all sign items minus already matched on base
+        let need = 0;
+        signItems.forEach(it => {
+          if (!it || !it.image) return;
+          const id = ensureItemImageData(it);
+          const base = ensureBaseImageData();
+          if (!id || !base) return;
+          const w = id.width|0, h = id.height|0;
+          const wx0 = Math.round(it.worldX || 0);
+          const wy0 = Math.round(it.worldY || 0);
+          for (let y = 0; y < h; y++) {
+            const wy = wy0 + y; if (wy < 0 || wy >= base.height) continue;
+            for (let x = 0; x < w; x++) {
+              const wx = wx0 + x; if (wx < 0 || wx >= base.width) continue;
+              const ii = ((w * y + x) << 2);
+              const a1 = id.data[ii + 3]; if (a1 === 0) continue;
+              const ib = ((base.width * wy + wx) << 2);
+              const a0 = base.data[ib + 3]; if (a0 === 0) { need++; continue; }
+              if (id.data[ii] !== base.data[ib] || id.data[ii+1] !== base.data[ib+1] || id.data[ii+2] !== base.data[ib+2]) need++;
+            }
+          }
+        });
+        return need;
+      } catch { return 0; }
+    }
+
+    function computeAccountsThroughput(){
+      // Each account regenerates 1 charge every 30s up to its max; current available can be used immediately
+      let active = 0; let totalAvailableNow = 0; let totalMax = 0;
+      accountsData.forEach(r => {
+        const isActive = r && r.active !== false && !!r.token;
+        if (!isActive) return;
+        active++;
+        const c = Number.isFinite(Number(r.pixelCount)) ? Math.floor(Number(r.pixelCount)) : 0;
+        const m = Number.isFinite(Number(r.pixelMax)) ? Math.floor(Number(r.pixelMax)) : 0;
+        totalAvailableNow += Math.max(0, c);
+        totalMax += Math.max(0, m);
+      });
+      const regenPerSec = active > 0 ? (active / 30) : 0; // pixels/sec
+      return { active, availableNow: totalAvailableNow, maxTotal: totalMax, regenPerSec };
+    }
+
+    function updateEtaEstimate(){
+      if (!etaEstimateEl) return;
+      try {
+        const totalNeeded = estimateTotalPixelsNeeded();
+        const tp = computeAccountsThroughput();
+        // Effective rate: immediate burst first, then regen; approximate completion time
+        if (totalNeeded <= 0 || (tp.availableNow <= 0 && tp.regenPerSec <= 0)) { etaEstimateEl.textContent = 'ETA: -'; return; }
+        let remaining = totalNeeded;
+        let ms = 0;
+        if (tp.availableNow > 0) {
+          const used = Math.min(remaining, tp.availableNow);
+          remaining -= used;
+          // Assume instant sending for estimation
+        }
+        if (remaining > 0) {
+          const sec = remaining / (tp.regenPerSec > 0 ? tp.regenPerSec : 1e-6);
+          ms += sec * 1000;
+        }
+        etaEstimateEl.textContent = 'ETA: ' + formatEta(ms);
+      } catch { etaEstimateEl.textContent = 'ETA: -'; }
     }
     async function loadAccounts() {
       try {
@@ -4627,6 +4724,11 @@
     const imgHeightInput = document.getElementById('img-height');
     const imgFillToggle = document.getElementById('img-fill-toggle');
     const imgFillColorWrap = document.getElementById('img-fill-color');
+    const imgDitherSelect = document.getElementById('img-dither');
+    const imgDitherStrength = document.getElementById('img-dither-strength');
+    const imgDitherStrengthVal = document.getElementById('img-dither-strength-val');
+    const imgAlphaThreshold = document.getElementById('img-alpha-threshold');
+    const imgAlphaThresholdVal = document.getElementById('img-alpha-threshold-val');
     let imgFillColorId = null; // null => none, number => palette id
     let previewSourceImage = null;
 
@@ -4660,59 +4762,90 @@
       try {
         const id = octx.getImageData(0, 0, targetW, targetH);
         const data = id.data;
+        const alphaCut = Math.max(0, Math.min(255, parseInt(imgAlphaThreshold && imgAlphaThreshold.value || '0', 10)));
+        // Pre-clear pixels below alpha threshold
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i+3] <= alphaCut) { data[i] = 0; data[i+1] = 0; data[i+2] = 0; data[i+3] = 0; }
+        }
+        const mode = (imgDitherSelect && imgDitherSelect.value) || 'floyd';
+        const strength = Math.max(0, Math.min(1, ((imgDitherStrength && parseInt(imgDitherStrength.value||'100',10))|0) / 100));
         const w2 = targetW + 2;
         const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
         const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
-        for (let y = 0; y < targetH; y++) {
-          const leftToRight = (y % 2 === 0);
-          for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
-          if (leftToRight) {
+        if (mode === 'bayer') {
+          // 4x4 Bayer matrix normalized 0..1
+          const BM = [
+            [0, 8, 2, 10],
+            [12, 4, 14, 6],
+            [3, 11, 1, 9],
+            [15, 7, 13, 5]
+          ];
+          for (let y = 0; y < targetH; y++) {
             for (let x = 0; x < targetW; x++) {
               const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3];
-              if (a === 0) {
-                // already filled by background above if enabled; skip quantization for speed
-                continue;
-              }
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              if (data[idx+3] === 0) continue;
+              const t = ((BM[y & 3][x & 3] / 15) - 0.5) * 64 * strength; // bias amplitude
+              let r = Math.max(0, Math.min(255, data[idx] + t));
+              let g = Math.max(0, Math.min(255, data[idx+1] + t));
+              let b = Math.max(0, Math.min(255, data[idx+2] + t));
               const nn = nearestPaletteRgb(r, g, b);
               data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
-            }
-          } else {
-            for (let x = targetW - 1; x >= 0; x--) {
-              const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3];
-              if (a === 0) { continue; }
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
-              const nn = nearestPaletteRgb(r, g, b);
-              data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
-              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
             }
           }
-          for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+        } else if (mode === 'none' || strength === 0) {
+          for (let i = 0; i < data.length; i += 4) {
+            if (data[i+3] === 0) continue;
+            const nn = nearestPaletteRgb(data[i], data[i+1], data[i+2]);
+            data[i] = nn[0]; data[i+1] = nn[1]; data[i+2] = nn[2];
+          }
+        } else {
+          // Floyd–Steinberg with adjustable strength
+          for (let y = 0; y < targetH; y++) {
+            const leftToRight = (y % 2 === 0);
+            for (let i2 = 0; i2 < w2; i2++) { errCurrR[i2] += 0; errCurrG[i2] += 0; errCurrB[i2] += 0; }
+            if (leftToRight) {
+              for (let x = 0; x < targetW; x++) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteRgb(r, g, b);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = (r - nn[0]) * strength;
+                const eg = (g - nn[1]) * strength;
+                const eb = (b - nn[2]) * strength;
+                errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+                errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+              }
+            } else {
+              for (let x = targetW - 1; x >= 0; x--) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteRgb(r, g, b);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = (r - nn[0]) * strength;
+                const eg = (g - nn[1]) * strength;
+                const eb = (b - nn[2]) * strength;
+                errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+                errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+              }
+            }
+            for (let i2 = 0; i2 < w2; i2++) { errCurrR[i2] = errNextR[i2]; errCurrG[i2] = errNextG[i2]; errCurrB[i2] = errNextB[i2]; errNextR[i2]=0; errNextG[i2]=0; errNextB[i2]=0; }
+          }
         }
         octx.putImageData(id, 0, 0);
       } catch {}
@@ -4789,6 +4922,9 @@
     if (imgWidthInput) imgWidthInput.addEventListener('change', updateHeightFromWidth);
     if (imgHeightInput) imgHeightInput.addEventListener('change', updateWidthFromHeight);
     if (imgKeepRatioInput) imgKeepRatioInput.addEventListener('change', () => { drawPreview(); });
+    if (imgDitherSelect) imgDitherSelect.addEventListener('change', () => { drawPreview(); });
+    if (imgDitherStrength) imgDitherStrength.addEventListener('input', () => { if (imgDitherStrengthVal) imgDitherStrengthVal.textContent = String(imgDitherStrength.value|0) + '%'; drawPreview(); });
+    if (imgAlphaThreshold) imgAlphaThreshold.addEventListener('input', () => { if (imgAlphaThresholdVal) imgAlphaThresholdVal.textContent = String(imgAlphaThreshold.value|0); drawPreview(); });
     function buildFillPaletteUi(){
       if (!imgFillColorWrap) return;
       try { imgFillColorWrap.innerHTML = ''; } catch {}
@@ -4865,23 +5001,80 @@
           octx.fillRect(0, 0, targetW, targetH);
         }
         octx.drawImage(previewSourceImage, 0, 0, previewSourceImage.naturalWidth, previewSourceImage.naturalHeight, 0, 0, targetW, targetH);
+        // Apply the same quantization pipeline used in preview so the added image matches
+        try {
+          const id = octx.getImageData(0, 0, targetW, targetH);
+          const data = id.data;
+          const alphaCut = Math.max(0, Math.min(255, parseInt(imgAlphaThreshold && imgAlphaThreshold.value || '0', 10)));
+          for (let i = 0; i < data.length; i += 4) { if (data[i+3] <= alphaCut) { data[i]=0; data[i+1]=0; data[i+2]=0; data[i+3]=0; } }
+          const mode = (imgDitherSelect && imgDitherSelect.value) || 'floyd';
+          const strength = Math.max(0, Math.min(1, ((imgDitherStrength && parseInt(imgDitherStrength.value||'100',10))|0) / 100));
+          const w2 = targetW + 2;
+          const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+          const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+          if (mode === 'bayer') {
+            const BM = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+            for (let y = 0; y < targetH; y++) {
+              for (let x = 0; x < targetW; x++) {
+                const idx = (y * targetW + x) * 4; if (data[idx+3] === 0) continue;
+                const t = ((BM[y & 3][x & 3] / 15) - 0.5) * 64 * strength;
+                let r = Math.max(0, Math.min(255, data[idx] + t));
+                let g = Math.max(0, Math.min(255, data[idx+1] + t));
+                let b = Math.max(0, Math.min(255, data[idx+2] + t));
+                const nn = nearestPaletteRgb(r, g, b);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+              }
+            }
+          } else if (mode === 'none' || strength === 0) {
+            for (let i = 0; i < data.length; i += 4) { if (data[i+3] === 0) continue; const nn = nearestPaletteRgb(data[i], data[i+1], data[i+2]); data[i]=nn[0]; data[i+1]=nn[1]; data[i+2]=nn[2]; }
+          } else {
+            for (let y = 0; y < targetH; y++) {
+              const leftToRight = (y % 2 === 0);
+              for (let i2 = 0; i2 < w2; i2++) { errCurrR[i2]+=0; errCurrG[i2]+=0; errCurrB[i2]+=0; }
+              if (leftToRight) {
+                for (let x = 0; x < targetW; x++) {
+                  const idx = (y * targetW + x) * 4; if (data[idx+3] === 0) continue;
+                  let r = data[idx] + errCurrR[x+1]; let g = data[idx+1] + errCurrG[x+1]; let b = data[idx+2] + errCurrB[x+1];
+                  r = r < 0 ? 0 : (r > 255 ? 255 : r); g = g < 0 ? 0 : (g > 255 ? 255 : g); b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                  const nn = nearestPaletteRgb(r, g, b);
+                  data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+                  const er = (r - nn[0]) * strength; const eg = (g - nn[1]) * strength; const eb = (b - nn[2]) * strength;
+                  errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+                  errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+                  errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                  errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+                }
+              } else {
+                for (let x = targetW - 1; x >= 0; x--) {
+                  const idx = (y * targetW + x) * 4; if (data[idx+3] === 0) continue;
+                  let r = data[idx] + errCurrR[x+1]; let g = data[idx+1] + errCurrG[x+1]; let b = data[idx+2] + errCurrB[x+1];
+                  r = r < 0 ? 0 : (r > 255 ? 255 : r); g = g < 0 ? 0 : (g > 255 ? 255 : g); b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                  const nn = nearestPaletteRgb(r, g, b);
+                  data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+                  const er = (r - nn[0]) * strength; const eg = (g - nn[1]) * strength; const eb = (b - nn[2]) * strength;
+                  errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+                  errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+                  errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                  errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+                }
+              }
+              for (let i2 = 0; i2 < w2; i2++) { errCurrR[i2] = errNextR[i2]; errCurrG[i2] = errNextG[i2]; errCurrB[i2] = errNextB[i2]; errNextR[i2]=0; errNextG[i2]=0; errNextB[i2]=0; }
+            }
+          }
+          octx.putImageData(id, 0, 0);
+        } catch {}
         const blob = await new Promise((resolve)=>{ off.toBlob((b)=>resolve(b), 'image/png'); });
-        const url0 = URL.createObjectURL(blob);
-        const tmpImg = new Image();
-        tmpImg.onload = async () => {
-          URL.revokeObjectURL(url0);
-          const qBlob = await quantizeImageToPalette(tmpImg);
-          // Persist quantized image as data URL for future sessions
-          try {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              try { localStorage.setItem('last.image.dataUrl', String(reader.result || '')); } catch {}
-            };
-            reader.readAsDataURL(qBlob);
-          } catch {}
-          const url = URL.createObjectURL(qBlob);
-          const imageEl = new Image();
-          imageEl.onload = () => {
+        // Persist quantized image as data URL for future sessions
+        try {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            try { localStorage.setItem('last.image.dataUrl', String(reader.result || '')); } catch {}
+          };
+          reader.readAsDataURL(blob);
+        } catch {}
+        const url = URL.createObjectURL(blob);
+        const imageEl = new Image();
+        imageEl.onload = () => {
             const pixelCount = countNonTransparentPixels(imageEl);
             const item = { url, name: imgPreviewApply._filename || 'image.png', image: imageEl, worldX: 0, worldY: 0, el: null, locked: false, pixelCount };
             const centerPx = getContentCenterPx();
@@ -4907,9 +5100,7 @@
             try { localStorage.setItem('last.image.url', url); localStorage.setItem('last.image.name', item.name || 'image.png'); } catch {}
             closeImgPreview();
           };
-          imageEl.src = url;
-        };
-        tmpImg.src = url0;
+        imageEl.src = url;
       } catch {}
     });
 
@@ -5071,6 +5262,7 @@
       try { readyPixelEl.setAttribute('data-count', String(count)); readyPixelEl.setAttribute('data-max', String(limit)); } catch {}
       readyPixelEl.textContent = t('pixel.powerLabel', { count, max: limit });
       try { updateAutoSelectButtonLabel(); } catch {}
+      try { updateEtaEstimate(); } catch {}
     }
 
     function updateAutoSelectButtonLabel(){
