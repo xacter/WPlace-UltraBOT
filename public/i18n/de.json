@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Ab Start wählen",
       "frame": "Aus Rahmen wählen"
+    },
+    "autoMode": {
+      "on": "Auto-Modus an",
+      "off": "Auto-Modus aus"
+    },
+    "autoStart": {
+      "on": "Auto-Start an",
+      "off": "Auto-Start aus"
     }
   },
   "modal": {
@@ -125,7 +133,8 @@
     "cfCannotBeClearedWithAccounts": "cf_clearance darf bei vorhandenen Konten nicht leer sein.",
     "cfClearanceChange": "Bitte cf_clearance ändern.",
     "purchaseSuccess": "Kauf erfolgreich",
-    "purchaseFail": "Kauf fehlgeschlagen"
+    "purchaseFail": "Kauf fehlgeschlagen",
+    "tokenPastedFromExtension": "Token aus Erweiterung eingefügt"
   },
   "paletteMode": {
     "premium": "Premium-Farbe verwenden",
@@ -135,7 +144,7 @@
     "premiumTitle": "Premiumfarben",
     "purchased": "Gekaufte Farben",
     "exclusive": "Exklusive Palette",
-    "buyPremium": "💧 2000 Tropfen",
+    "buyPremium": "💧 2000 Droplets",
     "itemsTitle": "Artikel",
     "itemsSub": "Weitere Ladungen erhalten",
     "maxTitle": "+5 Max. Ladungen",

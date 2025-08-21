@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Seleccionar desde inicio",
       "frame": "Seleccionar desde contorno"
+    },
+    "autoMode": {
+      "on": "Modo automático activado",
+      "off": "Modo automático desactivado"
+    },
+    "autoStart": {
+      "on": "Inicio automático activado",
+      "off": "Inicio automático desactivado"
     }
   },
   "modal": {
@@ -108,7 +116,7 @@
     "premiumTitle": "Colores Premium",
     "purchased": "Colores comprados",
     "exclusive": "Paleta exclusiva",
-    "buyPremium": "💧 2000 Gotas",
+    "buyPremium": "💧 2000 Droplets",
     "itemsTitle": "Artículos",
     "itemsSub": "Obtén más cargas",
     "maxTitle": "+5 Cargas Máx.",
@@ -141,7 +149,8 @@
     "cfCannotBeClearedWithAccounts": "cf_clearance no puede estar vacío mientras existan cuentas.",
     "cfClearanceChange": "Por favor cambia cf_clearance.",
     "purchaseSuccess": "Compra exitosa",
-    "purchaseFail": "Compra fallida"
+    "purchaseFail": "Compra fallida",
+    "tokenPastedFromExtension": "Token pegado desde la extensión"
   }
 }
 

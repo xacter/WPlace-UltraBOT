@@ -12,7 +12,7 @@
 ---
 
 > [!NOTE]
-> **Hola, tras las nuevas medidas decidí desarrollar este bot, y lo terminé en solo un día. Debido a dichas medidas, por ahora parece imposible crear un bot totalmente automatizado. Sin embargo, gracias a un exploit actual, podemos dibujar desde 12 cuentas en un segundo con una sola verificación. Suponiendo que las cuentas estén llenas, podemos enviar 12 * 62 = <strong>744</strong> píxeles por segundo. Si estás listo, abajo explico cómo usarlo.**
+> **Hola, tras las nuevas medidas decidí desarrollar este bot y lo terminé en un solo día. Debido a esas medidas, por ahora parece imposible crear un bot totalmente automatizado. ~~Antes, aprovechando una vulnerabilidad, podíamos dibujar desde 12 cuentas en un segundo con una sola verificación (12 * 62 = <strong>744</strong> píxeles/s si las cuentas estaban llenas).~~ Después de una actualización, esta vulnerabilidad fue corregida; por lo tanto, tendrás que obtener un token de nuevo para cada envío de cuenta. Si estás listo, abajo explico cómo usarlo.**
 
 ---
 

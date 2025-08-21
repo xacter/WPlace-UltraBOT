@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "Önce başlangıçtan seç",
       "frame": "Önce çerçeveden seç"
+    },
+    "autoMode": {
+      "on": "Auto mode açık",
+      "off": "Auto mode kapalı"
+    },
+    "autoStart": {
+      "on": "Oto başlat açık",
+      "off": "Oto başlat kapalı"
     }
   },
   "modal": {
@@ -98,7 +106,8 @@
   },
   "palette": {
     "transparentTitle": "Transparan (resim rengi)",
-    "colorTitle": "Renk #{id}"
+    "colorTitle": "Renk #{id}",
+    "premiumColorTitle": "Premium renk (kalan {remain}/{total})"
   },
   "paletteMode": {
     "premium": "Premium renk kullan",
@@ -128,8 +137,11 @@
     "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi.",
     "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz.",
     "cfClearanceChange": "Lütfen cf_clearance değiştirin.",
+    "premiumColorLimitReached": "Seçilen premium renk için yeterli kapasite yok.",
+    "accountNotFound": "Hesap bulunamadı",
     "purchaseSuccess": "Satın alım başarılı",
-    "purchaseFail": "Satın alım başarısız"
+    "purchaseFail": "Satın alım başarısız",
+    "tokenPastedFromExtension": "Token eklentiden yapıştırıldı"
   },
   "shop": {
     "premiumTitle": "Premium Renkler",

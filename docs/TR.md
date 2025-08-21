@@ -12,7 +12,7 @@
 ---
 
 > [!NOTE]
-> **Merhaba, yeni önlemler geldikten sonra bu botu geliştirmeye karar verdim ve yalnızca bir günde tamamlandı. Bu önlemler nedeniyle şu an için tamamen otomatik bir bot yapmak mümkün görünmüyor. Ancak mevcut bir açıktan yararlanarak tek bir doğrulama ile bir saniyede 12 hesaptan çizim yapabiliyoruz. Hesapların dolu olduğunu varsayarsak, 12 * 62 = <strong>744</strong> piksel/saniye gönderebiliyoruz. Hazırsanız, kullanım adımlarını aşağıda anlattım.**
+> **Merhaba, yeni önlemler geldikten sonra bu botu geliştirmeye karar verdim ve yalnızca bir günde tamamlandı. Bu önlemler nedeniyle şu an için tamamen otomatik bir bot yapmak mümkün görünmüyor. ~~Ancak mevcut bir açıktan yararlanarak tek bir doğrulama ile bir saniyede 12 hesaptan çizim yapabiliyoruz. Hesapların dolu olduğunu varsayarsak, 12 * 62 = <strong>744</strong> piksel/saniye gönderebiliyoruz.~~ Güncellemeden sonra bu açık kapatıldı; bu yüzden her hesap gönderimi için yeniden bir token almanız gerekecek. Hazırsanız, kullanım adımlarını aşağıda anlattım.**
 
 ---
 

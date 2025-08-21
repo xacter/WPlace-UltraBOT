@@ -17,6 +17,14 @@
     "selectMode": {
       "multi": "開始位置から選択",
       "frame": "枠から選択"
+    },
+    "autoMode": {
+      "on": "自動モード ON",
+      "off": "自動モード OFF"
+    },
+    "autoStart": {
+      "on": "自動開始 ON",
+      "off": "自動開始 OFF"
     }
   },
   "modal": {
@@ -108,7 +116,7 @@
     "premiumTitle": "プレミアムカラー",
     "purchased": "購入済みの色",
     "exclusive": "限定パレット",
-    "buyPremium": "💧 2000 ドロップ",
+    "buyPremium": "💧 2000 Droplets",
     "itemsTitle": "アイテム",
     "itemsSub": "チャージを増やす",
     "maxTitle": "+5 最大チャージ",
@@ -141,7 +149,8 @@
     "cfCannotBeClearedWithAccounts": "アカウントがある場合、cf_clearance は空にできません。",
     "cfClearanceChange": "cf_clearance を変更してください。",
     "purchaseSuccess": "購入に成功しました",
-    "purchaseFail": "購入に失敗しました"
+    "purchaseFail": "購入に失敗しました",
+    "tokenPastedFromExtension": "拡張機能からトークンを貼り付けました"
   }
 }
 
