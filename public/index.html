@@ -3093,59 +3093,69 @@
       render();
     }
 
- function reloadCurrentBackground() {
+ async function reloadCurrentBackground() {
   try {
     const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
     if (saved) {
       if (saved.mode === 'mosaic') {
-        loadMosaic(saved.coords, true);
-        return;
+        try {
+          await loadMosaic(saved.coords, true);
+          return true;
+        } catch {
+          return false;
+        }
       }
       if (saved.mode === 'single') {
         const area = saved.coords[0].x;
         const no = saved.coords[0].y;
-        const url = buildUrl(area, no) + '?t=' + Date.now();
-        const image = new Image();
-        image.onload = () => {
-          img = image;
-          baseImageData = null;
-          currentTiles = [{ x: Number(area), y: Number(no) }];
-          currentTileW = image.width;
-          currentTileH = image.height;
-          currentMosaicCols = 1;
-          currentMosaicRows = 1;
-          try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
-          render();
-          updatePixelMarkers();
-        };
-        image.onerror = () => {};
-        image.src = url;
-        return;
+        return await new Promise(resolve => {
+          const url = buildUrl(area, no) + '?t=' + Date.now();
+          const image = new Image();
+          image.onload = () => {
+            img = image;
+            baseImageData = null;
+            currentTiles = [{ x: Number(area), y: Number(no) }];
+            currentTileW = image.width;
+            currentTileH = image.height;
+            currentMosaicCols = 1;
+            currentMosaicRows = 1;
+            try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+            render();
+            updatePixelMarkers();
+            resolve(true);
+          };
+          image.onerror = () => resolve(false);
+          image.src = url;
+        });
       }
     }
     // Si no hay datos guardados, carga desde los inputs
     const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
     const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-    if (!area || !no) return;
-    const url = buildUrl(area, no) + '?t=' + Date.now();
-    const image = new Image();
-    image.onload = () => {
-      img = image;
-      baseImageData = null;
-      currentTiles = [{ x: Number(area), y: Number(no) }];
-      currentTileW = image.width;
-      currentTileH = image.height;
-      currentMosaicCols = 1;
-      currentMosaicRows = 1;
-      try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
-      render();
-      updatePixelMarkers();
-    };
-    image.onerror = () => {};
-    image.src = url;
-  } catch {}
-
-    }
+    if (!area || !no) return false;
+    return await new Promise(resolve => {
+      const url = buildUrl(area, no) + '?t=' + Date.now();
+      const image = new Image();
+      image.onload = () => {
+        img = image;
+        baseImageData = null;
+        currentTiles = [{ x: Number(area), y: Number(no) }];
+        currentTileW = image.width;
+        currentTileH = image.height;
+        currentMosaicCols = 1;
+        currentMosaicRows = 1;
+        try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+        render();
+        updatePixelMarkers();
+        resolve(true);
+      };
+      image.onerror = () => resolve(false);
+      image.src = url;
+    });
+  } catch {
+    return false;
+  }
+}
 
     const USE_LOCAL_TILE = false;
     function buildUrl(area, no) {
@@ -4973,7 +4983,11 @@ function loadImage(area, no, preserveView = false) {
       currentTileH = tileH;
       currentMosaicCols = 2;
       currentMosaicRows = coords.length === 2 ? 1 : 2;
-      try { baseImageData = null; } catch {}
+      try {
+        baseImageData = null;
+        // Clear cached placed counts so auto-mode uses fresh data
+        signItems.forEach(it => { if (it) it._placedCountCache = null; });
+      } catch {}
       if (preserveView) {
         render();
       } else {
@@ -5964,6 +5978,7 @@ if (currentTiles && currentTiles.length > 1) {
     let missingTotal = 0;
     let usedIds = []; 
     let hadRequestError = false;
+    let didReload = false;
     for (const g of groups) {
       const total = g.colors.length|0;
       const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
@@ -6001,7 +6016,7 @@ if (currentTiles && currentTiles.length > 1) {
     }
     if (paintedAny) {
       showToast(t('messages.painted'), 'success', 1800);
-      const didReload = await reloadCurrentBackground();
+      didReload = await reloadCurrentBackground();
       try { clearAllReadySelections(); } catch {}
       try { readyGlobalMode = false; } catch {}
       if (!autoMode) {
@@ -6050,6 +6065,7 @@ if (currentTiles && currentTiles.length > 1) {
         let assignedCount = 0;
         const usedIds = [];
         let hadRequestError = false;
+        let didReload = false;
         for (let i = 0; i < selectedAccounts.length && assignedCount < total; i++) {
           const acc = selectedAccounts[i];
           const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
@@ -6094,7 +6110,7 @@ if (currentTiles && currentTiles.length > 1) {
         }
         if (assignedCount > 0) {
           showToast(t('messages.painted'), 'success', 1800);
-          const didReload = await reloadCurrentBackground();
+          didReload = await reloadCurrentBackground();
           try { clearAllReadySelections(); } catch {}
           try { readyGlobalMode = false; } catch {}
           if (!autoMode) {
