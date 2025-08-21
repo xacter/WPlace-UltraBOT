@@ -57,7 +57,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "Получить",
-    "uploadImage": "Загрузить изображение"
+    "uploadImage": "Загрузить изображение",
+    "mosaicButton": "Мозаика"
   },
   "preview": {
     "scale": "Масштаб (%)",
@@ -67,10 +68,25 @@
     "fillBackground": "Залить фон",
     "color": "Цвет",
     "addToMap": "Добавить на карту",
-    "maxSizeExceeded": "Максимальный размер 1000x1000 пикселей."
+    "maxSizeExceeded": "Максимальный размер 1000x1000 пикселей.",
+    "alphaThreshold": "Прозрачность",
+    "colorMetric": "Алгоритм цвета",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricOklab": "Oklab",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "Мозаика",
+    "use2": "Исп. 2 коорд",
+    "use4": "Исп. 4 коорд",
+    "fetch": "Получить"
   },
   "buttons": {
     "back": "Назад",

@@ -57,7 +57,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "取得",
-    "uploadImage": "画像をアップロード"
+    "uploadImage": "画像をアップロード",
+    "mosaicButton": "モザイク"
   },
   "preview": {
     "scale": "スケール (%)",
@@ -67,10 +68,25 @@
     "fillBackground": "背景を塗りつぶす",
     "color": "色",
     "addToMap": "マップに追加",
-    "maxSizeExceeded": "最大サイズは 1000x1000 ピクセルです。"
+    "maxSizeExceeded": "最大サイズは 1000x1000 ピクセルです。",
+    "alphaThreshold": "透過",
+    "colorMetric": "色アルゴリズム",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricOklab": "Oklab",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "モザイク",
+    "use2": "2座標を使用",
+    "use4": "4座標を使用",
+    "fetch": "取得"
   },
   "buttons": {
     "back": "戻る",

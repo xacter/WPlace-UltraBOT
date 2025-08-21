@@ -57,7 +57,8 @@
     "worldXLabel": "世界 X",
     "worldYLabel": "世界 Y",
     "fetchButton": "获取",
-    "uploadImage": "上传图片"
+    "uploadImage": "上传图片",
+    "mosaicButton": "拼图"
   },
   "preview": {
     "scale": "缩放（%）",
@@ -67,10 +68,25 @@
     "fillBackground": "填充背景",
     "color": "颜色",
     "addToMap": "添加到地图",
-    "maxSizeExceeded": "最大尺寸为 1000x1000 像素。"
+    "maxSizeExceeded": "最大尺寸为 1000x1000 像素。",
+    "alphaThreshold": "透明度",
+    "colorMetric": "颜色算法",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricOklab": "Oklab",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "拼图",
+    "use2": "使用2坐标",
+    "use4": "使用4坐标",
+    "fetch": "获取"
   },
   "buttons": {
     "back": "返回",

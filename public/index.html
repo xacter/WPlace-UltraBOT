@@ -324,6 +324,24 @@
       z-index: 1100;
     }
     #img-preview-modal[hidden] { display: none; }
+    #mosaic-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 1100;
+    }
+    #mosaic-modal[hidden] { display: none; }
+    #mosaic-modal .coords-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    #mosaic-modal .button-row { grid-template-columns: repeat(3, 1fr); }
     body.no-scroll { overflow: hidden; }
     #img-preview-canvas {
       width: min(540px, 85vw);
@@ -339,20 +357,41 @@
     #img-preview-modal .modal-body { max-height: none; overflow: visible; }
     .img-preview-grid {
       display: grid;
-      grid-template-columns: 140px 1fr;
+      grid-template-columns: minmax(0, 140px) 1fr;
       gap: 10px 12px;
       align-items: center;
       pointer-events: auto;
     }
-    .img-preview-flex { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .img-preview-flex {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
     @media (max-width: 720px){ .img-preview-flex { grid-template-columns: 1fr; } }
     #img-fill-side { pointer-events: auto; }
-    #img-fill-side .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px 12px; align-items: center; }
+    #img-fill-side .row { display: grid; grid-template-columns: minmax(0, 140px) 1fr; gap: 10px 12px; align-items: center; }
     #img-fill-side .row + .row { margin-top: 8px; }
     #img-fill-side .color-row { align-items: start; }
-    #img-fill-color { display: grid; grid-template-columns: repeat(auto-fill, minmax(22px, 1fr)); gap: 6px; align-items: start; width: 100%; }
-    #img-fill-color .palette-swatch { cursor: pointer; width: 100%; aspect-ratio: 1 / 1; height: auto; min-width: 18px; }
+    #img-fill-color {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      align-items: start;
+      width: 100%;
+    }
+    #img-fill-color .modal-palette-swatch {
+      cursor: pointer;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      height: auto;
+    }
     #img-fill-color[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+    #img-preview-modal .img-preview-grid select,
+    #img-preview-modal .img-preview-grid button {
+      justify-self: start;
+      width: 100px;
+    }
     .modal-card {
       background: rgba(17, 20, 24, 0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -945,6 +984,17 @@
               <input id="img-width" type="number" min="1" max="1000" step="1" />
               <label for="img-height" data-i18n="preview.height">Yükseklik</label>
               <input id="img-height" type="number" min="1" max="1000" step="1" />
+              <label for="img-alpha-input" data-i18n="preview.alphaThreshold">Transparency</label>
+              <input id="img-alpha-input" type="number" min="0" max="255" step="1" value="5" />
+              <label for="img-color-metric" data-i18n="preview.colorMetric">Color algorithm</label>
+              <select id="img-color-metric">
+                <option value="oklab" data-i18n="preview.metricOklab" selected>Oklab</option>
+                <option value="rgb" data-i18n="preview.metricRgb">RGB (fast)</option>
+                <option value="lab" data-i18n="preview.metricLab">Lab (CIE76)</option>
+                <option value="ciede2000" data-i18n="preview.metricCiede2000">CIEDE2000 (more accurate, slower)</option>
+              </select>
+              <label for="img-dither-toggle" data-i18n="preview.dithering">Dithering</label>
+              <button id="img-dither-toggle" class="app-btn" type="button" data-state="off" data-i18n="preview.ditheringOff">Dithering: OFF</button>
             </div>
           </div>
           <div id="img-fill-side">
@@ -969,6 +1019,44 @@
     </div>
   </div>
 
+  <div id="mosaic-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header" data-i18n="mosaic.title">Mosaic</div>
+      <button id="mosaic-close" class="modal-close" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-body">
+        <div class="coords-row">
+          <label for="mosaic-x1">X1</label>
+          <input id="mosaic-x1" type="number" />
+          <label for="mosaic-y1">Y1</label>
+          <input id="mosaic-y1" type="number" />
+        </div>
+        <div class="coords-row">
+          <label for="mosaic-x2">X2</label>
+          <input id="mosaic-x2" type="number" disabled />
+          <label for="mosaic-y2">Y2</label>
+          <input id="mosaic-y2" type="number" disabled />
+        </div>
+        <div class="coords-row" id="mosaic-row-3" hidden>
+          <label for="mosaic-x3">X3</label>
+          <input id="mosaic-x3" type="number" disabled />
+          <label for="mosaic-y3">Y3</label>
+          <input id="mosaic-y3" type="number" disabled />
+        </div>
+        <div class="coords-row" id="mosaic-row-4" hidden>
+          <label for="mosaic-x4">X4</label>
+          <input id="mosaic-x4" type="number" disabled />
+          <label for="mosaic-y4">Y4</label>
+          <input id="mosaic-y4" type="number" disabled />
+        </div>
+        <div class="coords-row button-row">
+          <button class="app-btn" type="button" id="mosaic-use2" data-i18n="mosaic.use2">Use 2 coords</button>
+          <button class="app-btn" type="button" id="mosaic-use4" data-i18n="mosaic.use4">Use 4 coords</button>
+          <button class="app-btn" type="button" id="mosaic-fetch" data-i18n="mosaic.fetch">Fetch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <form class="panel" id="form">
     <label for="area-code" data-i18n="form.worldXLabel">World X</label>
     <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
@@ -977,6 +1065,7 @@
     <input id="no" name="no" type="number" min="0" step="1" inputmode="numeric" />
 
     <button class="app-btn" type="submit" data-i18n="form.fetchButton">Getir</button>
+    <button class="app-btn" type="button" id="btn-mosaic" data-i18n="form.mosaicButton">Mosaic</button>
     <button class="app-btn" type="button" id="btn-upload-sign" data-i18n="form.uploadImage">Resim yükle</button>
   </form>
  
@@ -1255,6 +1344,23 @@
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
     const uploadBtn = document.getElementById('btn-upload-sign');
+    const mosaicBtn = document.getElementById('btn-mosaic');
+    const mosaicModal = document.getElementById('mosaic-modal');
+    const mosaicClose = document.getElementById('mosaic-close');
+    const mosaicX1 = document.getElementById('mosaic-x1');
+    const mosaicY1 = document.getElementById('mosaic-y1');
+    const mosaicX2 = document.getElementById('mosaic-x2');
+    const mosaicY2 = document.getElementById('mosaic-y2');
+    const mosaicX3 = document.getElementById('mosaic-x3');
+    const mosaicY3 = document.getElementById('mosaic-y3');
+    const mosaicX4 = document.getElementById('mosaic-x4');
+    const mosaicY4 = document.getElementById('mosaic-y4');
+    const mosaicRow3 = document.getElementById('mosaic-row-3');
+    const mosaicRow4 = document.getElementById('mosaic-row-4');
+    const mosaicUse2 = document.getElementById('mosaic-use2');
+    const mosaicUse4 = document.getElementById('mosaic-use4');
+    const mosaicFetch = document.getElementById('mosaic-fetch');
+    const mosaicCanvas = document.createElement('canvas');
     const sidebar = document.getElementById('sidebar');
     const thumbList = document.getElementById('thumb-list');
     const counter = document.getElementById('counter');
@@ -2433,67 +2539,171 @@
     function squaredDistance(r1,g1,b1, r2,g2,b2){
       const dr=r1-r2, dg=g1-g2, db=b1-b2; return dr*dr+dg*dg+db*db;
     }
-    
-    function srgbToOklab(r, g, b){
-      const sr = r / 255, sg = g / 255, sb = b / 255;
-      const toLin = (u) => (u <= 0.04045) ? (u / 12.92) : Math.pow((u + 0.055) / 1.055, 2.4);
-      const lr = toLin(sr), lg = toLin(sg), lb = toLin(sb);
-      const l_ = 0.4122214708*lr + 0.5363325363*lg + 0.0514459929*lb;
-      const m_ = 0.2119034982*lr + 0.6806995451*lg + 0.1073969566*lb;
-      const s_ = 0.0883024619*lr + 0.2817188376*lg + 0.6299787005*lb;
-      const l = Math.cbrt(l_), m = Math.cbrt(m_), s = Math.cbrt(s_);
-      const L = 0.2104542553*l + 0.7936177850*m - 0.0040720468*s;
-      const A = 1.9779984951*l - 2.4285922050*m + 0.4505937099*s;
-      const B = 0.0259040371*l + 0.7827717662*m - 0.8086757660*s;
-      return [L, A, B];
+    function srgbToXyz(r,g,b){
+      let sr=r/255, sg=g/255, sb=b/255;
+      const toLin=(u)=> (u<=0.04045)?(u/12.92):Math.pow((u+0.055)/1.055,2.4);
+      sr=toLin(sr); sg=toLin(sg); sb=toLin(sb);
+      const x=sr*0.4124 + sg*0.3576 + sb*0.1805;
+      const y=sr*0.2126 + sg*0.7152 + sb*0.0722;
+      const z=sr*0.0193 + sg*0.1192 + sb*0.9505;
+      return [x,y,z];
     }
+    function xyzToLab(x,y,z){
+      const xn=0.95047, yn=1.0, zn=1.08883;
+      x/=xn; y/=yn; z/=zn;
+      const f=(t)=> t>0.008856?Math.cbrt(t):(7.787*t + 16/116);
+      const fx=f(x), fy=f(y), fz=f(z);
+      return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+    }
+    function srgbToLab(r,g,b){
+      const xyz=srgbToXyz(r,g,b); return xyzToLab(xyz[0],xyz[1],xyz[2]);
+    }
+    function srgbToOklab(r,g,b){
+      let sr=r/255, sg=g/255, sb=b/255;
+      const toLin=(u)=> (u<=0.04045)?(u/12.92):Math.pow((u+0.055)/1.055,2.4);
+      sr=toLin(sr); sg=toLin(sg); sb=toLin(sb);
+      const l=0.4122214708*sr + 0.5363325363*sg + 0.0514459929*sb;
+      const m=0.2119034982*sr + 0.6806995451*sg + 0.1073969566*sb;
+      const s=0.0883024619*sr + 0.2817188376*sg + 0.6299787005*sb;
+      const l_=Math.cbrt(l), m_=Math.cbrt(m), s_=Math.cbrt(s);
+      return [
+        0.2104542553*l_ + 0.7936177850*m_ - 0.0040720468*s_,
+        1.9779984951*l_ - 2.4285922050*m_ + 0.4505937099*s_,
+        0.0259040371*l_ + 0.7827717662*m_ - 0.8086757660*s_
+      ];
+    }
+    function ciede2000(lab1, lab2){
+      const [L1,a1,b1]=lab1; const [L2,a2,b2]=lab2;
+      const avgLp=(L1+L2)/2;
+      const C1=Math.hypot(a1,b1); const C2=Math.hypot(a2,b2);
+      const avgC=(C1+C2)/2;
+      const G=0.5*(1-Math.sqrt(Math.pow(avgC,7)/(Math.pow(avgC,7)+Math.pow(25,7))));
+      const a1p=(1+G)*a1; const a2p=(1+G)*a2;
+      const C1p=Math.hypot(a1p,b1); const C2p=Math.hypot(a2p,b2);
+      const avgCp=(C1p+C2p)/2;
+      let h1p=Math.atan2(b1,a1p); if (h1p<0) h1p+=2*Math.PI;
+      let h2p=Math.atan2(b2,a2p); if (h2p<0) h2p+=2*Math.PI;
+      let deltahp;
+      const diffh=h2p-h1p;
+      if (isNaN(h1p) || isNaN(h2p)) deltahp=0;
+      else if (Math.abs(diffh)<=Math.PI) deltahp=diffh;
+      else if (diffh>Math.PI) deltahp=diffh-2*Math.PI;
+      else deltahp=diffh+2*Math.PI;
+      const deltaLp=L2-L1;
+      const deltaCp=C2p-C1p;
+      const deltaHp=2*Math.sqrt(C1p*C2p)*Math.sin(deltahp/2);
+      const avgLpMinus50Sq=Math.pow(avgLp-50,2);
+      const Sl=1+(0.015*avgLpMinus50Sq)/Math.sqrt(20+avgLpMinus50Sq);
+      const Sc=1+0.045*avgCp;
+      const T=1-0.17*Math.cos((h1p+h2p)/2 - Math.PI/6) + 0.24*Math.cos(2*(h1p+h2p)/2) + 0.32*Math.cos(3*(h1p+h2p)/2 + Math.PI/30) - 0.20*Math.cos(4*(h1p+h2p)/2 - 63*Math.PI/180);
+      const Sh=1+0.015*avgCp*T;
+      const deltaTheta=30*Math.PI/180*Math.exp(-Math.pow(((h1p+h2p)/2 - 275*Math.PI/180)/(25*Math.PI/180),2));
+      const Rc=2*Math.sqrt(Math.pow(avgCp,7)/(Math.pow(avgCp,7)+Math.pow(25,7)));
+      const Rt=-Rc*Math.sin(2*deltaTheta);
+      return Math.sqrt(Math.pow(deltaLp/Sl,2)+Math.pow(deltaCp/Sc,2)+Math.pow(deltaHp/Sh,2)+Rt*(deltaCp/Sc)*(deltaHp/Sh));
+    }
+    let PALETTE_LAB = [];
     let PALETTE_OKLAB = [];
     let EXACT_PALETTE_MAP = new Map();
     function recomputePaletteCaches(){
       try {
         const arrActive = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
-        const arr = [];
+        const arrLab = [];
+        const arrOk = [];
         const m = new Map();
         for (let i = 0; i < arrActive.length; i++){
           const p = arrActive[i];
-          const lab = srgbToOklab(p.rgb[0], p.rgb[1], p.rgb[2]);
-          arr.push({ id: p.id, lab });
+          const lab = srgbToLab(p.rgb[0], p.rgb[1], p.rgb[2]);
+          const ok = srgbToOklab(p.rgb[0], p.rgb[1], p.rgb[2]);
+          arrLab.push({ id: p.id, lab, rgb: p.rgb });
+          arrOk.push({ id: p.id, oklab: ok, rgb: p.rgb });
           m.set(String(p.rgb[0]) + ',' + String(p.rgb[1]) + ',' + String(p.rgb[2]), p.id);
         }
-        PALETTE_OKLAB = arr;
+        PALETTE_LAB = arrLab;
+        PALETTE_OKLAB = arrOk;
         EXACT_PALETTE_MAP = m;
       } catch {}
     }
     try { recomputePaletteCaches(); } catch {}
-    function nearestPaletteRgb(r,g,b){
-      const lab = srgbToOklab(r,g,b);
+    function nearestPaletteColor(r,g,b, metric){
       const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
-      let best = arr[0].rgb, bestD = Infinity;
-      for (let i = 0; i < PALETTE_OKLAB.length; i++){
-        const q = PALETTE_OKLAB[i].lab;
-        const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
-        const d = dL*dL + dA*dA + dB*dB;
-        if (d < bestD){ bestD = d; best = arr[i].rgb; if (d === 0) break; }
+      if (metric === 'oklab'){
+        const ok = srgbToOklab(r,g,b);
+        let best = arr[0].rgb, bestD = Infinity;
+        for (let i = 0; i < PALETTE_OKLAB.length; i++){
+          const q = PALETTE_OKLAB[i];
+          const dL = ok[0]-q.oklab[0], dA = ok[1]-q.oklab[1], dB = ok[2]-q.oklab[2];
+          const d = dL*dL + dA*dA + dB*dB;
+          if (d < bestD){ bestD = d; best = q.rgb; if (d === 0) break; }
+        }
+        return best;
+      } else if (metric === 'lab' || metric === 'ciede2000'){
+        const lab = srgbToLab(r,g,b);
+        let best = arr[0].rgb, bestD = Infinity;
+        for (let i = 0; i < PALETTE_LAB.length; i++){
+          const q = PALETTE_LAB[i];
+          let d;
+          if (metric === 'lab'){
+            const dL = lab[0]-q.lab[0], dA = lab[1]-q.lab[1], dB = lab[2]-q.lab[2];
+            d = dL*dL + dA*dA + dB*dB;
+          } else {
+            d = ciede2000(lab, q.lab);
+          }
+          if (d < bestD){ bestD = d; best = q.rgb; if (d === 0) break; }
+        }
+        return best;
+      } else {
+        let best = arr[0].rgb, bestD = Infinity;
+        for (let i = 0; i < arr.length; i++){
+          const p = arr[i].rgb;
+          const d = squaredDistance(r,g,b,p[0],p[1],p[2]);
+          if (d < bestD){ bestD = d; best = p; if (d === 0) break; }
+        }
+        return best;
       }
-      return best;
     }
-    function nearestPaletteId(r,g,b){
-      const lab = srgbToOklab(r,g,b);
+    function nearestPaletteId(r,g,b, metric){
       const arr = (ACTIVE_PALETTE && Array.isArray(ACTIVE_PALETTE)) ? ACTIVE_PALETTE : PALETTE;
-      let bestId = arr[0].id;
-      let bestD = Infinity;
-      for (let i = 0; i < PALETTE_OKLAB.length; i++){
-        const q = PALETTE_OKLAB[i].lab;
-        const dL = lab[0]-q[0], dA = lab[1]-q[1], dB = lab[2]-q[2];
-        const d = dL*dL + dA*dA + dB*dB;
-        if (d < bestD){ bestD = d; bestId = arr[i].id; if (d === 0) break; }
+      if (metric === 'oklab'){
+        const ok = srgbToOklab(r,g,b);
+        let bestId = arr[0].id, bestD = Infinity;
+        for (let i = 0; i < PALETTE_OKLAB.length; i++){
+          const q = PALETTE_OKLAB[i];
+          const dL = ok[0]-q.oklab[0], dA = ok[1]-q.oklab[1], dB = ok[2]-q.oklab[2];
+          const d = dL*dL + dA*dA + dB*dB;
+          if (d < bestD){ bestD = d; bestId = q.id; if (d === 0) break; }
+        }
+        return bestId;
+      } else if (metric === 'lab' || metric === 'ciede2000'){
+        const lab = srgbToLab(r,g,b);
+        let bestId = arr[0].id, bestD = Infinity;
+        for (let i = 0; i < PALETTE_LAB.length; i++){
+          const q = PALETTE_LAB[i];
+          let d;
+          if (metric === 'lab'){
+            const dL = lab[0]-q.lab[0], dA = lab[1]-q.lab[1], dB = lab[2]-q.lab[2];
+            d = dL*dL + dA*dA + dB*dB;
+          } else {
+            d = ciede2000(lab, q.lab);
+          }
+          if (d < bestD){ bestD = d; bestId = q.id; if (d === 0) break; }
+        }
+        return bestId;
+      } else {
+        let bestId = arr[0].id, bestD = Infinity;
+        for (let i = 0; i < arr.length; i++){
+          const p = arr[i].rgb;
+          const d = squaredDistance(r,g,b,p[0],p[1],p[2]);
+          if (d < bestD){ bestD = d; bestId = arr[i].id; if (d === 0) break; }
+        }
+        return bestId;
       }
-      return bestId;
     }
     function rgbToPaletteId(r,g,b){
       const key = String(r) + ',' + String(g) + ',' + String(b);
       if (EXACT_PALETTE_MAP.has(key)) return EXACT_PALETTE_MAP.get(key);
-      return nearestPaletteId(r,g,b);
+      const metric = imgColorMetricSelect ? imgColorMetricSelect.value : 'oklab';
+      return nearestPaletteId(r,g,b, metric);
     }
     function quantizeImageToPalette(image){
       const w=image.naturalWidth|0, h=image.naturalHeight|0;
@@ -2503,60 +2713,70 @@
       octx.drawImage(image,0,0);
       const id=octx.getImageData(0,0,w,h);
       const data=id.data;
-      
-      const w2 = w + 2;
-      const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
-      const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
-      for (let y = 0; y < h; y++) {
-        const leftToRight = (y % 2 === 0);
-        
-        for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
-        
-        if (leftToRight) {
-          for (let x = 0; x < w; x++) {
-            const idx = (y * w + x) * 4;
-            const a = data[idx + 3]; if (a === 0) continue;
-            let r = data[idx] + errCurrR[x+1];
-            let g = data[idx+1] + errCurrG[x+1];
-            let b = data[idx+2] + errCurrB[x+1];
-            r = r < 0 ? 0 : (r > 255 ? 255 : r);
-            g = g < 0 ? 0 : (g > 255 ? 255 : g);
-            b = b < 0 ? 0 : (b > 255 ? 255 : b);
-            const nn = nearestPaletteRgb(r, g, b);
-            data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-            const er = r - nn[0];
-            const eg = g - nn[1];
-            const eb = b - nn[2];
-            
-            errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-            errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-            errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+      const alphaTh = imgAlphaInput ? parseInt(imgAlphaInput.value||'0',10) : 0;
+      for (let i=0;i<data.length;i+=4){
+        data[i+3] = (data[i+3] <= alphaTh) ? 0 : 255;
+      }
+      const metric = imgColorMetricSelect ? imgColorMetricSelect.value : 'oklab';
+      if (imgDitherEnabled){
+        const w2 = w + 2;
+        const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+        const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+        for (let y = 0; y < h; y++){
+          const leftToRight = (y % 2 === 0);
+          for (let i = 0; i < w2; i++){ errCurrR[i]+=0; errCurrG[i]+=0; errCurrB[i]+=0; }
+          if (leftToRight){
+            for (let x = 0; x < w; x++){
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteColor(r,g,b,metric);
+              data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+            }
+          } else {
+            for (let x = w - 1; x >= 0; x--){
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteColor(r,g,b,metric);
+              data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+            }
           }
-        } else {
-          for (let x = w - 1; x >= 0; x--) {
+          for (let i = 0; i < w2; i++){ errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+        }
+      } else {
+        for (let y = 0; y < h; y++){
+          for (let x = 0; x < w; x++){
             const idx = (y * w + x) * 4;
-            const a = data[idx + 3]; if (a === 0) continue;
-            let r = data[idx] + errCurrR[x+1];
-            let g = data[idx+1] + errCurrG[x+1];
-            let b = data[idx+2] + errCurrB[x+1];
-            r = r < 0 ? 0 : (r > 255 ? 255 : r);
-            g = g < 0 ? 0 : (g > 255 ? 255 : g);
-            b = b < 0 ? 0 : (b > 255 ? 255 : b);
-            const nn = nearestPaletteRgb(r, g, b);
-            data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-            const er = r - nn[0];
-            const eg = g - nn[1];
-            const eb = b - nn[2];
-            
-            errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
-            errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
-            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-            errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+            if (data[idx + 3] === 0) continue;
+            const nn = nearestPaletteColor(data[idx], data[idx+1], data[idx+2], metric);
+            data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
           }
         }
-        
-        for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
       }
       octx.putImageData(id,0,0);
       return new Promise((resolve)=>{ off.toBlob((blob)=>resolve(blob), 'image/png'); });
@@ -2723,6 +2943,11 @@
 
     let img = null;
     let baseImageData = null;
+    let currentTiles = [];
+    let currentTileW = 0;
+    let currentTileH = 0;
+    let currentMosaicCols = 1;
+    let currentMosaicRows = 1;
     const state = {
       scale: 1,
       minScale: 0.1,
@@ -2868,29 +3093,69 @@
       render();
     }
 
-    function reloadCurrentBackground() {
-      try {
-        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
-        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        if (!area || !no) return Promise.resolve(false);
-        const url = buildUrl(area, no) + '?t=' + Date.now();
-        return new Promise((resolve) => {
-          try {
-            const image = new Image();
-            image.onload = () => {
-              img = image;
-              baseImageData = null;
-              try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
-              render();
-              updatePixelMarkers();
-              resolve(true);
-            };
-            image.onerror = () => { resolve(false); };
-            image.src = url;
-          } catch { resolve(false); }
+ async function reloadCurrentBackground() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+    if (saved) {
+      if (saved.mode === 'mosaic') {
+        try {
+          await loadMosaic(saved.coords, true);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      if (saved.mode === 'single') {
+        const area = saved.coords[0].x;
+        const no = saved.coords[0].y;
+        return await new Promise(resolve => {
+          const url = buildUrl(area, no) + '?t=' + Date.now();
+          const image = new Image();
+          image.onload = () => {
+            img = image;
+            baseImageData = null;
+            currentTiles = [{ x: Number(area), y: Number(no) }];
+            currentTileW = image.width;
+            currentTileH = image.height;
+            currentMosaicCols = 1;
+            currentMosaicRows = 1;
+            try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+            render();
+            updatePixelMarkers();
+            resolve(true);
+          };
+          image.onerror = () => resolve(false);
+          image.src = url;
         });
-      } catch { return Promise.resolve(false); }
+      }
     }
+    // Si no hay datos guardados, carga desde los inputs
+    const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
+    const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
+    if (!area || !no) return false;
+    return await new Promise(resolve => {
+      const url = buildUrl(area, no) + '?t=' + Date.now();
+      const image = new Image();
+      image.onload = () => {
+        img = image;
+        baseImageData = null;
+        currentTiles = [{ x: Number(area), y: Number(no) }];
+        currentTileW = image.width;
+        currentTileH = image.height;
+        currentMosaicCols = 1;
+        currentMosaicRows = 1;
+        try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+        render();
+        updatePixelMarkers();
+        resolve(true);
+      };
+      image.onerror = () => resolve(false);
+      image.src = url;
+    });
+  } catch {
+    return false;
+  }
+}
 
     const USE_LOCAL_TILE = false;
     function buildUrl(area, no) {
@@ -2899,35 +3164,50 @@
       return '/tiles/' + encodeURIComponent(area) + '/' + encodeURIComponent(no) + '.png';
     }
 
-    function hasSavedView(){
-      try {
-        const sx = parseFloat(localStorage.getItem('view.translateX') || '');
-        const sy = parseFloat(localStorage.getItem('view.translateY') || '');
-        const sc = parseFloat(localStorage.getItem('view.scale') || '');
-        return !isNaN(sx) && !isNaN(sy) && !isNaN(sc);
-      } catch { return false; }
-    }
+function hasSavedView(){
+  try {
+    const sx = parseFloat(localStorage.getItem('view.translateX') || '');
+    const sy = parseFloat(localStorage.getItem('view.translateY') || '');
+    const sc = parseFloat(localStorage.getItem('view.scale') || '');
+    return !isNaN(sx) && !isNaN(sy) && !isNaN(sc);
+  } catch { return false; }
+}
 
-    function loadImage(area, no) {
-      const url = buildUrl(area, no);
-      const image = new Image();
-      
-      image.onload = () => {
-        img = image;
-        try { baseImageData = null; } catch {}
-        
-        if (hasSavedView()) {
-          render();
-          updatePixelMarkers();
-        } else {
-          fitToView();
-        }
-      };
-      image.onerror = () => {
-        alert(t('messages.imageLoadFailed'));
-      };
-      image.src = url;
+function loadImage(area, no, preserveView = false) {
+  const url = buildUrl(area, no);
+  const image = new Image();
+
+  image.onload = () => {
+    const prevScale = state.scale;
+    const prevTx = state.translateX;
+    const prevTy = state.translateY;
+
+    img = image;
+    currentTiles = [{ x: Number(area), y: Number(no) }];
+    currentTileW = image.width;
+    currentTileH = image.height;
+    currentMosaicCols = 1;
+    currentMosaicRows = 1;
+    try { baseImageData = null; } catch {}
+
+    if (preserveView) {
+      state.scale = prevScale;
+      state.translateX = prevTx;
+      state.translateY = prevTy;
+      render();
+    } else if (hasSavedView()) {
+      render();
+      updatePixelMarkers();
+    } else {
+      fitToView();
     }
+    localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
+  };
+  image.onerror = () => {
+    alert(t('messages.imageLoadFailed'));
+  };
+  image.src = url;
+}
     let rightEraseHeld = false;
     let rightEraseLastKey = null;
     
@@ -3145,8 +3425,8 @@
       }
     });
     window.addEventListener('mouseup', (e) => {
-      if (isReadyOpen()) {
-        
+      if (isReadyOpen()) {// Ready mode
+         
         if (readyMouseDownPt && !readyMouseMoved && e.button === 0) {
           const hasAccounts = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
           if (!hasAccounts) {
@@ -4623,6 +4903,117 @@
       if (e.key === 'Escape') accountsModal.hidden = true;
     });
 
+    // Mosaic modal logic
+    let mosaicCount = 2;
+    function updateMosaicCoords(){
+      const x1 = Number(mosaicX1.value) || 0;
+      const y1 = Number(mosaicY1.value) || 0;
+      mosaicX2.value = x1 + 1;
+      mosaicY2.value = y1;
+      mosaicX3.value = x1;
+      mosaicY3.value = y1 + 1;
+      mosaicX4.value = x1 + 1;
+      mosaicY4.value = y1 + 1;
+    }
+    mosaicX1.addEventListener('input', updateMosaicCoords);
+    mosaicY1.addEventListener('input', updateMosaicCoords);
+
+    mosaicBtn.addEventListener('click', () => {
+      mosaicModal.hidden = false;
+      document.body.classList.add('no-scroll');
+      mosaicCount = 2;
+      mosaicRow3.hidden = true;
+      mosaicRow4.hidden = true;
+      updateMosaicCoords();
+    });
+    mosaicClose.addEventListener('click', () => {
+      mosaicModal.hidden = true;
+      document.body.classList.remove('no-scroll');
+    });
+    mosaicModal.addEventListener('click', (e) => {
+      if (e.target === mosaicModal) {
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !mosaicModal.hidden) {
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      }
+    });
+
+    mosaicUse2.addEventListener('click', () => {
+      mosaicCount = 2;
+      mosaicRow3.hidden = true;
+      mosaicRow4.hidden = true;
+    });
+    mosaicUse4.addEventListener('click', () => {
+      mosaicCount = 4;
+      mosaicRow3.hidden = false;
+      mosaicRow4.hidden = false;
+    });
+
+    function fetchTile(area, no) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = buildUrl(area, no) + '?t=' + Date.now();
+      });
+    }
+
+    async function loadMosaic(coords, preserveView = false) {
+      const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
+      const tileW = images[0].width;
+      const tileH = images[0].height;
+      mosaicCanvas.width = tileW * 2;
+      mosaicCanvas.height = tileH * (coords.length === 2 ? 1 : 2);
+      const mctx = mosaicCanvas.getContext('2d');
+      mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
+      mctx.drawImage(images[0], 0, 0);
+      mctx.drawImage(images[1], tileW, 0);
+      if (coords.length === 4) {
+        mctx.drawImage(images[2], 0, tileH);
+        mctx.drawImage(images[3], tileW, tileH);
+      }
+      img = mosaicCanvas;
+      currentTiles = coords.slice();
+      currentTileW = tileW;
+      currentTileH = tileH;
+      currentMosaicCols = 2;
+      currentMosaicRows = coords.length === 2 ? 1 : 2;
+      try {
+        baseImageData = null;
+        // Clear cached placed counts so auto-mode uses fresh data
+        signItems.forEach(it => { if (it) it._placedCountCache = null; });
+      } catch {}
+      if (preserveView) {
+        render();
+      } else {
+        fitToView();
+      }
+    }
+
+    mosaicFetch.addEventListener('click', async () => {
+      const coords = [
+        { x: Number(mosaicX1.value), y: Number(mosaicY1.value) },
+        { x: Number(mosaicX2.value), y: Number(mosaicY2.value) }
+      ];
+      if (mosaicCount === 4) {
+        coords.push({ x: Number(mosaicX3.value), y: Number(mosaicY3.value) });
+        coords.push({ x: Number(mosaicX4.value), y: Number(mosaicY4.value) });
+      }
+      try {
+        await loadMosaic(coords);
+        localStorage.setItem('lastFetch', JSON.stringify({ mode: 'mosaic', coords }));
+        mosaicModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+      } catch (err) {
+        alert(t('messages.imageLoadFailed'));
+      }
+    });
+
     
     sign.addEventListener('load', () => {});
 
@@ -4642,8 +5033,19 @@
     const imgHeightInput = document.getElementById('img-height');
     const imgFillToggle = document.getElementById('img-fill-toggle');
     const imgFillColorWrap = document.getElementById('img-fill-color');
+    const imgAlphaInput = document.getElementById('img-alpha-input');
+    const imgColorMetricSelect = document.getElementById('img-color-metric');
+    const imgDitherToggle = document.getElementById('img-dither-toggle');
+    let imgDitherEnabled = false;
     let imgFillColorId = null; // null => none, number => palette id
     let previewSourceImage = null;
+
+    function updateDitherButtonUi(){
+      if (!imgDitherToggle) return;
+      const key = imgDitherEnabled ? 'preview.ditheringOn' : 'preview.ditheringOff';
+      imgDitherToggle.textContent = t(key);
+      imgDitherToggle.dataset.state = imgDitherEnabled ? 'on' : 'off';
+    }
 
     function openImagePreview(image, filename){
       previewSourceImage = image;
@@ -4656,9 +5058,17 @@
       imgFillColorId = null;
       buildFillPaletteUi();
       try { if (imgFillColorWrap) imgFillColorWrap.setAttribute('aria-disabled', 'true'); } catch {}
+      try { imgAlphaInput.value = '5'; } catch {}
+      try { imgColorMetricSelect.value = 'oklab'; } catch {}
+      imgDitherEnabled = false;
+      updateDitherButtonUi();
       drawPreview();
       imgPreviewModal.hidden = false;
-      try { document.body.classList.add('no-scroll'); } catch {}
+      try {
+        document.body.classList.add('no-scroll');
+        if (colorPaletteEl) colorPaletteEl.hidden = true;
+        if (paletteModeEl) paletteModeEl.hidden = true;
+      } catch {}
       imgPreviewApply._filename = filename || 'image.png';
     }
     function drawPreview(){
@@ -4675,59 +5085,70 @@
       try {
         const id = octx.getImageData(0, 0, targetW, targetH);
         const data = id.data;
-        const w2 = targetW + 2;
-        const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
-        const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
-        for (let y = 0; y < targetH; y++) {
-          const leftToRight = (y % 2 === 0);
-          for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
-          if (leftToRight) {
+        const alphaTh = imgAlphaInput ? parseInt(imgAlphaInput.value||'0',10) : 0;
+        for (let i = 0; i < data.length; i += 4) {
+          data[i+3] = (data[i+3] <= alphaTh) ? 0 : 255;
+        }
+        const metric = imgColorMetricSelect ? imgColorMetricSelect.value : 'oklab';
+        if (imgDitherEnabled) {
+          const w2 = targetW + 2;
+          const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
+          const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
+          for (let y = 0; y < targetH; y++) {
+            const leftToRight = (y % 2 === 0);
+            for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
+            if (leftToRight) {
+              for (let x = 0; x < targetW; x++) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteColor(r, g, b, metric);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = r - nn[0];
+                const eg = g - nn[1];
+                const eb = b - nn[2];
+                errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+                errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+              }
+            } else {
+              for (let x = targetW - 1; x >= 0; x--) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteColor(r, g, b, metric);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = r - nn[0];
+                const eg = g - nn[1];
+                const eb = b - nn[2];
+                errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+                errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+              }
+            }
+            for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
+          }
+        } else {
+          for (let y = 0; y < targetH; y++) {
             for (let x = 0; x < targetW; x++) {
               const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3];
-              if (a === 0) {
-                // already filled by background above if enabled; skip quantization for speed
-                continue;
-              }
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
-              const nn = nearestPaletteRgb(r, g, b);
+              if (data[idx + 3] === 0) continue;
+              const nn = nearestPaletteColor(data[idx], data[idx+1], data[idx+2], metric);
               data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
-            }
-          } else {
-            for (let x = targetW - 1; x >= 0; x--) {
-              const idx = (y * targetW + x) * 4;
-              const a = data[idx + 3];
-              if (a === 0) { continue; }
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
-              const nn = nearestPaletteRgb(r, g, b);
-              data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
-              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
             }
           }
-          for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
         }
         octx.putImageData(id, 0, 0);
       } catch {}
@@ -4804,12 +5225,23 @@
     if (imgWidthInput) imgWidthInput.addEventListener('change', updateHeightFromWidth);
     if (imgHeightInput) imgHeightInput.addEventListener('change', updateWidthFromHeight);
     if (imgKeepRatioInput) imgKeepRatioInput.addEventListener('change', () => { drawPreview(); });
+    if (imgAlphaInput) {
+      imgAlphaInput.addEventListener('input', () => {
+        let v = parseInt(imgAlphaInput.value || '0', 10);
+        if (isNaN(v)) v = 0;
+        if (v < 0) v = 0; else if (v > 255) v = 255;
+        imgAlphaInput.value = String(v);
+        drawPreview();
+      });
+    }
+    if (imgColorMetricSelect) imgColorMetricSelect.addEventListener('change', () => { drawPreview(); });
+    if (imgDitherToggle) imgDitherToggle.addEventListener('click', () => { imgDitherEnabled = !imgDitherEnabled; updateDitherButtonUi(); drawPreview(); });
     function buildFillPaletteUi(){
       if (!imgFillColorWrap) return;
       try { imgFillColorWrap.innerHTML = ''; } catch {}
       // Transparent option (none)
       const swNone = document.createElement('div');
-      swNone.className = 'palette-swatch transparent selected';
+      swNone.className = 'palette-swatch modal-palette-swatch transparent selected';
       swNone.title = t('palette.transparentTitle');
       swNone.setAttribute('role','button');
       swNone.addEventListener('click', () => {
@@ -4823,7 +5255,7 @@
       for (let i = 0; i < arr.length; i++){
         const p = arr[i];
         const el = document.createElement('div');
-        el.className = 'palette-swatch';
+        el.className = 'palette-swatch modal-palette-swatch';
         el.style.backgroundColor = 'rgb(' + p.rgb[0] + ',' + p.rgb[1] + ',' + p.rgb[2] + ')';
         setPaletteSwatchTitle(el, p);
         el.setAttribute('data-id', String(p.id));
@@ -4849,7 +5281,7 @@
     }
     function updateFillPaletteSelectionUi(){
       if (!imgFillColorWrap) return;
-      const swatches = Array.from(imgFillColorWrap.querySelectorAll('.palette-swatch'));
+      const swatches = Array.from(imgFillColorWrap.querySelectorAll('.modal-palette-swatch'));
       swatches.forEach(sw => {
         const idAttr = sw.getAttribute('data-id');
         const id = idAttr == null ? null : Number(idAttr);
@@ -4861,7 +5293,14 @@
       try { imgFillColorWrap.setAttribute('aria-disabled', imgFillToggle.checked ? 'false' : 'true'); } catch {}
       drawPreview();
     });
-    function closeImgPreview(){ try { document.body.classList.remove('no-scroll'); } catch {} imgPreviewModal.hidden = true; }
+    function closeImgPreview(){
+      try {
+        document.body.classList.remove('no-scroll');
+        if (colorPaletteEl) colorPaletteEl.hidden = false;
+        if (paletteModeEl) paletteModeEl.hidden = false;
+      } catch {}
+      imgPreviewModal.hidden = true;
+    }
     if (imgPreviewClose) imgPreviewClose.addEventListener('click', closeImgPreview);
     if (imgPreviewCancel) imgPreviewCancel.addEventListener('click', closeImgPreview);
     if (imgPreviewApply) imgPreviewApply.addEventListener('click', async () => {
@@ -5491,120 +5930,220 @@
       } catch {}
     }
 
-    if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        const hasToken = !!(readyTokenInput && readyTokenInput.value && readyTokenInput.value.trim().length > 0);
-        const hasAccounts = getSelectedAccountsSortedByCapacityDesc().length > 0;
-        const hasAnyPixel = readyGlobalMode ? (readyGlobalSelected.size > 0) : (getReadySelectedCount() > 0);
-        if (!(hasToken && hasAccounts && hasAnyPixel)) {
-          showToast(t('messages.startRequirementsMissing'), 'error', 2500);
-          try { updateStartEnabled(); } catch {}
-          return;
+    function groupPixelsByTile(colors, coords) {
+      const tileWidth = currentTileW || (img ? img.width : 0);
+      const tileHeight = currentTileH || (img ? img.height : 0);
+      const cols = currentMosaicCols || 1;
+      const map = new Map();
+      for (let i = 0; i < colors.length; i++) {
+        const wx = coords[i * 2];
+        const wy = coords[i * 2 + 1];
+        const col = Math.floor(wx / tileWidth);
+        const row = Math.floor(wy / tileHeight);
+        const index = row * cols + col;
+        const tile = currentTiles[index] || currentTiles[0] || { x: 0, y: 0 };
+        const localX = wx - col * tileWidth;
+        const localY = wy - row * tileHeight;
+        const key = tile.x + ',' + tile.y;
+        let g = map.get(key);
+        if (!g) {
+          g = { area: tile.x, no: tile.y, coords: [], colors: [] };
+          map.set(key, g);
         }
-        const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
-        if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
-        const data = buildSelectedExportForItem(sel);
-        const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
-        // Always clear token immediately upon starting (also in Auto Mode)
-        try { if (readyTokenInput) { readyTokenInput.value = ''; } } catch {}
-        try { updateStartEnabled(); } catch {}
-        const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
-        const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
-        const total = data.colors.length|0;
-        const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
-        // Build task list from exported data (already premium-first)
-        const tasks = [];
-        for (let i = 0; i < data.colors.length; i++) {
-          const c = data.colors[i];
-          const x = data.coords[i * 2];
-          const y = data.coords[i * 2 + 1];
-          tasks.push({ c, x, y });
+        g.coords.push(localX, localY);
+        g.colors.push(colors[i]);
+      }
+      return Array.from(map.values());
+    }
+
+if (startBtn) {
+  startBtn.addEventListener('click', () => {
+    const hasToken = !!(readyTokenInput && readyTokenInput.value && readyTokenInput.value.trim().length > 0);
+    const hasAccounts = getSelectedAccountsSortedByCapacityDesc().length > 0;
+    const hasAnyPixel = readyGlobalMode ? (readyGlobalSelected.size > 0) : (getReadySelectedCount() > 0);
+    if (!(hasToken && hasAccounts && hasAnyPixel)) {
+      showToast(t('messages.startRequirementsMissing'), 'error', 2500);
+      try { updateStartEnabled(); } catch {}
+      return;
+    }
+    const sel = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
+    if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
+    const data = buildSelectedExportForItem(sel);
+    const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
+    // Si hay mosaico, agrupa por tile y asigna por lotes
+if (currentTiles && currentTiles.length > 1) {
+  const groups = groupPixelsByTile(data.colors, data.coords);
+  (async () => {
+    let paintedAny = false;
+    let missingTotal = 0;
+    let usedIds = []; 
+    let hadRequestError = false;
+    let didReload = false;
+    for (const g of groups) {
+      const total = g.colors.length|0;
+      const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+      let offset = 0;
+      for (let i = 0; i < selectedAccounts.length && offset < total; i++) {
+        const acc = selectedAccounts[i];
+        const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
+        if (cap <= 0) continue;
+        const take = Math.min(cap, total - offset);
+        if (take <= 0) continue;
+        const colorsSlice = g.colors.slice(offset, offset + take);
+        const coordsSlice = g.coords.slice(offset * 2, (offset + take) * 2);
+        const r = await postBatch(String(g.area), String(g.no), colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+        if (r && r.status === 429) {
+          hadRequestError = true;
+          try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
+          break;
         }
-        const assigned = new Array(tasks.length).fill(false);
-        (async () => {
-          let assignedCount = 0;
-          const usedIds = [];
-          let hadRequestError = false;
-          for (let i = 0; i < selectedAccounts.length && assignedCount < total; i++) {
-            const acc = selectedAccounts[i];
-            const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
-            if (cap <= 0) continue;
-            const colorsSlice = [];
-            const coordsSlice = [];
-            for (let j = 0; j < tasks.length && colorsSlice.length < cap; j++) {
-              if (assigned[j]) continue;
-              const tsk = tasks[j];
-              let ok = true;
-              if (tsk.c != null && tsk.c !== 0 && isPremiumColorId(tsk.c)) {
-                const idx = Number(tsk.c) - 32;
-                const mask = idx >= 0 ? (1 << idx) : 0;
-                const bm = Number(acc.extraColorsBitmap || 0);
-                ok = (mask !== 0) && ((bm & mask) !== 0);
-              }
-              if (!ok) continue;
-              colorsSlice.push(tsk.c);
-              coordsSlice.push(tsk.x, tsk.y);
-              assigned[j] = true;
+        if (!r.ok) {
+          if (r.status >= 500) {
+            try { await loadAccounts(); } catch {}
+            continue;
+          } else {
+            hadRequestError = true;
+            showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
+            break;
+          }
+        }
+        offset += take;
+        usedIds.push(acc.id); 
+        try { await refreshAccountById(acc.id); } catch {}
+      }
+      if (offset > 0) paintedAny = true;
+      if (offset < total && !hadRequestError) missingTotal += (total - offset);
+    }
+    if (paintedAny) {
+      showToast(t('messages.painted'), 'success', 1800);
+      didReload = await reloadCurrentBackground();
+      try { clearAllReadySelections(); } catch {}
+      try { readyGlobalMode = false; } catch {}
+      if (!autoMode) {
+        try { resetReadyNow(); } catch {}
+      }
+      try { updateStartEnabled(); } catch {}
+    }
+    if (missingTotal > 0) {
+      showToast(t('messages.insufficientPixelPower', { n: missingTotal }), 'error', 3000);
+    }
+    try { await loadAccounts(); } catch {}
+    try { updateReadySelectionLabel(); } catch {}
+    render();
+    // Auto mode: después de pintar, selecciona la siguiente cuenta y auto selecciona píxeles
+    if (autoMode && paintedAny && !hadRequestError) {
+      try {
+        await loadAccounts();
+        try { renderReadyAccountList(); } catch {}
+        updateReadyPixelForSelectedAccounts();
+        const nextId = pickNextBestAccountId(usedIds); 
+        if (nextId != null) {
+          readySelectedAccountIds = [nextId];
+          try { renderReadyAccountList(); } catch {}
+          updateReadyPixelForSelectedAccounts();
+          try { await new Promise(resolve => setTimeout(resolve, didReload ? 50 : 300)); } catch {}
+          if (autoSelectBtn) { autoSelectDeleteMode = false; autoSelectBtn.click(); }
+        }
+      } catch {}
+    }
+  })();
+} else {
+      // Si no hay mosaico, usa la lógica de xacter (asignación individual)
+      const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
+      const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
+      const total = data.colors.length|0;
+      const selectedAccounts = getSelectedAccountsSortedByCapacityDesc();
+      const tasks = [];
+      for (let i = 0; i < data.colors.length; i++) {
+        const c = data.colors[i];
+        const x = data.coords[i * 2];
+        const y = data.coords[i * 2 + 1];
+        tasks.push({ c, x, y });
+      }
+      const assigned = new Array(tasks.length).fill(false);
+      (async () => {
+        let assignedCount = 0;
+        const usedIds = [];
+        let hadRequestError = false;
+        let didReload = false;
+        for (let i = 0; i < selectedAccounts.length && assignedCount < total; i++) {
+          const acc = selectedAccounts[i];
+          const cap = Math.max(0, Math.floor(Number(acc.pixelCount) || 0));
+          if (cap <= 0) continue;
+          const colorsSlice = [];
+          const coordsSlice = [];
+          for (let j = 0; j < tasks.length && colorsSlice.length < cap; j++) {
+            if (assigned[j]) continue;
+            const tsk = tasks[j];
+            let ok = true;
+            if (tsk.c != null && tsk.c !== 0 && isPremiumColorId(tsk.c)) {
+              const idx = Number(tsk.c) - 32;
+              const mask = idx >= 0 ? (1 << idx) : 0;
+              const bm = Number(acc.extraColorsBitmap || 0);
+              ok = (mask !== 0) && ((bm & mask) !== 0);
             }
-            if (colorsSlice.length === 0) continue;
-            const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
-            if (r && r.status === 429) {
+            if (!ok) continue;
+            colorsSlice.push(tsk.c);
+            coordsSlice.push(tsk.x, tsk.y);
+            assigned[j] = true;
+          }
+          if (colorsSlice.length === 0) continue;
+          const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+          if (r && r.status === 429) {
+            hadRequestError = true;
+            try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
+            break;
+          }
+          if (!r.ok) {
+            if (r.status >= 500) {
+              try { await loadAccounts(); } catch {}
+              continue;
+            } else {
               hadRequestError = true;
-              try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
+              showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
               break;
             }
-            if (!r.ok) {
-              if (r.status >= 500) {
-                try { await loadAccounts(); } catch {}
-                continue;
-              } else {
-                hadRequestError = true;
-                showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
-                break;
-              }
-            }
-            usedIds.push(acc.id);
-            assignedCount += colorsSlice.length;
-            try { await refreshAccountById(acc.id); } catch {}
           }
-          if (assignedCount > 0) {
-            showToast(t('messages.painted'), 'success', 1800);
-            const didReload = await reloadCurrentBackground();
-            try { clearAllReadySelections(); } catch {}
-            try { readyGlobalMode = false; } catch {}
-            if (!autoMode) {
-              try { resetReadyNow(); } catch {}
-            }
-            try { updateStartEnabled(); } catch {}
-            // Token remains cleared
+          usedIds.push(acc.id);
+          assignedCount += colorsSlice.length;
+          try { await refreshAccountById(acc.id); } catch {}
+        }
+        if (assignedCount > 0) {
+          showToast(t('messages.painted'), 'success', 1800);
+          didReload = await reloadCurrentBackground();
+          try { clearAllReadySelections(); } catch {}
+          try { readyGlobalMode = false; } catch {}
+          if (!autoMode) {
+            try { resetReadyNow(); } catch {}
           }
-          if (assignedCount < total && !hadRequestError) {
-            showToast(t('messages.insufficientPixelPower', { n: (total - assignedCount) }), 'error', 3000);
-          }
-          
-          try { await loadAccounts(); } catch {}
-          
-          try { updateReadySelectionLabel(); } catch {}
-          render();
-          render();
-
-          // Auto mode: after paint success, select next highest account and auto select pixels
-          if (autoMode && assignedCount > 0 && !hadRequestError) {
-            try {
-              const nextId = pickNextBestAccountId(usedIds);
-              if (nextId != null) {
-                readySelectedAccountIds = [nextId];
-                try { renderReadyAccountList(); } catch {}
-                updateReadyPixelForSelectedAccounts();
-                // Ensure background has actually reloaded before auto-selecting
-                try { await new Promise(resolve => setTimeout(resolve, didReload ? 50 : 300)); } catch {}
-                if (autoSelectBtn) { autoSelectDeleteMode = false; autoSelectBtn.click(); }
-              }
-            } catch {}
-          }
-        })();
-      });
+          try { updateStartEnabled(); } catch {}
+        }
+        if (assignedCount < total && !hadRequestError) {
+          showToast(t('messages.insufficientPixelPower', { n: (total - assignedCount) }), 'error', 3000);
+        }
+        try { await loadAccounts(); } catch {}
+        try { updateReadySelectionLabel(); } catch {}
+        render();
+        // Auto mode: después de pintar, selecciona la siguiente cuenta y auto selecciona píxeles
+if (autoMode && assignedCount > 0 && !hadRequestError) {
+  try {
+    await loadAccounts();
+    try { renderReadyAccountList(); } catch {}
+    updateReadyPixelForSelectedAccounts();
+    const nextId = pickNextBestAccountId(usedIds);
+    if (nextId != null) {
+      readySelectedAccountIds = [nextId];
+      try { renderReadyAccountList(); } catch {}
+      updateReadyPixelForSelectedAccounts();
+      try { await new Promise(resolve => setTimeout(resolve, didReload ? 50 : 300)); } catch {}
+      if (autoSelectBtn) { autoSelectDeleteMode = false; autoSelectBtn.click(); }
     }
+  } catch {}
+}
+      })();
+    }
+  });
+}
 
     // Space-to-paint: press/hold Space to add selection at hover pixel (like left-click)
     let spacePaintHeld = false;
@@ -5761,38 +6300,61 @@
       if (key === 'Space' || key === ' ') { spacePaintHeld = false; spacePaintLastKey = null; spacePaintLimitWarned = false; spacePaintAccountWarned = false; }
     });
 
-    (async () => {
-      try {
-        await loadSettings();
-        // Restore last view position
-        try {
-          const sx = parseFloat(localStorage.getItem('view.translateX') || '');
-          const sy = parseFloat(localStorage.getItem('view.translateY') || '');
-          const sc = parseFloat(localStorage.getItem('view.scale') || '');
-          if (!isNaN(sx)) state.translateX = sx;
-          if (!isNaN(sy)) state.translateY = sy;
-          if (!isNaN(sc)) state.scale = Math.min(state.maxScale, Math.max(state.minScale, sc));
-          render();
-          updatePixelMarkers();
-        } catch {}
-        // Restore last looked world coordinates
-        try {
-          const wx = localStorage.getItem('view.worldX');
-          const wy = localStorage.getItem('view.worldY');
-          if (wx && wy) { areaInput.value = String(wx); noInput.value = String(wy); }
-        } catch {}
-        // Restore images (supports multiple); falls back to legacy single image if list is empty
-        try { restoreImagesFromStorage(); } catch {}
-        if (areaInput.value && noInput.value) { loadImage(areaInput.value, noInput.value); }
-      } catch {}
-      updateCounter();
-      loadAccounts();
-    })();
+ (async () => {
+  try {
+    await loadSettings();
+    // Restore last view position
+    try {
+      const sx = parseFloat(localStorage.getItem('view.translateX') || '');
+      const sy = parseFloat(localStorage.getItem('view.translateY') || '');
+      const sc = parseFloat(localStorage.getItem('view.scale') || '');
+      if (!isNaN(sx)) state.translateX = sx;
+      if (!isNaN(sy)) state.translateY = sy;
+      if (!isNaN(sc)) state.scale = Math.min(state.maxScale, Math.max(state.minScale, sc));
+      render();
+      updatePixelMarkers();
+    } catch {}
+    // Restore last looked world coordinates
+    try {
+      const wx = localStorage.getItem('view.worldX');
+      const wy = localStorage.getItem('view.worldY');
+      if (wx && wy) { areaInput.value = String(wx); noInput.value = String(wy); }
+    } catch {}
+    // Restore images (supports multiple); falls back to legacy single image if list is empty
+    try { restoreImagesFromStorage(); } catch {}
+
+    const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+    if (saved && saved.mode === 'mosaic') {
+      await loadMosaic(saved.coords);
+    } else if (saved && saved.mode === 'single') {
+      areaInput.value = String(saved.coords[0].x);
+      noInput.value = String(saved.coords[0].y);
+      loadImage(areaInput.value, noInput.value);
+    } else if (areaInput.value && noInput.value) {
+      loadImage(areaInput.value, noInput.value);
+    }    
+  } catch {}
+  updateCounter();
+  loadAccounts();
+})();
     updatePixelPowerPosition();
-    
+
     try {
       setInterval(() => { refreshAllAccounts(); }, 20 * 1000);
     } catch {}
+
+    const CANVAS_REFRESH_MS = 30 * 1000;
+    setInterval(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
+        if (!saved) return;
+        if (saved.mode === 'mosaic') {
+          loadMosaic(saved.coords, true);
+        } else if (saved.mode === 'single') {
+          loadImage(saved.coords[0].x, saved.coords[0].y, true);
+        }
+      } catch {}
+    }, CANVAS_REFRESH_MS);
     
     
     try { setupColorPalette(); } catch {}

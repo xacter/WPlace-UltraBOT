@@ -57,7 +57,8 @@
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
     "fetchButton": "Récupérer",
-    "uploadImage": "Téléverser une image"
+    "uploadImage": "Téléverser une image",
+    "mosaicButton": "Mosaïque"
   },
   "preview": {
     "scale": "Échelle (%)",
@@ -67,10 +68,25 @@
     "fillBackground": "Remplir l’arrière-plan",
     "color": "Couleur",
     "addToMap": "Ajouter à la carte",
-    "maxSizeExceeded": "La taille maximale est de 1000x1000 pixels."
+    "maxSizeExceeded": "La taille maximale est de 1000x1000 pixels.",
+    "alphaThreshold": "Transparence",
+    "colorMetric": "Algorithme couleur",
+    "metricRgb": "RGB (fast)",
+    "metricLab": "Lab (CIE76)",
+    "metricOklab": "Oklab",
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "Mosaïque",
+    "use2": "Utiliser 2 coord",
+    "use4": "Utiliser 4 coord",
+    "fetch": "Récupérer"
   },
   "buttons": {
     "back": "Retour",
