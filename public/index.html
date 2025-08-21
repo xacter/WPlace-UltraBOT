@@ -2132,6 +2132,21 @@
       const r0 = baseId.data[iBase],   g0 = baseId.data[iBase+1],  b0 = baseId.data[iBase+2];
       return (r0 === r1) && (g0 === g1) && (b0 === b1);
     }
+    function isSamePaletteIdAsBase(item, sx, sy) {
+      const itemColor = getItemPixelColor(item, sx, sy);
+      if (!itemColor || itemColor.a === 0) {
+        return false;
+      }
+      const wx = Math.round((item.worldX || 0) + sx);
+      const wy = Math.round((item.worldY || 0) + sy);
+      const baseColor = getBasePixelColorAtWorld(wx, wy);
+      if (!baseColor || baseColor.a === 0) {
+        return false;
+      }
+      const itemPaletteId = rgbToPaletteId(itemColor.r, itemColor.g, itemColor.b);
+      const basePaletteId = rgbToPaletteId(baseColor.r, baseColor.g, baseColor.b);
+      return itemPaletteId === basePaletteId;
+    }
 
     function countPlacedPixelsForItem(item){
       const itemId = ensureItemImageData(item);
@@ -5745,7 +5760,7 @@ function loadImage(area, no, preserveView = false) {
         const totalCells = w * h;
         let traversed = 0;
         while (addedCount < need && traversed < totalCells) {
-          if (isOpaquePixel(selItem, sx, sy) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, sx, sy))) {
+          if (isOpaquePixel(selItem, sx, sy) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, sx, sy))) {
             const pid = (selectedOverrideColorId != null && selectedOverrideColorId !== 0)
               ? selectedOverrideColorId
               : getItemPixelPaletteId(selItem, sx, sy);
@@ -5785,7 +5800,7 @@ function loadImage(area, no, preserveView = false) {
       
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          if (isOpaquePixel(selItem, x, y) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, x, y))) {
+          if (isOpaquePixel(selItem, x, y) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, x, y))) {
             mask[idxOf(x,y)] = 1;
           }
         }
@@ -6141,7 +6156,7 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
         const lx = readyHoverPixel.x|0;
         const ly = readyHoverPixel.y|0;
         if (lx < 0 || ly < 0 || lx >= selItem.image.naturalWidth || ly >= selItem.image.naturalHeight) return false;
-        if (!(isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, lx, ly)))) return false;
+        if (!(isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, lx, ly)))) return false;
         const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
         const map = getSelectedMap(selItem);
         const already = map ? map.size : 0;
