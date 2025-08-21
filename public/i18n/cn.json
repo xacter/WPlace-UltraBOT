@@ -88,6 +88,15 @@
     "use4": "使用4坐标",
     "fetch": "获取"
   },
+  "favorites": {
+    "title": "收藏",
+    "openTitle": "收藏",
+    "starTitle": "保存",
+    "saveTitle": "保存位置",
+    "nameLabel": "名称",
+    "load": "加载",
+    "removeConfirm": "删除已保存的位置？"
+  },
   "buttons": {
     "back": "返回",
     "save": "保存",

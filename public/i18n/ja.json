@@ -88,6 +88,15 @@
     "use4": "4座標を使用",
     "fetch": "取得"
   },
+  "favorites": {
+    "title": "お気に入り",
+    "openTitle": "お気に入り",
+    "starTitle": "保存",
+    "saveTitle": "位置を保存",
+    "nameLabel": "名前",
+    "load": "読み込む",
+    "removeConfirm": "保存した場所を削除しますか？"
+  },
   "buttons": {
     "back": "戻る",
     "save": "保存",

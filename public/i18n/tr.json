@@ -88,6 +88,15 @@
     "use4": "4 kord kullan",
     "fetch": "Getir"
   },
+  "favorites": {
+    "title": "Favoriler",
+    "openTitle": "Favoriler",
+    "starTitle": "Kaydet",
+    "saveTitle": "Konumu kaydet",
+    "nameLabel": "İsim",
+    "load": "Yükle",
+    "removeConfirm": "Kaydedilmiş konum silinsin mi?"
+  },
   "buttons": {
     "back": "Geri",
     "save": "Kaydet",

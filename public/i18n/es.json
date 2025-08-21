@@ -88,6 +88,15 @@
     "use4": "Usar 4 coord",
     "fetch": "Obtener"
   },
+  "favorites": {
+    "title": "Favoritos",
+    "openTitle": "Favoritos",
+    "starTitle": "Guardar",
+    "saveTitle": "Guardar ubicación",
+    "nameLabel": "Nombre",
+    "load": "Obtener",
+    "removeConfirm": "¿Desea eliminar la ubicación guardada?"
+  },
   "buttons": {
     "back": "Atrás",
     "save": "Guardar",

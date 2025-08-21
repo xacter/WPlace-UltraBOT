@@ -88,6 +88,15 @@
     "use4": "4 Koordinaten",
     "fetch": "Abrufen"
   },
+  "favorites": {
+    "title": "Favoriten",
+    "openTitle": "Favoriten",
+    "starTitle": "Speichern",
+    "saveTitle": "Ort speichern",
+    "nameLabel": "Name",
+    "load": "Laden",
+    "removeConfirm": "Gespeicherten Ort löschen?"
+  },
   "buttons": {
     "back": "Zurück",
     "save": "Speichern",

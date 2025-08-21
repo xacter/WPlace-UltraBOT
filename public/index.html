@@ -1084,29 +1084,29 @@
 
   <div id="favorites-modal" hidden>
     <div class="modal-card">
-      <div class="modal-header">Favoritos</div>
-      <button id="favorites-close" class="modal-close" type="button">×</button>
+      <div class="modal-header" data-i18n="favorites.title">Favoritos</div>
+      <button id="favorites-close" class="modal-close" type="button" data-i18n-title="modal.closeTitle">×</button>
       <div class="modal-body" id="favorites-list"></div>
     </div>
   </div>
 
   <div id="save-fav-modal" hidden>
     <div class="modal-card">
-      <div class="modal-header">Guardar ubicación</div>
-      <button id="save-fav-close" class="modal-close" type="button">×</button>
+      <div class="modal-header" data-i18n="favorites.saveTitle">Guardar ubicación</div>
+      <button id="save-fav-close" class="modal-close" type="button" data-i18n-title="modal.closeTitle">×</button>
       <div class="modal-body">
-        <label for="fav-name-input">Nombre</label>
+        <label for="fav-name-input" data-i18n="favorites.nameLabel">Nombre</label>
         <input id="fav-name-input" type="text" />
       </div>
       <div class="modal-footer">
-        <button id="fav-save-btn" class="app-btn" type="button">Guardar</button>
+        <button id="fav-save-btn" class="app-btn" type="button" data-i18n="buttons.save">Guardar</button>
       </div>
     </div>
   </div>
 
   <form class="panel" id="form">
-    <button class="app-btn" type="button" id="btn-open-favorites" title="Favoritos">📁</button>
-    <button class="app-btn" type="button" id="btn-favorite-star" title="Guardar">★</button>
+    <button class="app-btn" type="button" id="btn-open-favorites" title="Favoritos" data-i18n-title="favorites.openTitle">📁</button>
+    <button class="app-btn" type="button" id="btn-favorite-star" title="Guardar" data-i18n-title="favorites.starTitle">★</button>
     <label for="area-code" data-i18n="form.worldXLabel">World X</label>
     <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
 
@@ -1479,7 +1479,7 @@
       span.textContent = f.name;
       const btn = document.createElement('button');
       btn.className = 'app-btn';
-      btn.textContent = 'Obtener';
+      btn.textContent = t('favorites.load');
       btn.dataset.index = String(i);
       row.append(span, btn);
       favoritesListEl.appendChild(row);
@@ -1525,7 +1525,7 @@
     const cur = currentLocation();
     if (!cur) return;
     if (isCurrentLocationSaved()){
-      if (confirm('¿Desea eliminar la ubicación guardada?')){
+      if (confirm(t('favorites.removeConfirm'))){
         await removeFavorite(cur);
         updateFavStar();
       }
