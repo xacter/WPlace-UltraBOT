@@ -120,6 +120,19 @@ function readJson(filePath, fallback) {
 function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
+// Simple SSE hub for live events from extension → UI
+const sseClients = new Set();
+function sseBroadcast(eventName, payload) {
+  try {
+    const data = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    sseClients.forEach((res) => {
+      try {
+        res.write(`event: ${eventName}\n`);
+        res.write(`data: ${data}\n\n`);
+      } catch {}
+    });
+  } catch {}
+}
 
 
 function deactivateAccountByToken(jToken) {
@@ -287,7 +300,53 @@ function startServer(port, host) {
       }
       return;
     }
-    
+    // Server-Sent Events for live notifications
+    if (parsed.pathname === '/api/events' && req.method === 'GET') {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+      });
+      try { res.write(': ok\n\n'); } catch {}
+      sseClients.add(res);
+      const ping = setInterval(() => { try { res.write('event: ping\ndata: {}\n\n'); } catch {} }, 15000);
+      req.on('close', () => { try { clearInterval(ping); } catch {}; sseClients.delete(res); });
+      return;
+    }
+
+    // CORS preflight for token endpoint
+    if (parsed.pathname === '/api/token' && req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '600'
+      });
+      res.end();
+      return;
+    }
+    // Receive token captured by extension and notify connected UIs
+    if (parsed.pathname === '/api/token' && req.method === 'POST') {
+      readJsonBody(req).then((body) => {
+        const token = body && typeof body.token === 'string' ? body.token : '';
+        const worldX = (body && (typeof body.worldX === 'string' || typeof body.worldX === 'number')) ? body.worldX : null;
+        const worldY = (body && (typeof body.worldY === 'string' || typeof body.worldY === 'number')) ? body.worldY : null;
+        if (!token) { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); return; }
+        try {
+          const existing = readJson(SETTINGS_FILE, { cf_clearance: '', worldX: null, worldY: null });
+          const merged = { ...existing };
+          if (worldX != null) merged.worldX = Number(worldX);
+          if (worldY != null) merged.worldY = Number(worldY);
+          writeJson(SETTINGS_FILE, merged);
+        } catch {}
+        sseBroadcast('token', { token, worldX, worldY });
+        res.writeHead(204, { 'Access-Control-Allow-Origin': '*' });
+        res.end();
+      }).catch(() => { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); });
+      return;
+    }
+
     
     if (parsed.pathname && /^\/api\/pixel\/([^\/]+)\/([^\/]+)$/.test(parsed.pathname) && req.method === 'POST') {
       const m = parsed.pathname.match(/^\/api\/pixel\/([^\/]+)\/([^\/]+)$/);

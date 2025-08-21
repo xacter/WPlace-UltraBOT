@@ -76,6 +76,7 @@
 					if (token) postToken(token, x, y);
 				}
 			} catch (e) {}
+			// Block the pixel POST after capturing token to avoid sending from page directly
 			if (ENABLED) {
 				return new Response(null, { status: 204, statusText: 'No Content' });
 			}

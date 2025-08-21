@@ -12,7 +12,7 @@
 ---
 
 > [!NOTE]
-> **Hallo, nachdem neue Maßnahmen eingeführt wurden, habe ich mich entschieden, diesen Bot zu entwickeln, und er war in nur einem Tag fertig. Aufgrund dieser Maßnahmen scheint es derzeit unmöglich, einen vollständig automatisierten Bot zu erstellen. Dank einer aktuellen Ausnutzung können wir jedoch mit einer einzigen Verifizierung in einer Sekunde aus 12 Konten zeichnen. Wenn die Konten voll sind, können wir 12 * 62 = <strong>744</strong> Pixel pro Sekunde senden. Wenn du bereit bist, habe ich unten erklärt, wie du ihn benutzt.**
+> **Hallo, nachdem neue Maßnahmen eingeführt wurden, habe ich mich entschieden, diesen Bot zu entwickeln, und er war in nur einem Tag fertig. Aufgrund dieser Maßnahmen scheint es derzeit unmöglich, einen vollständig automatisierten Bot zu erstellen. ~~Dank einer damaligen Schwachstelle konnten wir mit einer einzigen Verifizierung in einer Sekunde aus 12 Konten zeichnen. Bei vollen Konten wären das 12 * 62 = <strong>744</strong> Pixel pro Sekunde.~~ Nach einem Update wurde diese Lücke geschlossen; daher musst du für jede Kontoeinsendung erneut einen Token erhalten. Wenn du bereit bist, habe ich unten erklärt, wie du ihn benutzt.**
 
 ---
 
