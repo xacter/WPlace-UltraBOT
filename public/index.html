@@ -3415,8 +3415,8 @@ function loadImage(area, no, preserveView = false) {
       }
     });
     window.addEventListener('mouseup', (e) => {
-      if (isReadyOpen()) {
-        
+      if (isReadyOpen()) {// Ready mode
+         
         if (readyMouseDownPt && !readyMouseMoved && e.button === 0) {
           const hasAccounts = Array.isArray(readySelectedAccountIds) && readySelectedAccountIds.length > 0;
           if (!hasAccounts) {
