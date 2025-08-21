@@ -2723,25 +2723,48 @@
         const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
         const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
         for (let y = 0; y < h; y++){
+          const leftToRight = (y % 2 === 0);
           for (let i = 0; i < w2; i++){ errCurrR[i]+=0; errCurrG[i]+=0; errCurrB[i]+=0; }
-          for (let x = 0; x < w; x++){
-            const idx = (y * w + x) * 4;
-            if (data[idx + 3] === 0) continue;
-            let r = data[idx] + errCurrR[x+1];
-            let g = data[idx+1] + errCurrG[x+1];
-            let b = data[idx+2] + errCurrB[x+1];
-            r = r < 0 ? 0 : (r > 255 ? 255 : r);
-            g = g < 0 ? 0 : (g > 255 ? 255 : g);
-            b = b < 0 ? 0 : (b > 255 ? 255 : b);
-            const nn = nearestPaletteColor(r,g,b,metric);
-            data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
-            const er = r - nn[0];
-            const eg = g - nn[1];
-            const eb = b - nn[2];
-            errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-            errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-            errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-            errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+          if (leftToRight){
+            for (let x = 0; x < w; x++){
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteColor(r,g,b,metric);
+              data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+            }
+          } else {
+            for (let x = w - 1; x >= 0; x--){
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] === 0) continue;
+              let r = data[idx] + errCurrR[x+1];
+              let g = data[idx+1] + errCurrG[x+1];
+              let b = data[idx+2] + errCurrB[x+1];
+              r = r < 0 ? 0 : (r > 255 ? 255 : r);
+              g = g < 0 ? 0 : (g > 255 ? 255 : g);
+              b = b < 0 ? 0 : (b > 255 ? 255 : b);
+              const nn = nearestPaletteColor(r,g,b,metric);
+              data[idx]=nn[0]; data[idx+1]=nn[1]; data[idx+2]=nn[2];
+              const er = r - nn[0];
+              const eg = g - nn[1];
+              const eb = b - nn[2];
+              errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+              errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+              errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+            }
           }
           for (let i = 0; i < w2; i++){ errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
         }
@@ -5058,25 +5081,48 @@ function loadImage(area, no, preserveView = false) {
           const errCurrR = new Float32Array(w2), errCurrG = new Float32Array(w2), errCurrB = new Float32Array(w2);
           const errNextR = new Float32Array(w2), errNextG = new Float32Array(w2), errNextB = new Float32Array(w2);
           for (let y = 0; y < targetH; y++) {
+            const leftToRight = (y % 2 === 0);
             for (let i = 0; i < w2; i++) { errCurrR[i] += 0; errCurrG[i] += 0; errCurrB[i] += 0; }
-            for (let x = 0; x < targetW; x++) {
-              const idx = (y * targetW + x) * 4;
-              if (data[idx + 3] === 0) continue;
-              let r = data[idx] + errCurrR[x+1];
-              let g = data[idx+1] + errCurrG[x+1];
-              let b = data[idx+2] + errCurrB[x+1];
-              r = r < 0 ? 0 : (r > 255 ? 255 : r);
-              g = g < 0 ? 0 : (g > 255 ? 255 : g);
-              b = b < 0 ? 0 : (b > 255 ? 255 : b);
-              const nn = nearestPaletteColor(r, g, b, metric);
-              data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
-              const er = r - nn[0];
-              const eg = g - nn[1];
-              const eb = b - nn[2];
-              errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
-              errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
-              errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
-              errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+            if (leftToRight) {
+              for (let x = 0; x < targetW; x++) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteColor(r, g, b, metric);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = r - nn[0];
+                const eg = g - nn[1];
+                const eb = b - nn[2];
+                errCurrR[x+2] += er * (7/16); errCurrG[x+2] += eg * (7/16); errCurrB[x+2] += eb * (7/16);
+                errNextR[x  ] += er * (3/16); errNextG[x  ] += eg * (3/16); errNextB[x  ] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x+2] += er * (1/16); errNextG[x+2] += eg * (1/16); errNextB[x+2] += eb * (1/16);
+              }
+            } else {
+              for (let x = targetW - 1; x >= 0; x--) {
+                const idx = (y * targetW + x) * 4;
+                if (data[idx + 3] === 0) continue;
+                let r = data[idx] + errCurrR[x+1];
+                let g = data[idx+1] + errCurrG[x+1];
+                let b = data[idx+2] + errCurrB[x+1];
+                r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                b = b < 0 ? 0 : (b > 255 ? 255 : b);
+                const nn = nearestPaletteColor(r, g, b, metric);
+                data[idx] = nn[0]; data[idx+1] = nn[1]; data[idx+2] = nn[2];
+                const er = r - nn[0];
+                const eg = g - nn[1];
+                const eb = b - nn[2];
+                errCurrR[x  ] += er * (7/16); errCurrG[x  ] += eg * (7/16); errCurrB[x  ] += eb * (7/16);
+                errNextR[x+2] += er * (3/16); errNextG[x+2] += eg * (3/16); errNextB[x+2] += eb * (3/16);
+                errNextR[x+1] += er * (5/16); errNextG[x+1] += eg * (5/16); errNextB[x+1] += eb * (5/16);
+                errNextR[x  ] += er * (1/16); errNextG[x  ] += eg * (1/16); errNextB[x  ] += eb * (1/16);
+              }
             }
             for (let i = 0; i < w2; i++) { errCurrR[i] = errNextR[i]; errCurrG[i] = errNextG[i]; errCurrB[i] = errNextB[i]; errNextR[i]=0; errNextG[i]=0; errNextB[i]=0; }
           }
