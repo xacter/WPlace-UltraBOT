@@ -101,6 +101,11 @@
     }
     .app-btn:hover { background: rgba(255,255,255,0.08); }
     .app-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #btn-open-favorites,
+    #btn-favorite-star { font-size:16px; padding:6px 8px; }
+    #btn-favorite-star { opacity:0.4; }
+    #btn-favorite-star.saved { color: gold; opacity:1; }
+    #favorites-list .favorite-item { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
     #btn-account-cancel.app-btn, #btn-account-save.app-btn {
       padding-left: 30px;
       padding-right: 30px;
@@ -1054,10 +1059,34 @@
           <button class="app-btn" type="button" id="mosaic-fetch" data-i18n="mosaic.fetch">Fetch</button>
         </div>
       </div>
+  </div>
+</div>
+
+  <div id="favorites-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header">Favoritos</div>
+      <button id="favorites-close" class="modal-close" type="button">×</button>
+      <div class="modal-body" id="favorites-list"></div>
+    </div>
+  </div>
+
+  <div id="save-fav-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header">Guardar ubicación</div>
+      <button id="save-fav-close" class="modal-close" type="button">×</button>
+      <div class="modal-body">
+        <label for="fav-name-input">Nombre</label>
+        <input id="fav-name-input" type="text" />
+      </div>
+      <div class="modal-footer">
+        <button id="fav-save-btn" class="app-btn" type="button">Guardar</button>
+      </div>
     </div>
   </div>
 
   <form class="panel" id="form">
+    <button class="app-btn" type="button" id="btn-open-favorites" title="Favoritos">📁</button>
+    <button class="app-btn" type="button" id="btn-favorite-star" title="Guardar">★</button>
     <label for="area-code" data-i18n="form.worldXLabel">World X</label>
     <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
 
@@ -1311,8 +1340,17 @@
     try { ensureLangSwitch(); bindLangDropdownEvents(); initI18n(); layoutLangSwitch(); } catch {}
     try { layoutSoundControl(); } catch {}
 
-    const areaInput = document.getElementById('area-code');
-    const noInput = document.getElementById('no');
+  const areaInput = document.getElementById('area-code');
+  const noInput = document.getElementById('no');
+  const openFavsBtn = document.getElementById('btn-open-favorites');
+  const favStarBtn = document.getElementById('btn-favorite-star');
+  const favoritesModal = document.getElementById('favorites-modal');
+  const favoritesClose = document.getElementById('favorites-close');
+  const favoritesListEl = document.getElementById('favorites-list');
+  const saveFavModal = document.getElementById('save-fav-modal');
+  const saveFavClose = document.getElementById('save-fav-close');
+  const favNameInput = document.getElementById('fav-name-input');
+  const favSaveBtn = document.getElementById('fav-save-btn');
 
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
@@ -1360,11 +1398,126 @@
     const mosaicUse2 = document.getElementById('mosaic-use2');
     const mosaicUse4 = document.getElementById('mosaic-use4');
     const mosaicFetch = document.getElementById('mosaic-fetch');
-    const mosaicCanvas = document.createElement('canvas');
-    const sidebar = document.getElementById('sidebar');
-    const thumbList = document.getElementById('thumb-list');
-    const counter = document.getElementById('counter');
-    const accountsBtn = document.getElementById('btn-accounts');
+  const mosaicCanvas = document.createElement('canvas');
+  const sidebar = document.getElementById('sidebar');
+  const thumbList = document.getElementById('thumb-list');
+
+  function getFavorites(){
+    try { return JSON.parse(localStorage.getItem('favorites') || '[]'); } catch { return []; }
+  }
+  function saveFavorites(list){
+    try { localStorage.setItem('favorites', JSON.stringify(list)); } catch {}
+  }
+  function currentLocation(){
+    try { return JSON.parse(localStorage.getItem('lastFetch') || 'null'); } catch { return null; }
+  }
+  function sameLocation(a,b){
+    return a && b && a.mode === b.mode && JSON.stringify(a.coords) === JSON.stringify(b.coords);
+  }
+  function isCurrentLocationSaved(){
+    const cur = currentLocation();
+    if (!cur) return false;
+    return getFavorites().some(f => sameLocation(f, cur));
+  }
+  function updateFavStar(){
+    if (isCurrentLocationSaved()) favStarBtn.classList.add('saved');
+    else favStarBtn.classList.remove('saved');
+  }
+  function renderFavoritesList(){
+    const favs = getFavorites();
+    favoritesListEl.innerHTML = '';
+    favs.forEach((f,i) => {
+      const row = document.createElement('div');
+      row.className = 'favorite-item';
+      const span = document.createElement('span');
+      span.textContent = f.name;
+      const btn = document.createElement('button');
+      btn.className = 'app-btn';
+      btn.textContent = 'Obtener';
+      btn.dataset.index = String(i);
+      row.append(span, btn);
+      favoritesListEl.appendChild(row);
+    });
+  }
+
+  openFavsBtn.addEventListener('click', () => {
+    renderFavoritesList();
+    favoritesModal.hidden = false;
+    document.body.classList.add('no-scroll');
+  });
+  favoritesClose.addEventListener('click', () => {
+    favoritesModal.hidden = true;
+    document.body.classList.remove('no-scroll');
+  });
+  favoritesModal.addEventListener('click', (e) => {
+    if (e.target === favoritesModal){
+      favoritesModal.hidden = true;
+      document.body.classList.remove('no-scroll');
+    }
+  });
+  favoritesListEl.addEventListener('click', async (e) => {
+    if (e.target.tagName === 'BUTTON'){
+      const idx = Number(e.target.dataset.index);
+      const favs = getFavorites();
+      const fav = favs[idx];
+      if (fav){
+        if (fav.mode === 'mosaic'){
+          await loadMosaic(fav.coords);
+        } else {
+          loadImage(fav.coords[0].x, fav.coords[0].y);
+        }
+        localStorage.setItem('lastFetch', JSON.stringify({ mode: fav.mode, coords: fav.coords }));
+        favoritesModal.hidden = true;
+        document.body.classList.remove('no-scroll');
+        updateFavStar();
+      }
+    }
+  });
+
+  favStarBtn.addEventListener('click', () => {
+    const cur = currentLocation();
+    if (!cur) return;
+    const favs = getFavorites();
+    const existing = favs.find(f => sameLocation(f, cur));
+    favNameInput.value = existing ? existing.name : '';
+    saveFavModal.hidden = false;
+    document.body.classList.add('no-scroll');
+  });
+  saveFavClose.addEventListener('click', () => {
+    saveFavModal.hidden = true;
+    document.body.classList.remove('no-scroll');
+  });
+  saveFavModal.addEventListener('click', (e) => {
+    if (e.target === saveFavModal){
+      saveFavModal.hidden = true;
+      document.body.classList.remove('no-scroll');
+    }
+  });
+  favSaveBtn.addEventListener('click', () => {
+    const name = favNameInput.value.trim();
+    if (!name){
+      saveFavModal.hidden = true;
+      document.body.classList.remove('no-scroll');
+      return;
+    }
+    const cur = currentLocation();
+    if (!cur) return;
+    const favs = getFavorites();
+    const idx = favs.findIndex(f => sameLocation(f, cur));
+    if (idx >= 0){
+      favs[idx].name = name;
+    } else {
+      favs.push({ ...cur, name });
+    }
+    saveFavorites(favs);
+    saveFavModal.hidden = true;
+    document.body.classList.remove('no-scroll');
+    updateFavStar();
+  });
+  updateFavStar();
+
+  const counter = document.getElementById('counter');
+  const accountsBtn = document.getElementById('btn-accounts');
       const pixelPowerEl = document.getElementById('pixel-power');
     const soundToggleBtn = document.getElementById('sound-toggle');
     const soundVolumeEl = document.getElementById('sound-volume');
@@ -3198,11 +3351,12 @@ function loadImage(area, no, preserveView = false) {
     } else if (hasSavedView()) {
       render();
       updatePixelMarkers();
-    } else {
-      fitToView();
-    }
-    localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
-  };
+      } else {
+        fitToView();
+      }
+      localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
+      updateFavStar();
+    };
   image.onerror = () => {
     alert(t('messages.imageLoadFailed'));
   };
@@ -4764,7 +4918,7 @@ function loadImage(area, no, preserveView = false) {
         }
       } catch {}
       try { await loadAccounts(); } catch {}
-      try { reloadCurrentBackground(); } catch {}
+      try { reloadCurrentBackground().then(updateFavStar); } catch {}
       finally {
         lastBulkRefreshAt = Date.now();
         bulkRefreshInFlight = false;
@@ -5009,6 +5163,7 @@ function loadImage(area, no, preserveView = false) {
         localStorage.setItem('lastFetch', JSON.stringify({ mode: 'mosaic', coords }));
         mosaicModal.hidden = true;
         document.body.classList.remove('no-scroll');
+        updateFavStar();
       } catch (err) {
         alert(t('messages.imageLoadFailed'));
       }
@@ -6016,8 +6171,9 @@ if (currentTiles && currentTiles.length > 1) {
     }
     if (paintedAny) {
       showToast(t('messages.painted'), 'success', 1800);
-      didReload = await reloadCurrentBackground();
-      try { clearAllReadySelections(); } catch {}
+        didReload = await reloadCurrentBackground();
+        updateFavStar();
+        try { clearAllReadySelections(); } catch {}
       try { readyGlobalMode = false; } catch {}
       if (!autoMode) {
         try { resetReadyNow(); } catch {}
@@ -6110,8 +6266,9 @@ if (currentTiles && currentTiles.length > 1) {
         }
         if (assignedCount > 0) {
           showToast(t('messages.painted'), 'success', 1800);
-          didReload = await reloadCurrentBackground();
-          try { clearAllReadySelections(); } catch {}
+            didReload = await reloadCurrentBackground();
+            updateFavStar();
+            try { clearAllReadySelections(); } catch {}
           try { readyGlobalMode = false; } catch {}
           if (!autoMode) {
             try { resetReadyNow(); } catch {}
