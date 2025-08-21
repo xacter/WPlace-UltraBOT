@@ -73,6 +73,7 @@
     "colorMetric": "Algoritmo color",
     "metricRgb": "RGB (rápido, \"seguro\")",
     "metricLab": "Lab (CIE76)",
+    "metricOklab": "Oklab",
     "metricCiede2000": "CIEDE2000 (más preciso, más lento)",
     "dithering": "Dithering",
     "ditheringOn": "Dithering: ON",
