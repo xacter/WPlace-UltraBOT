@@ -4983,7 +4983,11 @@ function loadImage(area, no, preserveView = false) {
       currentTileH = tileH;
       currentMosaicCols = 2;
       currentMosaicRows = coords.length === 2 ? 1 : 2;
-      try { baseImageData = null; } catch {}
+      try {
+        baseImageData = null;
+        // Clear cached placed counts so auto-mode uses fresh data
+        signItems.forEach(it => { if (it) it._placedCountCache = null; });
+      } catch {}
       if (preserveView) {
         render();
       } else {
