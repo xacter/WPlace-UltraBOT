@@ -15,11 +15,6 @@
   <p align="center">
     <video src="https://github.com/user-attachments/assets/f655b939-d1a7-4449-b7dc-e50463e53c37" width="720" height="400" controls></video>
   </p>
-    <p align="center"><strong>New feature usage</strong></p>
-
- <p align="center">
-    <video src="https://github.com/user-attachments/assets/80409e34-79a3-42ab-b298-c062e7ffe1c1" width="720" height="400" controls></video>
-  </p>
 
   ---
 
@@ -97,10 +92,14 @@
 
   ---
 
-  ![Part 4](https://i.imgur.com/sJvyiC6.png)
+  ![Part 4](https://i.imgur.com/tR8pS53.png)
 
   Go back to the bot.<br>
-  Click on the "Accounts" button, then click the "Settings" button. Paste the value you copied into the field labeled 'cf_clearance' and save it.
+  Click on the "Accounts" button, then click the "Add Account" button. Paste the value you copied into the field labeled 'cf_clearance'  <br>
+  Note ! <br>
+  With the latest update, they have taken countermeasures, so you now need to enter a cf_clearance value for each account. To do this quickly, just go to the wplace.live page in an incognito tab and get the token. You don't need to log in.
+
+
 
   ---
 
@@ -225,8 +224,6 @@
   </p>
 
   ---
-
-
 
 
 
