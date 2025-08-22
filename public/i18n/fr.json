@@ -138,7 +138,7 @@
   "messages": {
     "selectAccountFirst": "Sélectionnez d'abord un compte.",
     "maxPixelsReached": "Vous avez atteint le nombre maximum de pixels : {limit}/{limit}",
-    "addCfClearancePrompt": "Ajoutez d'abord la valeur cf_clearance dans Paramètres (min. 30 caractères).",
+    "addCfClearancePrompt": "Ajoutez d'abord la valeur cf_clearance au compte (min. 30 caractères).",
     "max12Accounts": "Vous pouvez sélectionner jusqu'à 12 comptes.",
     "startRequirementsMissing": "Pour démarrer, saisissez un jeton, sélectionnez des comptes et au moins 1 pixel.",
     "noSelectedImage": "Aucune image sélectionnée.",
@@ -147,7 +147,6 @@
     "insufficientPixelPower": "Puissance de pixel insuffisante : {n} pixels n'ont pas pu être envoyés.",
     "imageLoadFailed": "L'image n'a pas pu être chargée. Vérifiez les valeurs.",
     "tokenAlreadyExists": "Un compte avec ce jeton existe déjà.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance ne peut pas être vide si des comptes existent.",
     "cfClearanceChange": "Veuillez changer cf_clearance.",
     "purchaseSuccess": "Achat réussi",
     "purchaseFail": "Échec de l'achat",

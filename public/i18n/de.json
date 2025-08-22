@@ -122,7 +122,7 @@
   "messages": {
     "selectAccountFirst": "Wähle zuerst ein Konto.",
     "maxPixelsReached": "Du hast die maximale Pixelanzahl erreicht: {limit}/{limit}",
-    "addCfClearancePrompt": "Füge zuerst den cf_clearance-Wert in den Einstellungen hinzu (min. 30 Zeichen).",
+    "addCfClearancePrompt": "Füge zuerst den cf_clearance-Wert zum Konto hinzu (mind. 30 Zeichen).",
     "max12Accounts": "Du kannst bis zu 12 Konten auswählen.",
     "startRequirementsMissing": "Zum Starten Token eingeben, Konten auswählen und mindestens 1 Pixel wählen.",
     "noSelectedImage": "Kein Bild ausgewählt.",
@@ -131,7 +131,6 @@
     "insufficientPixelPower": "Unzureichende Pixelkraft: {n} Pixel konnten nicht gesendet werden.",
     "imageLoadFailed": "Bild konnte nicht geladen werden. Werte prüfen.",
     "tokenAlreadyExists": "Ein Konto mit diesem Token existiert bereits.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance darf bei vorhandenen Konten nicht leer sein.",
     "cfClearanceChange": "Bitte cf_clearance ändern.",
     "purchaseSuccess": "Kauf erfolgreich",
     "purchaseFail": "Kauf fehlgeschlagen",

@@ -88,7 +88,7 @@
 ![パート4](https://i.imgur.com/sJvyiC6.png)
 
 ボットに戻ります。<br>
-「Accounts」ボタンをクリックし、続けて「Settings」ボタンをクリック。コピーした値を `cf_clearance` に貼り付けて保存します。
+「Accounts」ボタンをクリックしてアカウントを追加します。コピーした値をそのアカウントの `cf_clearance` 欄に貼り付けて保存します。
 
 ---
 

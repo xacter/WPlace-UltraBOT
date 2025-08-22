@@ -138,7 +138,7 @@
   "messages": {
     "selectAccountFirst": "请先选择账号。",
     "maxPixelsReached": "已达到最大像素数：{limit}/{limit}",
-    "addCfClearancePrompt": "请先在设置中添加 cf_clearance（至少30个字符）。",
+    "addCfClearancePrompt": "请先在账户中添加 cf_clearance（至少30个字符）。",
     "max12Accounts": "最多可选择12个账号。",
     "startRequirementsMissing": "开始前请输入令牌，选择账号并选择至少1个像素。",
     "noSelectedImage": "未选择图片。",
@@ -147,7 +147,6 @@
     "insufficientPixelPower": "像素功率不足：{n} 个像素未发送。",
     "imageLoadFailed": "图片加载失败。请检查数值。",
     "tokenAlreadyExists": "该令牌对应的账号已存在。",
-    "cfCannotBeClearedWithAccounts": "存在账号时，cf_clearance 不能为空。",
     "cfClearanceChange": "请更改 cf_clearance。",
     "purchaseSuccess": "购买成功",
     "purchaseFail": "购买失败",

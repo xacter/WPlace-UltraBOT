@@ -872,7 +872,6 @@
       <div class="modal-tabs">
         <button id="btn-shop-back" class="app-btn modal-back" type="button" data-i18n="buttons.back" hidden>Geri</button>
         <button id="tab-accounts" class="tab-button active" type="button" data-i18n="tabs.accounts">Hesaplar</button>
-        <button id="tab-settings" class="tab-button" type="button" data-i18n="tabs.settings">Ayarlar</button>
         <div id="shop-droplets-info" class="app-btn modal-right-info" hidden>💧 Droplets: -</div>
       </div>
       <div class="modal-body">
@@ -903,6 +902,8 @@
             <input id="account-name-input" type="text" placeholder="Örn: Ana hesap" data-i18n-placeholder="form.accountNamePlaceholder" />
             <label for="account-token-input" data-i18n="form.accountTokenLabel">Hesap tokeni</label>
             <input id="account-token-input" type="text" placeholder="Örn: eyJhbGciOi..." data-i18n-placeholder="form.accountTokenPlaceholder" />
+            <label for="account-cf-input" data-i18n="settings.cf_clearance">cf_clearance</label>
+            <input id="account-cf-input" type="text" placeholder="cf_clearance" />
             <input id="account-id-input" type="hidden" />
           </div>
           <div class="modal-footer split">
@@ -949,15 +950,6 @@
               <div id="shop-premium-palette" class="shop-palette-grid" aria-label="Premium color palette"></div>
               <div id="shop-premium-buy" class="shop-pill" role="button" tabindex="0" data-i18n="shop.buyPremium">💧 2000 Droplets</div>
             </div>
-          </div>
-        </div>
-        <div id="settings-section" hidden>
-          <div class="form-grid">
-            <label for="settings-cf-clearance-input" data-i18n="settings.cf_clearance">cf_clearance</label>
-            <input id="settings-cf-clearance-input" type="text" placeholder="cf_clearance" />
-          </div>
-          <div class="modal-footer">
-            <button id="btn-settings-save" class="app-btn" type="button" data-i18n="buttons.saveSettings">Kaydet</button>
           </div>
         </div>
       </div>
@@ -1722,12 +1714,9 @@
     const accountsClose = document.getElementById('accounts-close');
     const accountsBody = document.querySelector('#accounts-modal .modal-body');
     const tabAccounts = document.getElementById('tab-accounts');
-    const tabSettings = document.getElementById('tab-settings');
     const accountsSection = document.getElementById('accounts-section');
     const accountFormSection = document.getElementById('account-form-section');
     const shopViewSection = document.getElementById('shop-view-section');
-    const settingsSection = document.getElementById('settings-section');
-    const settingsCfInput = document.getElementById('settings-cf-clearance-input');
     const accountsTbody = document.getElementById('accounts-tbody');
     const shopDropletsInfo = document.getElementById('shop-droplets-info');
     // Shop controls
@@ -1751,11 +1740,11 @@
     const checkAllBtn = document.getElementById('btn-check-all');
     const accountNameInput = document.getElementById('account-name-input');
     const accountTokenInput = document.getElementById('account-token-input');
+    const accountCfInput = document.getElementById('account-cf-input');
     const accountIdInput = document.getElementById('account-id-input');
     const accountCancelBtn = document.getElementById('btn-account-cancel');
     const accountSaveBtn = document.getElementById('btn-account-save');
     const shopBackBtn = document.getElementById('btn-shop-back');
-    const settingsSaveBtn = document.getElementById('btn-settings-save');
     let signDragging = false;
     let signWorldX = 0;
     let signWorldY = 0;
@@ -3926,29 +3915,12 @@ function loadImage(area, no, preserveView = false) {
       render();
     }
 
-    
-    function setAccountsActiveTab(name) {
-      if (!tabAccounts || !tabSettings) return;
-      const isAccounts = name === 'accounts';
-      tabAccounts.classList.toggle('active', isAccounts);
-      tabSettings.classList.toggle('active', !isAccounts);
-      if (accountsSection && settingsSection) {
-        accountsSection.hidden = !isAccounts;
-        settingsSection.hidden = isAccounts;
-        if (accountFormSection) accountFormSection.hidden = true;
-        if (shopViewSection) shopViewSection.hidden = true;
-      }
-      try { if (!isAccounts) { loadSettings(); } } catch {}
-    }
     if (tabAccounts) {
-      tabAccounts.addEventListener('click', () => setAccountsActiveTab('accounts'));
-    }
-    if (tabSettings) {
-      tabSettings.addEventListener('click', () => setAccountsActiveTab('settings'));
+      tabAccounts.addEventListener('click', () => showAccountList());
     }
     accountsBtn.addEventListener('click', async () => {
       accountsModal.hidden = false;
-      setAccountsActiveTab('accounts');
+      showAccountList();
       try { await loadSettings(); } catch {}
     });
     function showAccountForm() {
@@ -3959,6 +3931,7 @@ function loadImage(area, no, preserveView = false) {
       try {
         accountNameInput.value = '';
         accountTokenInput.value = '';
+        accountCfInput.value = '';
         accountIdInput.value = '';
         accountNameInput.focus();
       } catch {}
@@ -3971,6 +3944,7 @@ function loadImage(area, no, preserveView = false) {
       try {
         accountNameInput.value = row.name || '';
         accountTokenInput.value = row.token || '';
+        accountCfInput.value = row.cf_clearance || '';
         accountIdInput.value = String(row.id || '');
         accountNameInput.focus();
       } catch {}
@@ -4365,6 +4339,7 @@ function loadImage(area, no, preserveView = false) {
             if (!hasSelection) return;
             const account = shopCurrentAccount;
             const token = account && account.token ? String(account.token) : '';
+            const cf = account && account.cf_clearance ? String(account.cf_clearance) : '';
             if (!token) return;
             // Premium color purchase: productId 100, amount 1, variant = selected color id
             const amount = 1;
@@ -4374,7 +4349,7 @@ function loadImage(area, no, preserveView = false) {
                 const res = await fetch('/api/purchase', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ productId: 100, amount, variant, j: token })
+                  body: JSON.stringify({ productId: 100, amount, variant, j: token, cf_clearance: cf })
                 });
                 const data = await res.json();
                 if (res.ok && data && data.success === true) {
@@ -4505,11 +4480,12 @@ function loadImage(area, no, preserveView = false) {
         const qty = parseQty(shopMaxQtyEl);
         const account = shopCurrentAccount;
         const token = account && account.token ? String(account.token) : '';
+        const cf = account && account.cf_clearance ? String(account.cf_clearance) : '';
         if (!token) { showToast(t('messages.accountNotFound'), 'error', 2000); return; }
         const res = await fetch('/api/purchase', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: 70, amount: Math.max(1, Number(qty || 1)), j: token })
+          body: JSON.stringify({ productId: 70, amount: Math.max(1, Number(qty || 1)), j: token, cf_clearance: cf })
         });
         const data = await res.json();
         if (res.ok && data && data.success === true) {
@@ -4547,11 +4523,12 @@ function loadImage(area, no, preserveView = false) {
         const qty = parseQty(shopRecQtyEl);
         const account = shopCurrentAccount;
         const token = account && account.token ? String(account.token) : '';
+        const cf = account && account.cf_clearance ? String(account.cf_clearance) : '';
         if (!token) { showToast(t('messages.accountNotFound'), 'error', 2000); return; }
         const res = await fetch('/api/purchase', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: 80, amount: Math.max(1, Number(qty || 1)), j: token })
+          body: JSON.stringify({ productId: 80, amount: Math.max(1, Number(qty || 1)), j: token, cf_clearance: cf })
         });
         const data = await res.json();
         if (res.ok && data && data.success === true) {
@@ -4581,14 +4558,7 @@ function loadImage(area, no, preserveView = false) {
       }
     });
     if (addAccountBtn) {
-      addAccountBtn.addEventListener('click', async () => {
-        try { await loadSettings(); } catch {}
-        const cf = (settingsCfInput.value || '').trim();
-        if (cf.length < 30) {
-          showToast(t('messages.addCfClearancePrompt'), 'error', 3000);
-          setAccountsActiveTab('settings');
-          return;
-        }
+      addAccountBtn.addEventListener('click', () => {
         showAccountForm();
       });
     }
@@ -4669,7 +4639,7 @@ function loadImage(area, no, preserveView = false) {
             const res = await fetch('/api/accounts/' + row.id + '/refresh', { method: 'POST' });
             if (!res.ok) {
               try {
-                if (res.status === 400) { showToast(t('messages.addCfClearancePrompt'), 'error', 2500); setAccountsActiveTab('settings'); }
+                if (res.status === 400) { showToast(t('messages.addCfClearancePrompt'), 'error', 2500); }
               } catch {}
             }
           } catch {}
@@ -4789,7 +4759,8 @@ function loadImage(area, no, preserveView = false) {
         const id = (accountIdInput.value || '').trim();
         const name = (accountNameInput.value || '').trim();
         const token = (accountTokenInput.value || '').trim();
-        if (!name || !token) return;
+        const cf = (accountCfInput.value || '').trim();
+        if (!name || !token || cf.length < 30) { showToast(t('messages.addCfClearancePrompt'), 'error', 3000); return; }
         try {
           try { await loadAccounts(); } catch {}
           try {
@@ -4807,7 +4778,7 @@ function loadImage(area, no, preserveView = false) {
             const res = await fetch('/api/accounts/' + id, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, token })
+              body: JSON.stringify({ name, token, cf_clearance: cf })
             });
             if (!res.ok) return;
             try { await fetch('/api/accounts/' + id + '/refresh', { method: 'POST' }); } catch {}
@@ -4815,7 +4786,7 @@ function loadImage(area, no, preserveView = false) {
             const res = await fetch('/api/accounts', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, token })
+              body: JSON.stringify({ name, token, cf_clearance: cf })
             });
             if (!res.ok) return;
             try {
@@ -4834,9 +4805,10 @@ function loadImage(area, no, preserveView = false) {
     if (accountTokenInput) {
       accountTokenInput.addEventListener('input', () => {
         const id = (accountIdInput && accountIdInput.value) ? accountIdInput.value.trim() : '';
-        if (!id) return; 
+        if (!id) return;
         const name = (accountNameInput && accountNameInput.value) ? accountNameInput.value.trim() : '';
         const token = (accountTokenInput && accountTokenInput.value) ? accountTokenInput.value.trim() : '';
+        const cf = (accountCfInput && accountCfInput.value) ? accountCfInput.value.trim() : '';
         try { if (accountTokenInputDebounce) clearTimeout(accountTokenInputDebounce); } catch {}
         accountTokenInputDebounce = setTimeout(async () => {
           try {
@@ -4856,7 +4828,7 @@ function loadImage(area, no, preserveView = false) {
             await fetch('/api/accounts/' + id, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, token })
+              body: JSON.stringify({ name, token, cf_clearance: cf })
             });
             await fetch('/api/accounts/' + id + '/refresh', { method: 'POST' });
             await loadAccounts();
@@ -4868,30 +4840,9 @@ function loadImage(area, no, preserveView = false) {
       try {
         const res = await fetch('/api/settings');
         const data = await res.json();
-        if (data && typeof data.cf_clearance === 'string') settingsCfInput.value = data.cf_clearance;
         if (typeof data.worldX === 'number') areaInput.value = String(data.worldX);
         if (typeof data.worldY === 'number') noInput.value = String(data.worldY);
       } catch {}
-    }
-    if (settingsSaveBtn && settingsCfInput) {
-      settingsSaveBtn.addEventListener('click', async () => {
-        const v = (settingsCfInput.value || '').trim();
-        try {
-          // Prevent clearing cf_clearance while accounts exist
-          try { await loadAccounts(); } catch {}
-          const hasAnyAccount = Array.isArray(accountsData) && accountsData.length > 0;
-          if (hasAnyAccount && v.length === 0) {
-            showToast(t('messages.cfCannotBeClearedWithAccounts'), 'error', 2500);
-            return;
-          }
-          await fetch('/api/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cf_clearance: v })
-          });
-        } catch {}
-        setAccountsActiveTab('accounts');
-      });
     }
     accountsClose.addEventListener('click', () => {
       accountsModal.hidden = true;
@@ -5903,12 +5854,12 @@ function loadImage(area, no, preserveView = false) {
       return rows;
     }
 
-    async function postBatch(area, no, colors, coords, t, jToken) {
+    async function postBatch(area, no, colors, coords, t, jToken, cf) {
       try {
         const res = await fetch('/api/pixel/' + encodeURIComponent(area) + '/' + encodeURIComponent(no), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ colors, coords, t, j: jToken })
+          body: JSON.stringify({ colors, coords, t, j: jToken, cf_clearance: cf })
         });
         const text = await res.text();
         let payload = null;
@@ -5991,7 +5942,7 @@ if (currentTiles && currentTiles.length > 1) {
         if (take <= 0) continue;
         const colorsSlice = g.colors.slice(offset, offset + take);
         const coordsSlice = g.coords.slice(offset * 2, (offset + take) * 2);
-        const r = await postBatch(String(g.area), String(g.no), colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+        const r = await postBatch(String(g.area), String(g.no), colorsSlice, coordsSlice, authToken, String(acc.token || ''), String(acc.cf_clearance || ''));
         if (r && r.status === 429) {
           hadRequestError = true;
           try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }
@@ -6088,7 +6039,7 @@ if (currentTiles && currentTiles.length > 1) {
             assigned[j] = true;
           }
           if (colorsSlice.length === 0) continue;
-          const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''));
+          const r = await postBatch(area, no, colorsSlice, coordsSlice, authToken, String(acc.token || ''), String(acc.cf_clearance || ''));
           if (r && r.status === 429) {
             hadRequestError = true;
             try { showToast(t('messages.cfClearanceChange'), 'error', 3500); } catch { showToast('Please change cf_clearance.', 'error', 3500); }

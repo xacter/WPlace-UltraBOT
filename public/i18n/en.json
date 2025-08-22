@@ -127,7 +127,7 @@
   "messages": {
     "selectAccountFirst": "Select an account first.",
     "maxPixelsReached": "You have reached the maximum pixel count: {limit}/{limit}",
-    "addCfClearancePrompt": "First add the cf_clearance value in Settings (min 30 chars).",
+    "addCfClearancePrompt": "First add the cf_clearance value to the account (min 30 chars).",
     "max12Accounts": "You can select up to 12 accounts.",
     "startRequirementsMissing": "Enter token, select accounts and pick at least 1 pixel to start.",
     "noSelectedImage": "No selected image.",
@@ -136,7 +136,6 @@
     "insufficientPixelPower": "Insufficient pixel power: {n} pixels could not be sent.",
     "imageLoadFailed": "Image could not be loaded. Check the values.",
     "tokenAlreadyExists": "An account with this token already exists.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist.",
     "cfClearanceChange": "Please change cf_clearance.",
     "premiumColorLimitReached": "Not enough capacity for the selected premium color.",
     "accountNotFound": "Account not found",

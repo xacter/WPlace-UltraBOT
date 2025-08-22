@@ -88,7 +88,7 @@ Açılan pencerede üstten 'Application' sekmesini seçin (bulamazsanız sarı i
 ![Bölüm 4](https://i.imgur.com/sJvyiC6.png)
 
 Bota geri dönün.<br>
-"Accounts" butonuna, ardından "Settings" butonuna tıklayın. Kopyaladığınız `cf_clearance` değerini ilgili alana yapıştırıp kaydedin.<br>
+"Accounts" butonuna tıklayıp bir hesap ekleyin. Kopyaladığınız `cf_clearance` değerini bu hesabın ilgili alanına yapıştırıp kaydedin.<br>
 
 ---
 

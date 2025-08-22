@@ -138,7 +138,7 @@
   "messages": {
     "selectAccountFirst": "先にアカウントを選択してください。",
     "maxPixelsReached": "最大ピクセル数に達しました: {limit}/{limit}",
-    "addCfClearancePrompt": "まず設定で cf_clearance を追加してください（30文字以上）。",
+    "addCfClearancePrompt": "まずアカウントに cf_clearance を追加してください（30文字以上）。",
     "max12Accounts": "最大12アカウントまで選択できます。",
     "startRequirementsMissing": "開始するにはトークンを入力し、アカウントを選択し、少なくとも1ピクセル選んでください。",
     "noSelectedImage": "選択された画像はありません。",
@@ -147,7 +147,6 @@
     "insufficientPixelPower": "ピクセルパワー不足: {n} ピクセルを送れませんでした。",
     "imageLoadFailed": "画像を読み込めませんでした。値を確認してください。",
     "tokenAlreadyExists": "このトークンのアカウントは既に存在します。",
-    "cfCannotBeClearedWithAccounts": "アカウントがある場合、cf_clearance は空にできません。",
     "cfClearanceChange": "cf_clearance を変更してください。",
     "purchaseSuccess": "購入に成功しました",
     "purchaseFail": "購入に失敗しました",

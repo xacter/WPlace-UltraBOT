@@ -138,7 +138,7 @@
   "messages": {
     "selectAccountFirst": "Сначала выберите аккаунт.",
     "maxPixelsReached": "Достигнут максимум пикселей: {limit}/{limit}",
-    "addCfClearancePrompt": "Сначала добавьте значение cf_clearance в Настройках (минимум 30 символов).",
+    "addCfClearancePrompt": "Сначала добавьте значение cf_clearance в аккаунт (минимум 30 символов).",
     "max12Accounts": "Можно выбрать до 12 аккаунтов.",
     "startRequirementsMissing": "Чтобы начать, введите токен, выберите аккаунты и хотя бы 1 пиксель.",
     "noSelectedImage": "Изображение не выбрано.",
@@ -147,7 +147,6 @@
     "insufficientPixelPower": "Недостаточная мощность пикселей: {n} пикселей не отправлено.",
     "imageLoadFailed": "Не удалось загрузить изображение. Проверьте значения.",
     "tokenAlreadyExists": "Аккаунт с этим токеном уже существует.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance не может быть пустым при наличии аккаунтов.",
     "cfClearanceChange": "Пожалуйста, смените cf_clearance.",
     "purchaseSuccess": "Покупка успешна",
     "purchaseFail": "Покупка не удалась",

@@ -100,7 +100,7 @@
   ![Part 4](https://i.imgur.com/sJvyiC6.png)
 
   Go back to the bot.<br>
-  Click on the "Accounts" button, then click the "Settings" button. Paste the value you copied into the field labeled 'cf_clearance' and save it.
+  Click on the "Accounts" button and add a new account. Paste the value you copied into the field labeled 'cf_clearance' for that account and save it.
 
   ---
 

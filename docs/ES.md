@@ -88,7 +88,7 @@ Haz clic en `cf_clearance` y copia su valor desde abajo.<br>
 ![Parte 4](https://i.imgur.com/sJvyiC6.png)
 
 Vuelve al bot.<br>
-Haz clic en el botón "Accounts" y luego en "Settings". Pega el valor copiado en el campo `cf_clearance` y guarda.
+Haz clic en el botón "Accounts" y agrega una cuenta. Pega el valor copiado en el campo `cf_clearance` de esa cuenta y guarda.
 
 ---
 

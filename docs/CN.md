@@ -97,8 +97,8 @@
   ![第4步](https://i.imgur.com/sJvyiC6.png)
 
   返回到bot界面。<br>
-  点击 “Accounts” 按钮，然后点击 “Settings” 按钮。
-  将你复制的值粘贴到标有 `cf_clearance` 的输入框中，然后保存。
+  点击 “Accounts” 按钮并添加一个账号。
+  将你复制的值粘贴到该账号的 `cf_clearance` 输入框中，然后保存。
 
 
   ---
