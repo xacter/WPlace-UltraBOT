@@ -324,24 +324,7 @@
       z-index: 1100;
     }
     #img-preview-modal[hidden] { display: none; }
-    #mosaic-modal {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.45);
-      z-index: 1100;
-    }
-    #mosaic-modal[hidden] { display: none; }
-    #mosaic-modal .coords-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 8px;
-      align-items: center;
-    }
-    #mosaic-modal .button-row { grid-template-columns: repeat(3, 1fr); }
+    
     body.no-scroll { overflow: hidden; }
     #img-preview-canvas {
       width: min(540px, 85vw);
@@ -787,6 +770,20 @@
     .lang-item:hover { background: rgba(255,255,255,0.08); }
     .lang-item[aria-selected="true"] { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.35); }
     
+    /* Favorites UI */
+    #favorites-modal, #save-fav-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 1100;
+    }
+    #favorites-modal[hidden], #save-fav-modal[hidden] { display: none; }
+    #favorites-list .favorite-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    #btn-favorite-star { font-size: 16px; padding: 6px 8px; }
+    #btn-favorite-star.saved { color: gold; }
   </style>
 </head>
 <body>
@@ -1013,45 +1010,11 @@
     </div>
   </div>
 
-  <div id="mosaic-modal" hidden>
-    <div class="modal-card">
-      <div class="modal-header" data-i18n="mosaic.title">Mosaic</div>
-      <button id="mosaic-close" class="modal-close" type="button" data-i18n-title="modal.closeTitle">×</button>
-      <div class="modal-body">
-        <div class="coords-row">
-          <label for="mosaic-x1">X1</label>
-          <input id="mosaic-x1" type="number" />
-          <label for="mosaic-y1">Y1</label>
-          <input id="mosaic-y1" type="number" />
-        </div>
-        <div class="coords-row">
-          <label for="mosaic-x2">X2</label>
-          <input id="mosaic-x2" type="number" disabled />
-          <label for="mosaic-y2">Y2</label>
-          <input id="mosaic-y2" type="number" disabled />
-        </div>
-        <div class="coords-row" id="mosaic-row-3" hidden>
-          <label for="mosaic-x3">X3</label>
-          <input id="mosaic-x3" type="number" disabled />
-          <label for="mosaic-y3">Y3</label>
-          <input id="mosaic-y3" type="number" disabled />
-        </div>
-        <div class="coords-row" id="mosaic-row-4" hidden>
-          <label for="mosaic-x4">X4</label>
-          <input id="mosaic-x4" type="number" disabled />
-          <label for="mosaic-y4">Y4</label>
-          <input id="mosaic-y4" type="number" disabled />
-        </div>
-        <div class="coords-row button-row">
-          <button class="app-btn" type="button" id="mosaic-use2" data-i18n="mosaic.use2">Use 2 coords</button>
-          <button class="app-btn" type="button" id="mosaic-use4" data-i18n="mosaic.use4">Use 4 coords</button>
-          <button class="app-btn" type="button" id="mosaic-fetch" data-i18n="mosaic.fetch">Fetch</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  
 
   <form class="panel" id="form">
+    <button class="app-btn" type="button" id="btn-open-favorites" title="Favoriler" data-i18n-title="favorites.openTitle">📁</button>
+    <button class="app-btn" type="button" id="btn-favorite-star" title="Kaydet" data-i18n-title="favorites.starTitle">★</button>
     <label for="area-code" data-i18n="form.worldXLabel">World X</label>
     <input id="area-code" name="area code" type="number" min="0" step="1" inputmode="numeric" />
 
@@ -1059,7 +1022,6 @@
     <input id="no" name="no" type="number" min="0" step="1" inputmode="numeric" />
 
     <button class="app-btn" type="submit" data-i18n="form.fetchButton">Getir</button>
-    <button class="app-btn" type="button" id="btn-mosaic" data-i18n="form.mosaicButton">Mosaic</button>
     <button class="app-btn" type="button" id="btn-upload-sign" data-i18n="form.uploadImage">Resim yükle</button>
   </form>
  
@@ -1084,6 +1046,27 @@
         <span></span>
         <button id="move-down" class="app-btn dir-btn" type="button" title="Aşağı" aria-label="Aşağı" data-i18n-title="movement.down" data-i18n-aria-label="movement.down">▼</button>
         <span></span>
+      </div>
+    </div>
+  </div>
+  <div id="favorites-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header" data-i18n="favorites.title">Favoriler</div>
+      <button id="favorites-close" class="modal-close app-btn" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-body" id="favorites-list"></div>
+    </div>
+  </div>
+
+  <div id="save-fav-modal" hidden>
+    <div class="modal-card">
+      <div class="modal-header" data-i18n="favorites.saveTitle">Konumu kaydet</div>
+      <button id="save-fav-close" class="modal-close app-btn" type="button" data-i18n-title="modal.closeTitle">×</button>
+      <div class="modal-body">
+        <label for="fav-name-input" data-i18n="favorites.nameLabel">Ad</label>
+        <input id="fav-name-input" type="text" />
+      </div>
+      <div class="modal-footer">
+        <button id="fav-save-btn" class="app-btn" type="button" data-i18n="buttons.save">Kaydet</button>
       </div>
     </div>
   </div>
@@ -1307,6 +1290,133 @@
 
     const areaInput = document.getElementById('area-code');
     const noInput = document.getElementById('no');
+    const openFavsBtn = document.getElementById('btn-open-favorites');
+    const favStarBtn = document.getElementById('btn-favorite-star');
+    const favoritesModal = document.getElementById('favorites-modal');
+    const favoritesClose = document.getElementById('favorites-close');
+    const favoritesListEl = document.getElementById('favorites-list');
+    const saveFavModal = document.getElementById('save-fav-modal');
+    const saveFavClose = document.getElementById('save-fav-close');
+    const favNameInput = document.getElementById('fav-name-input');
+    const favSaveBtn = document.getElementById('fav-save-btn');
+
+    let favoritesCache = [];
+    async function refreshFavorites(){
+      try {
+        const res = await fetch('/api/favorites', { cache: 'no-store' });
+        favoritesCache = await res.json();
+      } catch {
+        favoritesCache = [];
+      }
+    }
+    function getFavorites(){ return favoritesCache; }
+    async function addFavorite(entry){
+      try {
+        await fetch('/api/favorites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
+      } catch {}
+      await refreshFavorites();
+    }
+    async function removeFavorite(entry){
+      try {
+        await fetch('/api/favorites', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
+      } catch {}
+      await refreshFavorites();
+    }
+    function currentLocation(){
+      try { return JSON.parse(localStorage.getItem('lastFetch') || 'null'); } catch { return null; }
+    }
+    function sameLocation(a,b){ return a && b && a.mode === b.mode && JSON.stringify(a.coords) === JSON.stringify(b.coords); }
+    function isCurrentLocationSaved(){
+      const cur = currentLocation();
+      if (!cur) return false;
+      return getFavorites().some(f => sameLocation(f, cur));
+    }
+    function updateFavStar(){ try { if (!favStarBtn) return; favStarBtn.classList.toggle('saved', isCurrentLocationSaved()); } catch {} }
+    function renderFavoritesList(){
+      if (!favoritesListEl) return;
+      favoritesListEl.innerHTML = '';
+      const favs = getFavorites();
+      for (let i = 0; i < favs.length; i++) {
+        const f = favs[i];
+        const row = document.createElement('div'); row.className = 'favorite-item';
+        const span = document.createElement('span'); span.textContent = f && f.name ? f.name : (f && f.mode === 'single' ? `${f.coords[0].x}, ${f.coords[0].y}` : '');
+        const loadBtn = document.createElement('button'); loadBtn.type = 'button'; loadBtn.className = 'app-btn'; loadBtn.textContent = t('favorites.load') || 'Yükle'; loadBtn.dataset.index = String(i); loadBtn.dataset.action = 'load';
+        const delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.className = 'app-btn'; delBtn.textContent = t('buttons.delete') || 'Sil'; delBtn.dataset.index = String(i); delBtn.dataset.action = 'delete';
+        row.appendChild(span); row.appendChild(loadBtn); row.appendChild(delBtn); favoritesListEl.appendChild(row);
+      }
+    }
+
+    if (openFavsBtn) openFavsBtn.addEventListener('click', async () => {
+      await refreshFavorites();
+      renderFavoritesList();
+      if (favoritesModal) favoritesModal.hidden = false;
+      try { document.body.classList.add('no-scroll'); } catch {}
+    });
+    if (favoritesClose) favoritesClose.addEventListener('click', () => {
+      if (favoritesModal) favoritesModal.hidden = true;
+      try { document.body.classList.remove('no-scroll'); } catch {}
+    });
+    if (favoritesModal) favoritesModal.addEventListener('click', (e) => {
+      if (e.target === favoritesModal) { favoritesModal.hidden = true; try { document.body.classList.remove('no-scroll'); } catch {} }
+    });
+    if (favoritesListEl) favoritesListEl.addEventListener('click', async (e) => {
+      const target = e.target;
+      if (!target || String(target.tagName).toLowerCase() !== 'button') return;
+      const idx = Number(target.dataset.index);
+      const favs = getFavorites();
+      const fav = favs && favs[idx];
+      if (!fav) return;
+      const action = target.dataset.action || 'load';
+      if (action === 'delete') {
+        await removeFavorite({ mode: fav.mode, coords: fav.coords });
+        renderFavoritesList();
+        updateFavStar();
+        return;
+      }
+      if (action === 'load') {
+        if (fav.mode === 'single') {
+          if (Array.isArray(fav.coords) && fav.coords[0]) {
+            loadImage(fav.coords[0].x, fav.coords[0].y);
+            try { localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: fav.coords[0].x, y: fav.coords[0].y }] })); } catch {}
+          }
+        }
+        if (favoritesModal) favoritesModal.hidden = true;
+        try { document.body.classList.remove('no-scroll'); } catch {}
+        updateFavStar();
+      }
+    });
+
+    if (favStarBtn) favStarBtn.addEventListener('click', async () => {
+      const cur = currentLocation();
+      if (!cur) return;
+      if (isCurrentLocationSaved()) {
+        await removeFavorite(cur);
+        updateFavStar();
+        return;
+      }
+      if (favNameInput && saveFavModal) {
+        favNameInput.value = '';
+        saveFavModal.hidden = false;
+        try { document.body.classList.add('no-scroll'); } catch {}
+      }
+    });
+    if (saveFavClose) saveFavClose.addEventListener('click', () => {
+      if (saveFavModal) saveFavModal.hidden = true;
+      try { document.body.classList.remove('no-scroll'); } catch {}
+    });
+    if (saveFavModal) saveFavModal.addEventListener('click', (e) => {
+      if (e.target === saveFavModal) { saveFavModal.hidden = true; try { document.body.classList.remove('no-scroll'); } catch {} }
+    });
+    if (favSaveBtn) favSaveBtn.addEventListener('click', async () => {
+      const name = (favNameInput && favNameInput.value) ? favNameInput.value.trim() : '';
+      const cur = currentLocation();
+      if (!cur) { if (saveFavModal) saveFavModal.hidden = true; try { document.body.classList.remove('no-scroll'); } catch {}; return; }
+      await addFavorite({ ...cur, name });
+      if (saveFavModal) saveFavModal.hidden = true;
+      try { document.body.classList.remove('no-scroll'); } catch {}
+      updateFavStar();
+    });
+    refreshFavorites().then(() => { try { updateFavStar(); } catch {} });
 
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
@@ -1338,22 +1448,6 @@
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
     const uploadBtn = document.getElementById('btn-upload-sign');
-    const mosaicBtn = document.getElementById('btn-mosaic');
-    const mosaicModal = document.getElementById('mosaic-modal');
-    const mosaicClose = document.getElementById('mosaic-close');
-    const mosaicX1 = document.getElementById('mosaic-x1');
-    const mosaicY1 = document.getElementById('mosaic-y1');
-    const mosaicX2 = document.getElementById('mosaic-x2');
-    const mosaicY2 = document.getElementById('mosaic-y2');
-    const mosaicX3 = document.getElementById('mosaic-x3');
-    const mosaicY3 = document.getElementById('mosaic-y3');
-    const mosaicX4 = document.getElementById('mosaic-x4');
-    const mosaicY4 = document.getElementById('mosaic-y4');
-    const mosaicRow3 = document.getElementById('mosaic-row-3');
-    const mosaicRow4 = document.getElementById('mosaic-row-4');
-    const mosaicUse2 = document.getElementById('mosaic-use2');
-    const mosaicUse4 = document.getElementById('mosaic-use4');
-    const mosaicFetch = document.getElementById('mosaic-fetch');
     const mosaicCanvas = document.createElement('canvas');
     const sidebar = document.getElementById('sidebar');
     const thumbList = document.getElementById('thumb-list');
@@ -1597,14 +1691,45 @@
     function clampPositionForItem(item, x, y){
       let nx = Math.round(x|0), ny = Math.round(y|0);
       try {
-        if (img && item && item.image && item.image.naturalWidth && item.image.naturalHeight) {
-          const maxX = Math.max(0, img.width - item.image.naturalWidth);
-          const maxY = Math.max(0, img.height - item.image.naturalHeight);
-          nx = Math.min(Math.max(0, nx), maxX);
-          ny = Math.min(Math.max(0, ny), maxY);
+        if (!img || !item || !item.image || !item.image.naturalWidth || !item.image.naturalHeight) return { x: nx, y: ny };
+        const iw = item.image.naturalWidth|0, ih = item.image.naturalHeight|0;
+        if (!ALLOW_DRAG_BEYOND_NINE) {
+          const rects = getAllowedPlacementRects();
+          if (!rects || rects.length === 0) {
+            const maxX = Math.max(0, img.width - iw);
+            const maxY = Math.max(0, img.height - ih);
+            return { x: Math.min(Math.max(0, nx), maxX), y: Math.min(Math.max(0, ny), maxY) };
+          }
+          const bounds = getCompositeBounds(rects);
+          const maxX = (bounds.maxX|0) - iw;
+          const maxY = (bounds.maxY|0) - ih;
+          const minX = bounds.minX|0;
+          const minY = bounds.minY|0;
+          nx = Math.min(Math.max(minX, nx), maxX);
+          ny = Math.min(Math.max(minY, ny), maxY);
+          return { x: nx, y: ny };
         }
-      } catch {}
-      return { x: nx, y: ny };
+        // If allowed beyond nine: keep at least 1 px inside composite bounds (with some slack)
+        const rects = getAllowedPlacementRects();
+        if (!rects || rects.length === 0) {
+          const minX = 1 - iw;
+          const minY = 1 - ih;
+          const maxX = (img.width|0) - 1;
+          const maxY = (img.height|0) - 1;
+          nx = Math.min(Math.max(minX, nx), maxX);
+          ny = Math.min(Math.max(minY, ny), maxY);
+          return { x: nx, y: ny };
+        }
+        const b = getCompositeBounds(rects);
+        const outerSlack = 512;
+        const minX = (b.minX|0) - iw + 1 - outerSlack;
+        const minY = (b.minY|0) - ih + 1 - outerSlack;
+        const maxX = (b.maxX|0) - 1 + outerSlack;
+        const maxY = (b.maxY|0) - 1 + outerSlack;
+        nx = Math.min(Math.max(minX, nx), maxX);
+        ny = Math.min(Math.max(minY, ny), maxY);
+        return { x: nx, y: ny };
+      } catch { return { x: nx, y: ny }; }
     }
     function moveSelectedBy(dx, dy, step){
       const it = getSelectedItem();
@@ -1758,6 +1883,8 @@
     let signItems = [];
     let selectedIndex = -1;
     let pendingZoomToSelected = false;
+    // When we change tiles to bring a sign into view, remember to zoom after load
+    let pendingZoomToItem = null;
     let readyLockedItem = null;
     let accountsData = [];
     let readySelectedAccountIds = [];
@@ -1937,6 +2064,43 @@
       const i = ((baseId.width * y + x) << 2);
       return { r: baseId.data[i], g: baseId.data[i+1], b: baseId.data[i+2], a: baseId.data[i+3] };
     }
+    // For overlays: ensure imageData for a neighbor overlay
+    function ensureOverlayImageData(ov){
+      if (!ov || !ov.image) return null;
+      try {
+        const w = ov.image.naturalWidth || ov.image.width;
+        const h = ov.image.naturalHeight || ov.image.height;
+        if (ov.imageData && ov.imageData.width === (w|0) && ov.imageData.height === (h|0)) return ov.imageData;
+        const off = document.createElement('canvas'); off.width = w; off.height = h;
+        const octx = off.getContext('2d', { willReadFrequently: true });
+        octx.drawImage(ov.image, 0, 0);
+        ov.imageData = octx.getImageData(0, 0, w, h);
+        return ov.imageData;
+      } catch { return null; }
+    }
+    // Composite color at world coords considering overlays when present
+    function getCompositeColorAtWorld(wx, wy){
+      if (!img) return null;
+      const w = img.width|0, h = img.height|0;
+      try {
+        if (neighborOverlays && neighborOverlays.size > 0) {
+          const gx = Math.floor(wx), gy = Math.floor(wy);
+          for (const [k, ov] of neighborOverlays.entries()) {
+            if (!ov || !ov.image) continue;
+            const ox0 = (ov.col|0) * w;
+            const oy0 = (ov.row|0) * h;
+            if (gx >= ox0 && gx < ox0 + w && gy >= oy0 && gy < oy0 + h) {
+              const id = ensureOverlayImageData(ov);
+              if (!id) break;
+              const lx = gx - ox0, ly = gy - oy0;
+              const i = ((id.width * ly + lx) << 2);
+              return { r: id.data[i], g: id.data[i+1], b: id.data[i+2], a: id.data[i+3] };
+            }
+          }
+        }
+      } catch {}
+      return getBasePixelColorAtWorld(wx, wy);
+    }
     function logSelectionDetails(item, sx, sy){  }
 
     function worldToScreen(wx, wy){
@@ -1956,6 +2120,23 @@
       try {
         const hit = hitOverlayAt(worldX, worldY);
         if (hit) canvas.style.cursor = 'pointer'; else canvas.style.cursor = '';
+      } catch {}
+      // Update 3x3 grid hover state and re-render when it changes
+      try {
+        if (!img) {
+          if (hoveredGridCell) { hoveredGridCell = null; render(); }
+          return;
+        }
+        let next = gridCellAt(worldX, worldY);
+        // Do not highlight the center cell (fetched tile)
+        if (next && next.row === 0 && next.col === 0) next = null;
+        // Also do not highlight cells that already have overlay
+        if (next) {
+          const k = String(next.col|0) + ',' + String(next.row|0);
+          if (neighborOverlays && neighborOverlays.has(k)) next = null;
+        }
+        const changed = !((!hoveredGridCell && !next) || (hoveredGridCell && next && hoveredGridCell.row === next.row && hoveredGridCell.col === next.col));
+        if (changed) { hoveredGridCell = next; render(); }
       } catch {}
     }
 
@@ -2107,23 +2288,14 @@
     }
 
     function isSameColorAsBase(item, sx, sy){
-      const itemId = ensureItemImageData(item);
-      const baseId = ensureBaseImageData();
-      if (!itemId || !baseId) return false;
-      
+      // Compare against composite (base + overlays) so seam tiles are handled
+      const itemColor = getItemPixelColor(item, sx, sy);
+      if (!itemColor || itemColor.a === 0) return false;
       const wx = Math.round((item.worldX || 0) + sx);
       const wy = Math.round((item.worldY || 0) + sy);
-      if (wx < 0 || wy < 0 || wx >= baseId.width || wy >= baseId.height) return false;
-      if (sx < 0 || sy < 0 || sx >= itemId.width || sy >= itemId.height) return false;
-      const iBase = ((baseId.width * wy + wx) << 2);
-      const iItem = ((itemId.width * sy + sx) << 2);
-      const a1 = itemId.data[iItem + 3];
-      if (a1 === 0) return false; 
-      const a0 = baseId.data[iBase + 3];
-      if (a0 === 0) return false; 
-      const r1 = itemId.data[iItem],   g1 = itemId.data[iItem+1], b1 = itemId.data[iItem+2];
-      const r0 = baseId.data[iBase],   g0 = baseId.data[iBase+1],  b0 = baseId.data[iBase+2];
-      return (r0 === r1) && (g0 === g1) && (b0 === b1);
+      const baseColor = getCompositeColorAtWorld(wx, wy);
+      if (!baseColor || baseColor.a === 0) return false;
+      return (itemColor.r === baseColor.r) && (itemColor.g === baseColor.g) && (itemColor.b === baseColor.b);
     }
     function isSamePaletteIdAsBase(item, sx, sy) {
       const itemColor = getItemPixelColor(item, sx, sy);
@@ -2132,7 +2304,7 @@
       }
       const wx = Math.round((item.worldX || 0) + sx);
       const wy = Math.round((item.worldY || 0) + sy);
-      const baseColor = getBasePixelColorAtWorld(wx, wy);
+      const baseColor = getCompositeColorAtWorld(wx, wy);
       if (!baseColor || baseColor.a === 0) {
         return false;
       }
@@ -2149,31 +2321,106 @@
       const wy0 = Math.round(item.worldY || 0);
       const nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
       const cache = item._placedCountCache;
-      if (cache && cache.baseW === baseId.width && cache.baseH === baseId.height && cache.wx0 === wx0 && cache.wy0 === wy0 && (nowMs - cache.atMs) < 1000) {
+      if (cache && cache.baseW === baseId.width && cache.baseH === baseId.height && cache.wx0 === wx0 && cache.wy0 === wy0 && cache.ovVer === overlayVersion && (nowMs - cache.atMs) < 1000) {
         return cache.count;
       }
       let count = 0;
       const w = itemId.width|0, h = itemId.height|0;
-      const itemData = itemId.data, baseData = baseId.data;
+      const itemData = itemId.data;
+      // Compute composite bounds (base + any unlocked neighbor overlays), capped to 3x3
+      let b = null;
+      try { b = getCompositeBounds(getAllowedPlacementRects()); } catch { b = { minX: 0, minY: 0, maxX: baseId.width|0, maxY: baseId.height|0 }; }
       for (let y = 0; y < h; y++){
         const wy = wy0 + y;
-        if (wy < 0 || wy >= baseId.height) continue;
+        if (b && (wy < b.minY || wy >= b.maxY)) continue;
         for (let x = 0; x < w; x++){
           const wx = wx0 + x;
-          if (wx < 0 || wx >= baseId.width) continue;
+          if (b && (wx < b.minX || wx >= b.maxX)) continue;
           const iItem = ((w * y + x) << 2);
           const a = itemData[iItem + 3];
           if (a === 0) continue;
-          const iBase = ((baseId.width * wy + wx) << 2);
-          const a0 = baseData[iBase + 3];
-          if (a0 === 0) continue;
-          if (itemData[iItem] === baseData[iBase] && itemData[iItem+1] === baseData[iBase+1] && itemData[iItem+2] === baseData[iBase+2]) {
+          const col = getCompositeColorAtWorld(wx, wy);
+          if (!col || col.a === 0) continue;
+          if (itemData[iItem] === col.r && itemData[iItem+1] === col.g && itemData[iItem+2] === col.b) {
             count++;
           }
         }
       }
-      item._placedCountCache = { count, wx0, wy0, baseW: baseId.width, baseH: baseId.height, atMs: nowMs };
+      item._placedCountCache = { count, wx0, wy0, baseW: baseId.width, baseH: baseId.height, ovVer: overlayVersion, atMs: nowMs };
       return count;
+    }
+
+    // Allowed placement rectangles: base tile + any neighbor overlays
+    function getAllowedPlacementRects(){
+      const rects = [];
+      if (img && img.width && img.height) {
+        rects.push({ x0: 0, y0: 0, x1: img.width|0, y1: img.height|0 });
+      }
+      try {
+        if (neighborOverlays && neighborOverlays.size > 0) {
+          const w = img ? (img.width|0) : 0;
+          const h = img ? (img.height|0) : 0;
+          neighborOverlays.forEach(ov => {
+            if (!ov) return;
+            const col = ov.col|0, row = ov.row|0;
+            rects.push({ x0: col * w, y0: row * h, x1: col * w + w, y1: row * h + h });
+          });
+        }
+      } catch {}
+      // Always cap to 3x3 region around base tile to match visual clipping
+      try {
+        const w = img ? (img.width|0) : 0;
+        const h = img ? (img.height|0) : 0;
+        const cap = { x0: -w, y0: -h, x1: 2*w, y1: 2*h };
+        for (let i = 0; i < rects.length; i++) {
+          const r = rects[i];
+          if (!r) continue;
+          r.x0 = Math.max(r.x0, cap.x0);
+          r.y0 = Math.max(r.y0, cap.y0);
+          r.x1 = Math.min(r.x1, cap.x1);
+          r.y1 = Math.min(r.y1, cap.y1);
+        }
+      } catch {}
+      return rects;
+    }
+    function getCompositeBounds(rects){
+      if (!rects || rects.length === 0) return { minX: 0, minY: 0, maxX: img ? (img.width|0) : 0, maxY: img ? (img.height|0) : 0 };
+      let minX = rects[0].x0, minY = rects[0].y0, maxX = rects[0].x1, maxY = rects[0].y1;
+      for (let i = 1; i < rects.length; i++) {
+        const r = rects[i];
+        if (!r) continue;
+        if (r.x0 < minX) minX = r.x0;
+        if (r.y0 < minY) minY = r.y0;
+        if (r.x1 > maxX) maxX = r.x1;
+        if (r.y1 > maxY) maxY = r.y1;
+      }
+      return { minX, minY, maxX, maxY };
+    }
+    function isWithinAllowedPlacement(x, y, w, h){
+      const rects = getAllowedPlacementRects();
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        if (!r) continue;
+        if (x >= r.x0 && y >= r.y0 && (x + w) <= r.x1 && (y + h) <= r.y1) return true;
+      }
+      return false;
+    }
+    // Returns true if the rect overlaps allowed area by at least minPixels
+    function isPartiallyWithinAllowedPlacement(x, y, w, h, minPixels){
+      const rects = getAllowedPlacementRects();
+      const minPx = Math.max(1, Number(minPixels || 1)|0);
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        if (!r) continue;
+        const ix0 = Math.max(x, r.x0);
+        const iy0 = Math.max(y, r.y0);
+        const ix1 = Math.min(x + w, r.x1);
+        const iy1 = Math.min(y + h, r.y1);
+        const iw = (ix1 - ix0)|0;
+        const ih = (iy1 - iy0)|0;
+        if (iw >= 1 && ih >= 1 && (iw * ih) >= minPx) return true;
+      }
+      return false;
     }
 
     function snapItemToNearest(item, targetX, targetY){
@@ -2183,40 +2430,49 @@
       if (!img) {
         return { x: Math.round(targetX || 0), y: Math.round(targetY || 0) };
       }
+      const rects = getAllowedPlacementRects();
+      const bounds = getCompositeBounds(rects);
       if (!id || !baseId) {
-        const maxXFallback = Math.max(0, img.width - (id && id.width ? id.width : 0));
-        const maxYFallback = Math.max(0, img.height - (id && id.height ? id.height : 0));
-        const rxFallback = Math.round(Math.min(Math.max(0, targetX), maxXFallback));
-        const ryFallback = Math.round(Math.min(Math.max(0, targetY), maxYFallback));
-        return { x: rxFallback, y: ryFallback };
+        const iw = id && id.width ? id.width : 0;
+        const ih = id && id.height ? id.height : 0;
+        const minXb = (bounds.minX|0) - iw + 1;
+        const minYb = (bounds.minY|0) - ih + 1;
+        const maxXb = (bounds.maxX|0) - 1;
+        const maxYb = (bounds.maxY|0) - 1;
+        const rxFallback = Math.round(Math.min(Math.max(minXb, targetX), maxXb));
+        const ryFallback = Math.round(Math.min(Math.max(minYb, targetY), maxYb));
+        const xOk = isPartiallyWithinAllowedPlacement(rxFallback, ryFallback, iw, ih, 1);
+        if (xOk) return { x: rxFallback, y: ryFallback };
+        // If clamped point not inside allowed rects, fall back to 0,0 within base
+        return { x: Math.max(0, Math.min((img.width|0) - (id && id.width ? id.width : 0), rxFallback)), y: Math.max(0, Math.min((img.height|0) - (id && id.height ? id.height : 0), ryFallback)) };
       }
-      const maxX = Math.max(0, img.width - id.width);
-      const maxY = Math.max(0, img.height - id.height);
-      const rx = Math.round(Math.min(Math.max(0, targetX), maxX));
-      const ry = Math.round(Math.min(Math.max(0, targetY), maxY));
+      const minXb = (bounds.minX|0) - id.width + 1;
+      const minYb = (bounds.minY|0) - id.height + 1;
+      const maxXb = (bounds.maxX|0) - 1;
+      const maxYb = (bounds.maxY|0) - 1;
+      const rx = Math.round(Math.min(Math.max(minXb, targetX), maxXb));
+      const ry = Math.round(Math.min(Math.max(minYb, targetY), maxYb));
       let bestX = rx, bestY = ry, bestScore = -1;
       const radius = 2;
-      const minX = Math.max(0, rx - radius), maxXn = Math.min(maxX, rx + radius);
-      const minY = Math.max(0, ry - radius), maxYn = Math.min(maxY, ry + radius);
+      const minX = Math.max(minXb, rx - radius), maxXn = Math.min(maxXb, rx + radius);
+      const minY = Math.max(minYb, ry - radius), maxYn = Math.min(maxYb, ry + radius);
       const stride = Math.max(1, Math.floor(Math.min(id.width, id.height) / 64));
       for (let oy = minY; oy <= maxYn; oy++) {
         for (let ox = minX; ox <= maxXn; ox++) {
+          if (!isPartiallyWithinAllowedPlacement(ox, oy, id.width, id.height, 1)) continue;
           let score = 0;
           for (let sy = 0; sy < id.height; sy += stride) {
-            const by = oy + sy; if (by < 0 || by >= baseId.height) continue;
+            const by = oy + sy;
             let iItem = ((id.width * sy) << 2);
-            let iBase = ((baseId.width * by) << 2) + (ox << 2);
             for (let sx = 0; sx < id.width; sx += stride) {
               const a = id.data[iItem + 3];
               if (a !== 0) {
                 const r1 = id.data[iItem], g1 = id.data[iItem+1], b1 = id.data[iItem+2];
-                const bx = ox + sx; if (bx >= 0 && bx < baseId.width) {
-                  const r0 = baseId.data[iBase], g0 = baseId.data[iBase+1], b0 = baseId.data[iBase+2];
-                  if (r0 === r1 && g0 === g1 && b0 === b1) score++;
-                }
+                const bx = ox + sx;
+                const col = getCompositeColorAtWorld(bx, by);
+                if (col && col.a !== 0 && col.r === r1 && col.g === g1 && col.b === b1) score++;
               }
               iItem += (stride << 2);
-              iBase += (stride << 2);
             }
           }
           if (score > bestScore) { bestScore = score; bestX = ox; bestY = oy; }
@@ -2952,6 +3208,13 @@
       zooming: false
     };
     let zoomingTimeout = null;
+    // Hovered cell in the 3x3 grid relative to the fetched tile
+    let hoveredGridCell = null; // { row: -1|0|1, col: -1|0|1 }
+    // Overlay tiles fetched via lock clicks: key = "col,row" → { image, col, row, area, no }
+    const neighborOverlays = new Map();
+    let overlayVersion = 0;
+    // Allow dragging images beyond the 3x3 grid; outside parts stay clipped
+    const ALLOW_DRAG_BEYOND_NINE = true;
 
     function resizeCanvasToDisplaySize() {
       const dpr = window.devicePixelRatio || 1;
@@ -2972,7 +3235,23 @@
       ctx.imageSmoothingEnabled = false;
       ctx.setTransform(dpr * state.scale, 0, 0, dpr * state.scale, dpr * state.translateX, dpr * state.translateY);
       ctx.drawImage(img, 0, 0);
-      
+      // Draw neighbor overlay tiles above base image but below uploaded images
+      try {
+        if (img && neighborOverlays.size > 0) {
+          neighborOverlays.forEach((ov) => {
+            if (!ov || !ov.image || !ov.image.complete) return;
+            const w = img.width|0, h = img.height|0;
+            const x = (ov.col|0) * w;
+            const y = (ov.row|0) * h;
+            ctx.drawImage(ov.image, x, y);
+          });
+        }
+      } catch {}
+      // Clip sign images and selection UI to the 3x3 region around base tile
+      const baseW = img.width|0, baseH = img.height|0;
+      ctx.save();
+      try { ctx.beginPath(); ctx.rect(-baseW, -baseH, baseW * 3, baseH * 3); ctx.clip(); } catch {}
+
       let dimSelectedWhileReadyOpen = false;
       try {
         const rp = document.getElementById('ready-popup');
@@ -3070,8 +3349,307 @@
           bg: { x: xRight, y: yTop, w: totalW, h: bgH }
         };
       }
+      ctx.restore();
       
+      // Draw 3x3 grid overlay and hover highlight
+      try { drawNineGridOverlay(); } catch {}
+
       try { updatePixelMarkers(); } catch {}
+      try { autoUnlockNeighborsBasedOnSigns(); } catch {}
+    }
+
+    // Determine which of the 3x3 grid cells the world point is in
+    function gridCellAt(worldX, worldY){
+      if (!img) return null;
+      const w = img.width|0, h = img.height|0;
+      if (w <= 0 || h <= 0) return null;
+      // Limit to the 3x3 block around the fetched tile
+      if (worldX < -w || worldX >= 2*w || worldY < -h || worldY >= 2*h) return null;
+      const col = Math.floor(worldX / w);
+      const row = Math.floor(worldY / h);
+      if (col < -1 || col > 1 || row < -1 || row > 1) return null;
+      return { row, col };
+    }
+
+    // Draw highlight for hovered cell only (no persistent grid lines)
+    function drawNineGridOverlay(){
+      if (!img) return;
+      const w = img.width|0, h = img.height|0;
+      if (w <= 0 || h <= 0) return;
+      ctx.save();
+      // Hovered cell outline only
+      if (hoveredGridCell) {
+        // If this cell already has an overlay, do not draw outline/lock
+        try {
+          const k = String(hoveredGridCell.col|0) + ',' + String(hoveredGridCell.row|0);
+          if (neighborOverlays && neighborOverlays.has(k)) { ctx.restore(); return; }
+        } catch {}
+        const hx = hoveredGridCell.col * w;
+        const hy = hoveredGridCell.row * h;
+        ctx.lineWidth = Math.max(1, 2 / state.scale);
+        try { ctx.setLineDash([6 / state.scale, 6 / state.scale]); } catch {}
+        ctx.strokeStyle = '#3b82f6';
+        ctx.strokeRect(hx, hy, w, h);
+        try { ctx.setLineDash([]); } catch {}
+
+        // Draw a big lock emoji at cell center
+        const cx = hx + w / 2;
+        const cy = hy + h / 2;
+        const baseSize = Math.min(w, h);
+        const fontPx = Math.max(28, Math.floor(baseSize * 0.24));
+        // Subtle background disc to improve contrast
+        try {
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          const r = Math.max(14, Math.floor(baseSize * 0.16));
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } catch {}
+        try {
+          ctx.save();
+          ctx.font = String(fontPx) + 'px system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🔒', cx, cy);
+          ctx.restore();
+        } catch {}
+      }
+      ctx.restore();
+    }
+
+    // Returns true if given world point hits the lock emoji inside hovered cell
+    function isOverLockButton(worldX, worldY){
+      if (!img || !hoveredGridCell) return false;
+      if (hoveredGridCell.row === 0 && hoveredGridCell.col === 0) return false;
+      const w = img.width|0, h = img.height|0;
+      if (w <= 0 || h <= 0) return false;
+      const cx = hoveredGridCell.col * w + w / 2;
+      const cy = hoveredGridCell.row * h + h / 2;
+      const baseSize = Math.min(w, h);
+      const r = Math.max(16, Math.floor(baseSize * 0.18));
+      const dx = worldX - cx;
+      const dy = worldY - cy;
+      return (dx*dx + dy*dy) <= (r*r);
+    }
+
+    function getCurrentTileCoords(){
+      try {
+        if (Array.isArray(currentTiles) && currentTiles.length > 0) {
+          const t = currentTiles[0];
+          if (t && typeof t.x === 'number' && typeof t.y === 'number') return { x: t.x, y: t.y };
+        }
+      } catch {}
+      let ax = 0, ay = 0;
+      try {
+        const a = parseInt((areaInput && areaInput.value) ? areaInput.value : '0', 10);
+        const n = parseInt((noInput && noInput.value) ? noInput.value : '0', 10);
+        if (Number.isFinite(a)) ax = a;
+        if (Number.isFinite(n)) ay = n;
+      } catch {}
+      return { x: ax, y: ay };
+    }
+    function getCurrentOriginTile(){
+      try {
+        if (Array.isArray(currentTiles) && currentTiles.length > 0) {
+          let minX = Infinity, minY = Infinity;
+          for (let i = 0; i < currentTiles.length; i++) {
+            const t = currentTiles[i];
+            if (!t) continue;
+            const tx = Number(t.x || 0);
+            const ty = Number(t.y || 0);
+            if (tx < minX) minX = tx;
+            if (ty < minY) minY = ty;
+          }
+          if (minX !== Infinity && minY !== Infinity) return { x: minX, y: minY };
+        }
+      } catch {}
+      return null;
+    }
+    function shiftSignItemsForOriginChange(prevOrigin, newOrigin, tileW, tileH){
+      try {
+        if (!prevOrigin || !newOrigin) return;
+        const w = Number(tileW || 0), h = Number(tileH || 0);
+        if (!(w > 0 && h > 0)) return;
+        const dxTiles = (Number(prevOrigin.x || 0) - Number(newOrigin.x || 0));
+        const dyTiles = (Number(prevOrigin.y || 0) - Number(newOrigin.y || 0));
+        if (dxTiles === 0 && dyTiles === 0) return;
+        const dx = dxTiles * w;
+        const dy = dyTiles * h;
+        for (let i = 0; i < signItems.length; i++) {
+          const it = signItems[i];
+          if (!it || !it.image) continue;
+          it.worldX = Number(it.worldX || 0) + dx;
+          it.worldY = Number(it.worldY || 0) + dy;
+          try { it._placedCountCache = null; } catch {}
+        }
+        try { saveImagesToStorage(); } catch {}
+      } catch {}
+    }
+
+    // Shift view so that the newly centered tile appears where the hovered cell was
+    function shiftViewForCell(col, row){
+      if (!img) return;
+      const w = img.width|0, h = img.height|0;
+      state.translateX += (col * w) * state.scale;
+      state.translateY += (row * h) * state.scale;
+    }
+
+    // Handle clicking the lock: fetch neighbor tile and place it under the clicked cell
+    function handleGridLockClick(){
+      if (!img || !hoveredGridCell) return;
+      const col = hoveredGridCell.col|0;
+      const row = hoveredGridCell.row|0;
+      if (col === 0 && row === 0) return;
+      const base = getCurrentTileCoords();
+      const newArea = Number(base.x || 0) + col;
+      const newNo = Number(base.y || 0) + row;
+      const key = String(col) + ',' + String(row);
+      // Fetch the neighbor tile image and store as overlay; do not change center tile/view
+      try {
+        const imgEl = new Image();
+        imgEl.onload = () => {
+          neighborOverlays.set(key, { image: imgEl, col, row, area: newArea, no: newNo });
+          overlayVersion++;
+          render();
+          try { saveOverlaysToStorage(); } catch {}
+        };
+        imgEl.onerror = () => {};
+        imgEl.src = buildUrl(newArea, newNo) + '?t=' + Date.now();
+      } catch {}
+    }
+
+    // Programmatically ensure a neighbor overlay is fetched for given cell
+    function ensureNeighborOverlay(col, row){
+      try {
+        if (!img) return;
+        col = col|0; row = row|0;
+        if (col === 0 && row === 0) return;
+        const key = String(col) + ',' + String(row);
+        if (neighborOverlays && neighborOverlays.has(key)) return;
+        const base = getCurrentTileCoords();
+        const newArea = Number(base.x || 0) + col;
+        const newNo = Number(base.y || 0) + row;
+        const imgEl = new Image();
+        imgEl.onload = () => {
+          try { neighborOverlays.set(key, { image: imgEl, col, row, area: newArea, no: newNo }); } catch {}
+          overlayVersion++;
+          render();
+          try { saveOverlaysToStorage(); } catch {}
+        };
+        imgEl.onerror = () => {};
+        imgEl.src = buildUrl(newArea, newNo) + '?t=' + Date.now();
+      } catch {}
+    }
+
+    // Promise-based ensure for overlay cell; resolves when loaded/ready
+    function ensureNeighborOverlayAsync(col, row){
+      return new Promise((resolve) => {
+        try {
+          if (!img) { resolve(false); return; }
+          col = col|0; row = row|0;
+          if (col === 0 && row === 0) { resolve(true); return; }
+          const key = String(col) + ',' + String(row);
+          const existing = neighborOverlays && neighborOverlays.get ? neighborOverlays.get(key) : null;
+          if (existing && existing.image && existing.image.complete) { resolve(true); return; }
+          const base = getCurrentTileCoords();
+          const newArea = Number(base.x || 0) + col;
+          const newNo = Number(base.y || 0) + row;
+          const imgEl = new Image();
+          imgEl.onload = () => {
+            try { neighborOverlays.set(key, { image: imgEl, col, row, area: newArea, no: newNo }); } catch {}
+            overlayVersion++;
+            try { saveOverlaysToStorage(); } catch {}
+            render();
+            resolve(true);
+          };
+          imgEl.onerror = () => resolve(false);
+          imgEl.src = buildUrl(newArea, newNo) + '?t=' + Date.now();
+        } catch { resolve(false); }
+      });
+    }
+
+    // Ensure overlays for all neighbor cells intersecting the given item's bounds are loaded
+    async function ensureOverlaysForItemLoaded(item){
+      try {
+        if (!img || !item || !item.image || !item.image.complete) return;
+        const w = currentTileW || (img.width|0);
+        const h = currentTileH || (img.height|0);
+        const x0 = Number(item.worldX || 0), y0 = Number(item.worldY || 0);
+        const x1 = x0 + (item.image.naturalWidth|0), y1 = y0 + (item.image.naturalHeight|0);
+        const promises = [];
+        for (let row = -1; row <= 1; row++) {
+          for (let col = -1; col <= 1; col++) {
+            if (col === 0 && row === 0) continue;
+            const cx0 = col * w, cy0 = row * h, cx1 = cx0 + w, cy1 = cy0 + h;
+            const intersects = (x1 > cx0) && (x0 < cx1) && (y1 > cy0) && (y0 < cy1);
+            if (intersects) promises.push(ensureNeighborOverlayAsync(col, row));
+          }
+        }
+        if (promises.length > 0) await Promise.all(promises);
+      } catch {}
+    }
+
+    // If any part of any sign lies in a neighbor cell, auto-unlock that neighbor overlay
+    function autoUnlockNeighborsBasedOnSigns(){
+      try {
+        if (!img || !Array.isArray(signItems) || signItems.length === 0) return;
+        const w = img.width|0, h = img.height|0;
+        for (let i = 0; i < signItems.length; i++) {
+          const it = signItems[i];
+          if (!it || !it.image || !it.image.complete) continue;
+          const x0 = Number(it.worldX || 0), y0 = Number(it.worldY || 0);
+          const x1 = x0 + (it.image.naturalWidth|0), y1 = y0 + (it.image.naturalHeight|0);
+          for (let row = -1; row <= 1; row++) {
+            for (let col = -1; col <= 1; col++) {
+              if (col === 0 && row === 0) continue;
+              const cx0 = col * w, cy0 = row * h, cx1 = cx0 + w, cy1 = cy0 + h;
+              const intersects = (x1 > cx0) && (x0 < cx1) && (y1 > cy0) && (y0 < cy1);
+              if (intersects) ensureNeighborOverlay(col, row);
+            }
+          }
+        }
+      } catch {}
+    }
+
+    function overlaysStorageKey(){
+      const base = getCurrentTileCoords();
+      return 'overlays:' + String(base.x) + ',' + String(base.y);
+    }
+    function saveOverlaysToStorage(){
+      try {
+        const list = [];
+        neighborOverlays.forEach((ov, k) => {
+          if (!ov) return;
+          list.push({ key: k, col: ov.col|0, row: ov.row|0, area: Number(ov.area||0), no: Number(ov.no||0) });
+        });
+        localStorage.setItem(overlaysStorageKey(), JSON.stringify(list));
+      } catch {}
+    }
+    function restoreOverlaysFromStorage(){
+      try {
+        const raw = localStorage.getItem(overlaysStorageKey()) || '[]';
+        let list = [];
+        try { list = JSON.parse(raw); } catch { list = []; }
+        if (!Array.isArray(list) || list.length === 0) return;
+        for (let i = 0; i < list.length; i++) {
+          const e = list[i];
+          if (!e || e.col == null || e.row == null || e.area == null || e.no == null) continue;
+          const key = String(e.col) + ',' + String(e.row);
+          try {
+            const imgEl = new Image();
+            imgEl.onload = () => {
+              neighborOverlays.set(key, { image: imgEl, col: e.col|0, row: e.row|0, area: Number(e.area||0), no: Number(e.no||0) });
+              overlayVersion++;
+              render();
+            };
+            imgEl.onerror = () => {};
+            imgEl.src = buildUrl(e.area, e.no) + '?t=' + Date.now();
+          } catch {}
+        }
+      } catch {}
     }
 
     function fitToView() {
@@ -3089,14 +3667,6 @@
   try {
     const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
     if (saved) {
-      if (saved.mode === 'mosaic') {
-        try {
-          await loadMosaic(saved.coords, true);
-          return true;
-        } catch {
-          return false;
-        }
-      }
       if (saved.mode === 'single') {
         const area = saved.coords[0].x;
         const no = saved.coords[0].y;
@@ -3104,6 +3674,9 @@
           const url = buildUrl(area, no) + '?t=' + Date.now();
           const image = new Image();
           image.onload = () => {
+            const prevOrigin = getCurrentOriginTile();
+            const prevW = currentTileW || (img ? (img.width|0) : 0);
+            const prevH = currentTileH || (img ? (img.height|0) : 0);
             img = image;
             baseImageData = null;
             currentTiles = [{ x: Number(area), y: Number(no) }];
@@ -3111,9 +3684,27 @@
             currentTileH = image.height;
             currentMosaicCols = 1;
             currentMosaicRows = 1;
+            try { shiftSignItemsForOriginChange(prevOrigin, { x: Number(area), y: Number(no) }, prevW, prevH); } catch {}
             try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+            try {
+              if (!hasSavedView()) {
+                if (neighborOverlays && neighborOverlays.size > 0) { neighborOverlays.clear(); overlayVersion++; hoveredGridCell = null; }
+              }
+            } catch {}
             render();
             updatePixelMarkers();
+            try { restoreOverlaysFromStorage(); } catch {}
+            try {
+              if (pendingZoomToItem && pendingZoomToItem.image && pendingZoomToItem.image.complete) {
+                const w = img ? (img.width|0) : 0;
+                const h = img ? (img.height|0) : 0;
+                const wx = Math.floor(pendingZoomToItem.worldX || 0);
+                const wy = Math.floor(pendingZoomToItem.worldY || 0);
+                const inCurrent3x3 = !!(img && wx >= -w && wx < 2*w && wy >= -h && wy < 2*h);
+                if (inCurrent3x3) { zoomToSign(pendingZoomToItem); }
+                pendingZoomToItem = null;
+              }
+            } catch {}
             resolve(true);
           };
           image.onerror = () => resolve(false);
@@ -3129,6 +3720,9 @@
       const url = buildUrl(area, no) + '?t=' + Date.now();
       const image = new Image();
       image.onload = () => {
+        const prevOrigin = getCurrentOriginTile();
+        const prevW = currentTileW || (img ? (img.width|0) : 0);
+        const prevH = currentTileH || (img ? (img.height|0) : 0);
         img = image;
         baseImageData = null;
         currentTiles = [{ x: Number(area), y: Number(no) }];
@@ -3136,9 +3730,27 @@
         currentTileH = image.height;
         currentMosaicCols = 1;
         currentMosaicRows = 1;
+        try { shiftSignItemsForOriginChange(prevOrigin, { x: Number(area), y: Number(no) }, prevW, prevH); } catch {}
         try { signItems.forEach(it => { if (it) it._placedCountCache = null; }); } catch {}
+        try {
+          if (!hasSavedView()) {
+            if (neighborOverlays && neighborOverlays.size > 0) { neighborOverlays.clear(); overlayVersion++; hoveredGridCell = null; }
+          }
+        } catch {}
         render();
         updatePixelMarkers();
+        try { restoreOverlaysFromStorage(); } catch {}
+        try {
+          if (pendingZoomToItem && pendingZoomToItem.image && pendingZoomToItem.image.complete) {
+            const w = img ? (img.width|0) : 0;
+            const h = img ? (img.height|0) : 0;
+            const wx = Math.floor(pendingZoomToItem.worldX || 0);
+            const wy = Math.floor(pendingZoomToItem.worldY || 0);
+            const inCurrent3x3 = !!(img && wx >= -w && wx < 2*w && wy >= -h && wy < 2*h);
+            if (inCurrent3x3) { zoomToSign(pendingZoomToItem); }
+            pendingZoomToItem = null;
+          }
+        } catch {}
         resolve(true);
       };
       image.onerror = () => resolve(false);
@@ -3173,6 +3785,9 @@ function loadImage(area, no, preserveView = false) {
     const prevScale = state.scale;
     const prevTx = state.translateX;
     const prevTy = state.translateY;
+    const prevOrigin = getCurrentOriginTile();
+    const prevW = currentTileW || (img ? (img.width|0) : 0);
+    const prevH = currentTileH || (img ? (img.height|0) : 0);
 
     img = image;
     currentTiles = [{ x: Number(area), y: Number(no) }];
@@ -3181,19 +3796,53 @@ function loadImage(area, no, preserveView = false) {
     currentMosaicCols = 1;
     currentMosaicRows = 1;
     try { baseImageData = null; } catch {}
+    try { shiftSignItemsForOriginChange(prevOrigin, { x: Number(area), y: Number(no) }, prevW, prevH); } catch {}
+    // Clear overlays only if we are NOT preserving view and also want to reset overlays
+    try {
+      if (!preserveView) {
+        if (neighborOverlays && neighborOverlays.size > 0) { neighborOverlays.clear(); overlayVersion++; hoveredGridCell = null; }
+      }
+    } catch {}
 
     if (preserveView) {
       state.scale = prevScale;
       state.translateX = prevTx;
       state.translateY = prevTy;
       render();
+      try { restoreOverlaysFromStorage(); } catch {}
     } else if (hasSavedView()) {
+      // If saved view exists but this is a manual fetch (preserveView=false), do not restore overlays
       render();
       updatePixelMarkers();
     } else {
       fitToView();
     }
     localStorage.setItem('lastFetch', JSON.stringify({ mode: 'single', coords: [{ x: Number(area), y: Number(no) }] }));
+    // Center focus only when there's no saved view and not preserving view
+    try {
+      if (!(preserveView || hasSavedView())) {
+        const vw = canvas.clientWidth;
+        const vh = canvas.clientHeight;
+        const centerPx = getContentCenterPx();
+        const newScale = state.scale; // keep current scale after fit/restore above
+        const cx = (img.width|0) / 2;
+        const cy = (img.height|0) / 2;
+        state.translateX = centerPx.x - cx * newScale;
+        state.translateY = centerPx.y - cy * newScale;
+        render();
+      }
+    } catch {}
+    try {
+      if (pendingZoomToItem && pendingZoomToItem.image && pendingZoomToItem.image.complete) {
+        const w = img ? (img.width|0) : 0;
+        const h = img ? (img.height|0) : 0;
+        const wx = Math.floor(pendingZoomToItem.worldX || 0);
+        const wy = Math.floor(pendingZoomToItem.worldY || 0);
+        const inCurrent3x3 = !!(img && wx >= -w && wx < 2*w && wy >= -h && wy < 2*h);
+        if (inCurrent3x3) { zoomToSign(pendingZoomToItem); }
+        pendingZoomToItem = null;
+      }
+    } catch {}
   };
   image.onerror = () => {
     alert(t('messages.imageLoadFailed'));
@@ -3210,6 +3859,14 @@ function loadImage(area, no, preserveView = false) {
       const py = e.clientY - rect.top;
       const worldX = (px - state.translateX) / state.scale;
       const worldY = (py - state.translateY) / state.scale;
+      // Lock button click on hovered neighbor cell
+      try {
+        if (e.button === 0 && isOverLockButton(worldX, worldY)) {
+          e.preventDefault();
+          handleGridLockClick();
+          return;
+        }
+      } catch {}
       
       if (isReadyOpen()) {
         readyMouseDownPt = { screenX: e.clientX, screenY: e.clientY, worldX, worldY, button: e.button };
@@ -3340,8 +3997,32 @@ function loadImage(area, no, preserveView = false) {
         const dy = e.clientY - state.lastY;
         state.lastX = e.clientX;
         state.lastY = e.clientY;
-        state.translateX += dx;
-        state.translateY += dy;
+        // Clamp panning only when composite content is larger than viewport
+        try {
+          const rects = getAllowedPlacementRects();
+          const b = getCompositeBounds(rects);
+          const vw = canvas.clientWidth, vh = canvas.clientHeight;
+          const s = state.scale;
+          const cw = (b.maxX - b.minX) * s;
+          const ch = (b.maxY - b.minY) * s;
+          let nx = state.translateX + dx;
+          let ny = state.translateY + dy;
+          // Allow some overscroll slack so users can pan even when content nearly fits
+          const panSlackX = Math.max(32, Math.floor(vw * 0.2));
+          const panSlackY = Math.max(32, Math.floor(vh * 0.2));
+          if (cw > vw) {
+            const minTx = vw - (b.maxX * s) - panSlackX; // right edge aligned with slack
+            const maxTx = - (b.minX * s) + panSlackX;    // left edge aligned with slack
+            nx = Math.min(Math.max(minTx, nx), maxTx);
+          }
+          if (ch > vh) {
+            const minTy = vh - (b.maxY * s) - panSlackY;
+            const maxTy = - (b.minY * s) + panSlackY;
+            ny = Math.min(Math.max(minTy, ny), maxTy);
+          }
+          state.translateX = nx;
+          state.translateY = ny;
+        } catch { state.translateX += dx; state.translateY += dy; }
         render();
         updatePixelMarkers();
         
@@ -3563,8 +4244,42 @@ function loadImage(area, no, preserveView = false) {
       const zoom = Math.exp(-e.deltaY * 0.0015);
       const newScale = Math.min(state.maxScale, Math.max(state.minScale, state.scale * zoom));
       if (newScale === state.scale) return;
-      state.translateX = px - imageX * newScale;
-      state.translateY = py - imageY * newScale;
+      // Zoom toward cursor, anchoring to composite bounds to avoid jumps across tiles
+      let nx, ny;
+      try {
+        const rects = getAllowedPlacementRects();
+        const b = getCompositeBounds(rects);
+        const clamp = (v, min, max) => v < min ? min : (v > max ? max : v);
+        const wx = clamp(imageX, b.minX, b.maxX);
+        const wy = clamp(imageY, b.minY, b.maxY);
+        nx = px - wx * newScale;
+        ny = py - wy * newScale;
+      } catch {
+        nx = px - imageX * newScale;
+        ny = py - imageY * newScale;
+      }
+      try {
+        const rects = getAllowedPlacementRects();
+        const b = getCompositeBounds(rects);
+        const vw = canvas.clientWidth, vh = canvas.clientHeight;
+        const cw = (b.maxX - b.minX) * newScale;
+        const ch = (b.maxY - b.minY) * newScale;
+        // Allow some overscroll slack while zooming
+        const panSlackX = Math.max(32, Math.floor(vw * 0.2));
+        const panSlackY = Math.max(32, Math.floor(vh * 0.2));
+        if (cw > vw) {
+          const minTx = vw - (b.maxX * newScale) - panSlackX;
+          const maxTx = - (b.minX * newScale) + panSlackX;
+          nx = Math.min(Math.max(minTx, nx), maxTx);
+        }
+        if (ch > vh) {
+          const minTy = vh - (b.maxY * newScale) - panSlackY;
+          const maxTy = - (b.minY * newScale) + panSlackY;
+          ny = Math.min(Math.max(minTy, ny), maxTy);
+        }
+      } catch {}
+      state.translateX = nx;
+      state.translateY = ny;
       state.scale = newScale;
       render();
       updatePixelMarkers();
@@ -3695,6 +4410,20 @@ function loadImage(area, no, preserveView = false) {
         localStorage.setItem('view.translateX', String(state.translateX));
         localStorage.setItem('view.translateY', String(state.translateY));
         localStorage.setItem('view.scale', String(state.scale));
+        // Update world X/Y inputs to the tile that contains the image center
+        if (areaInput && noInput && img) {
+          const w = img.width|0, h = img.height|0;
+          const cx = Math.floor(centerX);
+          const cy = Math.floor(centerY);
+          const base = getCurrentTileCoords();
+          const col = Math.floor(cx / Math.max(1, w));
+          const row = Math.floor(cy / Math.max(1, h));
+          const areaX = Number(base.x || 0) + col;
+          const areaY = Number(base.y || 0) + row;
+          areaInput.value = String(areaX);
+          noInput.value = String(areaY);
+          try { localStorage.setItem('area code', String(areaX)); localStorage.setItem('no', String(areaY)); } catch {}
+        }
       } catch {}
     }
 
@@ -3904,7 +4633,29 @@ function loadImage(area, no, preserveView = false) {
         if (btn) btn.disabled = !(selectedIndex >= 0 && selectedIndex < signItems.length);
       } catch {}
       if (item.image && item.image.complete) {
-        if (zoom) zoomToSign(item);
+        if (zoom) {
+          try {
+            // Ensure the item's tile is loaded; if not, load it then zoom
+            const w = img ? (img.width|0) : 0;
+            const h = img ? (img.height|0) : 0;
+            const wx = Math.floor(item.worldX || 0);
+            const wy = Math.floor(item.worldY || 0);
+            const inCurrent3x3 = !!(img && wx >= -w && wx < 2*w && wy >= -h && wy < 2*h);
+            if (!inCurrent3x3) {
+              const areaNow = getCurrentTileCoords();
+              const areaX = Number(areaNow.x || 0);
+              const areaY = Number(areaNow.y || 0);
+              const dx = Math.floor(wx / Math.max(1, w));
+              const dy = Math.floor(wy / Math.max(1, h));
+              const targetArea = { x: areaX + dx, y: areaY + dy };
+              pendingZoomToItem = item;
+              loadImage(targetArea.x, targetArea.y, true);
+              // zoom will occur after load completes (see below)
+            } else {
+              zoomToSign(item);
+            }
+          } catch { zoomToSign(item); }
+        }
         try { localStorage.setItem('last.image.url', item.url || ''); localStorage.setItem('last.image.name', item.name || 'image.png'); } catch {}
       } else {
         pendingZoomToSelected = !!zoom;
@@ -4846,57 +5597,6 @@ function loadImage(area, no, preserveView = false) {
       if (e.key === 'Escape') accountsModal.hidden = true;
     });
 
-    // Mosaic modal logic
-    let mosaicCount = 2;
-    function updateMosaicCoords(){
-      const x1 = Number(mosaicX1.value) || 0;
-      const y1 = Number(mosaicY1.value) || 0;
-      mosaicX2.value = x1 + 1;
-      mosaicY2.value = y1;
-      mosaicX3.value = x1;
-      mosaicY3.value = y1 + 1;
-      mosaicX4.value = x1 + 1;
-      mosaicY4.value = y1 + 1;
-    }
-    mosaicX1.addEventListener('input', updateMosaicCoords);
-    mosaicY1.addEventListener('input', updateMosaicCoords);
-
-    mosaicBtn.addEventListener('click', () => {
-      mosaicModal.hidden = false;
-      document.body.classList.add('no-scroll');
-      mosaicCount = 2;
-      mosaicRow3.hidden = true;
-      mosaicRow4.hidden = true;
-      updateMosaicCoords();
-    });
-    mosaicClose.addEventListener('click', () => {
-      mosaicModal.hidden = true;
-      document.body.classList.remove('no-scroll');
-    });
-    mosaicModal.addEventListener('click', (e) => {
-      if (e.target === mosaicModal) {
-        mosaicModal.hidden = true;
-        document.body.classList.remove('no-scroll');
-      }
-    });
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !mosaicModal.hidden) {
-        mosaicModal.hidden = true;
-        document.body.classList.remove('no-scroll');
-      }
-    });
-
-    mosaicUse2.addEventListener('click', () => {
-      mosaicCount = 2;
-      mosaicRow3.hidden = true;
-      mosaicRow4.hidden = true;
-    });
-    mosaicUse4.addEventListener('click', () => {
-      mosaicCount = 4;
-      mosaicRow3.hidden = false;
-      mosaicRow4.hidden = false;
-    });
-
     function fetchTile(area, no) {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -4906,56 +5606,7 @@ function loadImage(area, no, preserveView = false) {
       });
     }
 
-    async function loadMosaic(coords, preserveView = false) {
-      const images = await Promise.all(coords.map(c => fetchTile(c.x, c.y)));
-      const tileW = images[0].width;
-      const tileH = images[0].height;
-      mosaicCanvas.width = tileW * 2;
-      mosaicCanvas.height = tileH * (coords.length === 2 ? 1 : 2);
-      const mctx = mosaicCanvas.getContext('2d');
-      mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
-      mctx.drawImage(images[0], 0, 0);
-      mctx.drawImage(images[1], tileW, 0);
-      if (coords.length === 4) {
-        mctx.drawImage(images[2], 0, tileH);
-        mctx.drawImage(images[3], tileW, tileH);
-      }
-      img = mosaicCanvas;
-      currentTiles = coords.slice();
-      currentTileW = tileW;
-      currentTileH = tileH;
-      currentMosaicCols = 2;
-      currentMosaicRows = coords.length === 2 ? 1 : 2;
-      try {
-        baseImageData = null;
-        // Clear cached placed counts so auto-mode uses fresh data
-        signItems.forEach(it => { if (it) it._placedCountCache = null; });
-      } catch {}
-      if (preserveView) {
-        render();
-      } else {
-        fitToView();
-      }
-    }
-
-    mosaicFetch.addEventListener('click', async () => {
-      const coords = [
-        { x: Number(mosaicX1.value), y: Number(mosaicY1.value) },
-        { x: Number(mosaicX2.value), y: Number(mosaicY2.value) }
-      ];
-      if (mosaicCount === 4) {
-        coords.push({ x: Number(mosaicX3.value), y: Number(mosaicY3.value) });
-        coords.push({ x: Number(mosaicX4.value), y: Number(mosaicY4.value) });
-      }
-      try {
-        await loadMosaic(coords);
-        localStorage.setItem('lastFetch', JSON.stringify({ mode: 'mosaic', coords }));
-        mosaicModal.hidden = true;
-        document.body.classList.remove('no-scroll');
-      } catch (err) {
-        alert(t('messages.imageLoadFailed'));
-      }
-    });
+    
 
     
     sign.addEventListener('load', () => {});
@@ -5913,10 +6564,36 @@ if (startBtn) {
     if (!readyGlobalMode && !sel) { showToast(t('messages.noSelectedImage'), 'error', 2000); return; }
     const data = buildSelectedExportForItem(sel);
     const authToken = (readyTokenInput && readyTokenInput.value) ? String(readyTokenInput.value) : '';
-    // Si hay mosaico, agrupa por tile y asigna por lotes
-if (currentTiles && currentTiles.length > 1) {
-  const groups = groupPixelsByTile(data.colors, data.coords);
+    // Her durumda (tek tile veya değil) pikselleri world koordinata göre area/no bazında gruplandır
+  const groups = (function(){
+    try {
+      const w = img ? (img.width|0) : 0, h = img ? (img.height|0) : 0;
+      const base = getCurrentTileCoords();
+      const m = new Map();
+      for (let i = 0; i < data.colors.length; i++) {
+        const wx = data.coords[i*2]|0;
+        const wy = data.coords[i*2+1]|0;
+        const col = Math.floor(wx / Math.max(1, w));
+        const row = Math.floor(wy / Math.max(1, h));
+        const area = Number(base.x||0) + col;
+        const no = Number(base.y||0) + row;
+        let lx = wx - col * w;
+        let ly = wy - row * h;
+        // Clamp just in case of rounding anomalies at tile seams
+        if (w > 0) { if (lx < 0) lx = 0; else if (lx >= w) lx = w - 1; }
+        if (h > 0) { if (ly < 0) ly = 0; else if (ly >= h) ly = h - 1; }
+        const key = String(area)+","+String(no);
+        let g = m.get(key);
+        if (!g) { g = { area, no, coords: [], colors: [] }; m.set(key, g); }
+        g.coords.push(lx, ly);
+        g.colors.push(data.colors[i]);
+      }
+      return Array.from(m.values());
+    } catch { return [{ area: (areaInput && areaInput.value) ? Number(areaInput.value) : 0, no: (noInput && noInput.value) ? Number(noInput.value) : 0, colors: data.colors.slice(), coords: data.coords.slice() }]; }
+  })();
   (async () => {
+    // If selected image crosses into neighbors, ensure overlays are loaded before grouping
+    try { if (!readyGlobalMode && sel) await ensureOverlaysForItemLoaded(sel); } catch {}
     let paintedAny = false;
     let missingTotal = 0;
     let usedIds = []; 
@@ -5990,7 +6667,7 @@ if (currentTiles && currentTiles.length > 1) {
       } catch {}
     }
   })();
-} else {
+/* else {
       // Si no hay mosaico, usa la lógica de xacter (asignación individual)
       const area = (areaInput && areaInput.value) ? String(areaInput.value).trim() : '';
       const no = (noInput && noInput.value) ? String(noInput.value).trim() : '';
@@ -6084,9 +6761,59 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
   } catch {}
 }
       })();
-    }
+    } */
   });
 }
+
+    // Periodically refresh base tile and all unlocked overlays (neighborOverlays)
+    const MAP_REFRESH_PERIOD_MS = 60000;
+    function refreshBaseTilePreserveView(){
+      try {
+        if (!img) return;
+        const base = getCurrentTileCoords();
+        const url = buildUrl(base.x, base.y) + '?t=' + Date.now();
+        const next = new Image();
+        next.onload = () => {
+          img = next;
+          try { baseImageData = null; } catch {}
+          try { currentTiles = [{ x: Number(base.x), y: Number(base.y) }]; } catch {}
+          try { currentTileW = next.width; currentTileH = next.height; } catch {}
+          render();
+          try { updatePixelMarkers(); } catch {}
+        };
+        next.onerror = () => {};
+        next.src = url;
+      } catch {}
+    }
+    function refreshAllUnlockedOverlays(){
+      try {
+        if (!neighborOverlays || neighborOverlays.size === 0) return;
+        neighborOverlays.forEach((ov, key) => {
+          try {
+            if (!ov || ov.col == null || ov.row == null || ov.area == null || ov.no == null) return;
+            const imgEl = new Image();
+            imgEl.onload = () => {
+              try { neighborOverlays.set(key, { ...ov, image: imgEl }); } catch {}
+              overlayVersion++;
+              render();
+              try { saveOverlaysToStorage(); } catch {}
+            };
+            imgEl.onerror = () => {};
+            imgEl.src = buildUrl(ov.area, ov.no) + '?t=' + Date.now();
+          } catch {}
+        });
+      } catch {}
+    }
+    function startMapAutoRefresh(){
+      try {
+        if (window._mapRefreshTimer) return;
+        window._mapRefreshTimer = setInterval(() => {
+          try { refreshBaseTilePreserveView(); } catch {}
+          try { refreshAllUnlockedOverlays(); } catch {}
+        }, MAP_REFRESH_PERIOD_MS);
+      } catch {}
+    }
+    try { startMapAutoRefresh(); } catch {}
 
     // Space-to-paint: press/hold Space to add selection at hover pixel (like left-click)
     let spacePaintHeld = false;
@@ -6266,14 +6993,12 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
     try { restoreImagesFromStorage(); } catch {}
 
     const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
-    if (saved && saved.mode === 'mosaic') {
-      await loadMosaic(saved.coords);
-    } else if (saved && saved.mode === 'single') {
+    if (saved && saved.mode === 'single') {
       areaInput.value = String(saved.coords[0].x);
       noInput.value = String(saved.coords[0].y);
-      loadImage(areaInput.value, noInput.value);
+      loadImage(areaInput.value, noInput.value, true);
     } else if (areaInput.value && noInput.value) {
-      loadImage(areaInput.value, noInput.value);
+      loadImage(areaInput.value, noInput.value, true);
     }    
   } catch {}
   updateCounter();
@@ -6290,9 +7015,7 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
       try {
         const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
         if (!saved) return;
-        if (saved.mode === 'mosaic') {
-          loadMosaic(saved.coords, true);
-        } else if (saved.mode === 'single') {
+        if (saved.mode === 'single') {
           loadImage(saved.coords[0].x, saved.coords[0].y, true);
         }
       } catch {}
