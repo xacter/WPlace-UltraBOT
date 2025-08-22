@@ -676,6 +676,13 @@
       box-shadow: 0 0 0 2px rgba(34,211,238,0.25);
     }
     .palette-swatch.transparent {
+      background-color: rgba(255,255,255,0.06);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><rect x='3' y='5' width='18' height='14' rx='2' ry='2' stroke='%23e5e7eb' stroke-width='2'/><path d='M7 15l3-3 3 4 3-3 3 4H7z' fill='%23e5e7eb'/><circle cx='9' cy='9' r='2' fill='%23e5e7eb'/></svg>");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 80% 80%;
+    }
+    .palette-swatch.block {
       background-color: #bbb;
       background-image:
         linear-gradient(45deg, #888 25%, transparent 25%),
@@ -685,13 +692,12 @@
       background-size: 8px 8px;
       background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
     }
-    .palette-swatch.block {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      line-height: 1;
-      background: rgba(0,0,0,0.25);
+    .modal-palette-swatch.transparent {
+      background-color: rgba(255,255,255,0.06);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><rect x='3' y='5' width='18' height='14' rx='2' ry='2' stroke='%23e5e7eb' stroke-width='2'/><path d='M7 15l3-3 3 4 3-3 3 4H7z' fill='%23e5e7eb'/><circle cx='9' cy='9' r='2' fill='%23e5e7eb'/></svg>");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 80% 80%;
     }
     
     #lang-switch {
@@ -2742,7 +2748,6 @@
       swB.title = 'Block';
       swB.setAttribute('role', 'button');
       swB.setAttribute('data-id', '0');
-      swB.textContent = '⛔';
       swB.addEventListener('click', () => {
         selectedOverrideColorId = 0;
         
