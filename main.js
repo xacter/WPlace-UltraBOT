@@ -363,8 +363,16 @@ function startServer(port, host) {
             res.end(JSON.stringify({ error: 'invalid payload' }));
             return;
           }
-          const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
-          const cf = settings && typeof settings.cf_clearance === 'string' ? settings.cf_clearance : '';
+          // Use cf_clearance stored on the specific account matching this token
+          const accounts = readJson(ACCOUNTS_FILE, []);
+          const acc = accounts.find(a => a && typeof a.token === 'string' && a.token === jToken);
+          const cf = acc && typeof acc.cf_clearance === 'string' ? acc.cf_clearance : '';
+          if (!cf || cf.length < 30) {
+            try { deactivateAccountByToken(jToken); } catch {}
+            res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: 'cf_clearance missing for account' }));
+            return;
+          }
           const remotePath = `/s0/pixel/${encodeURIComponent(area)}/${encodeURIComponent(no)}`;
           const payload = JSON.stringify({ colors, coords, t });
           
@@ -467,11 +475,13 @@ function startServer(port, host) {
             res.end(JSON.stringify({ error: 'invalid payload' }));
             return;
           }
-          const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
-          const cf = settings && typeof settings.cf_clearance === 'string' ? settings.cf_clearance : '';
+          const accounts = readJson(ACCOUNTS_FILE, []);
+          const acc = accounts.find(a => a && typeof a.token === 'string' && a.token === jToken);
+          const cf = acc && typeof acc.cf_clearance === 'string' ? acc.cf_clearance : '';
           if (!cf || cf.length < 30) {
+            try { deactivateAccountByToken(jToken); } catch {}
             res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ error: 'cf_clearance missing' }));
+            res.end(JSON.stringify({ error: 'cf_clearance missing for account' }));
             return;
           }
           const remotePath = '/purchase';
@@ -559,6 +569,14 @@ function startServer(port, host) {
     
     if (parsed.pathname === '/api/accounts' && req.method === 'GET') {
       const accounts = readJson(ACCOUNTS_FILE, []);
+      try {
+        for (let i = 0; i < accounts.length; i++) {
+          const a = accounts[i];
+          const cf = a && typeof a.cf_clearance === 'string' ? a.cf_clearance : '';
+          if (!cf || cf.length < 30) { accounts[i] = { ...a, active: false }; }
+        }
+        writeJson(ACCOUNTS_FILE, accounts);
+      } catch {}
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(accounts));
       return;
@@ -587,8 +605,22 @@ function startServer(port, host) {
         const updated = { ...accounts[idx] };
         if (typeof body.name === 'string') updated.name = body.name;
         if (typeof body.token === 'string') updated.token = body.token;
+        if (typeof body.cf_clearance === 'string') {
+          const newCf = String(body.cf_clearance);
+          const dup = accounts.find(a => a && a.id !== id && typeof a.cf_clearance === 'string' && a.cf_clearance === newCf);
+          if (dup) {
+            res.writeHead(409, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: 'cf_clearance already used' }));
+            return;
+          }
+          updated.cf_clearance = newCf;
+        }
         if (body.pixelRight != null) updated.pixelRight = body.pixelRight;
         if (typeof body.active === 'boolean') updated.active = body.active;
+        try {
+          const cf = updated && typeof updated.cf_clearance === 'string' ? updated.cf_clearance : '';
+          if (!cf || cf.length < 30) updated.active = false;
+        } catch {}
         accounts[idx] = updated;
         writeJson(ACCOUNTS_FILE, accounts);
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -599,64 +631,45 @@ function startServer(port, host) {
       });
       return;
     }
-    if (parsed.pathname === '/api/settings' && req.method === 'GET') {
-      const settings = readJson(SETTINGS_FILE, { cf_clearance: '', worldX: null, worldY: null });
-      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify(settings));
-      return;
-    }
-    if (parsed.pathname === '/api/settings' && req.method === 'POST') {
-      readJsonBody(req).then((body) => {
-        const existing = readJson(SETTINGS_FILE, { cf_clearance: '', worldX: null, worldY: null });
-        const merged = { ...existing };
-        if (body && Object.prototype.hasOwnProperty.call(body, 'cf_clearance') && typeof body.cf_clearance === 'string') {
-          merged.cf_clearance = body.cf_clearance;
-        }
-        const worldX = (body && (typeof body.worldX === 'number' || body.worldX === null)) ? body.worldX : undefined;
-        const worldY = (body && (typeof body.worldY === 'number' || body.worldY === null)) ? body.worldY : undefined;
-        if (worldX !== undefined) merged.worldX = worldX;
-        if (worldY !== undefined) merged.worldY = worldY;
-        writeJson(SETTINGS_FILE, merged);
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ cf_clearance: merged.cf_clearance }));
-      }).catch(() => {
-        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ error: 'invalid json' }));
-      });
-      return;
-    }
+    // Settings endpoints removed; cf_clearance is now per-account
     if (parsed.pathname === '/api/accounts' && req.method === 'POST') {
       readJsonBody(req).then(async (body) => {
         const name = (body && body.name) ? String(body.name) : '';
         const token = (body && body.token) ? String(body.token) : '';
-        if (!name || !token) {
+        const cf_clearance = (body && body.cf_clearance) ? String(body.cf_clearance) : '';
+        if (!name || !token || !cf_clearance || cf_clearance.length < 30) {
           res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-          res.end(JSON.stringify({ error: 'name and token required' }));
+          res.end(JSON.stringify({ error: 'name, token and cf_clearance required' }));
           return;
         }
         const accounts = readJson(ACCOUNTS_FILE, []);
-        const account = { id: Date.now(), name, token, pixelCount: null, pixelMax: null, droplets: null, extraColorsBitmap: null, active: false };
-        
-        const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
-        if (settings.cf_clearance && settings.cf_clearance.length >= 30) {
-          try {
-            const me = await fetchMe(settings.cf_clearance, token);
-            if (me && me.charges) {
-              account.pixelCount = Number(me.charges.count);
-              account.pixelMax = Number(me.charges.max);
-              account.active = true;
-            }
-            if (me && Object.prototype.hasOwnProperty.call(me, 'droplets')) {
-              const d = Number(me.droplets);
-              account.droplets = Number.isFinite(d) ? Math.floor(d) : null;
-            }
-            if (me && Object.prototype.hasOwnProperty.call(me, 'extraColorsBitmap')) {
-              const b = Number(me.extraColorsBitmap);
-              account.extraColorsBitmap = Number.isFinite(b) ? Math.floor(b) : null;
-            }
-            if (me && me.name && !name) account.name = String(me.name);
-          } catch {}
-        }
+        try {
+          const dup = accounts.find(a => a && typeof a.cf_clearance === 'string' && a.cf_clearance === cf_clearance);
+          if (dup) {
+            res.writeHead(409, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: 'cf_clearance already used' }));
+            return;
+          }
+        } catch {}
+        const account = { id: Date.now(), name, token, cf_clearance, pixelCount: null, pixelMax: null, droplets: null, extraColorsBitmap: null, active: false };
+        try {
+          const me = await fetchMe(cf_clearance, token);
+          if (me && me.charges) {
+            account.pixelCount = Number(me.charges.count);
+            account.pixelMax = Number(me.charges.max);
+            account.active = true;
+          }
+          if (me && Object.prototype.hasOwnProperty.call(me, 'droplets')) {
+            const d = Number(me.droplets);
+            account.droplets = Number.isFinite(d) ? Math.floor(d) : null;
+          }
+          if (me && Object.prototype.hasOwnProperty.call(me, 'extraColorsBitmap')) {
+            const b = Number(me.extraColorsBitmap);
+            account.extraColorsBitmap = Number.isFinite(b) ? Math.floor(b) : null;
+          }
+          if (me && me.name && !name) account.name = String(me.name);
+        } catch {}
+        try { if (!account.cf_clearance || account.cf_clearance.length < 30) account.active = false; } catch {}
         accounts.push(account);
         writeJson(ACCOUNTS_FILE, accounts);
         res.writeHead(201, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -673,14 +686,16 @@ function startServer(port, host) {
       const accounts = readJson(ACCOUNTS_FILE, []);
       const idx = accounts.findIndex(a => a.id === id);
       if (idx === -1) { res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'not found' })); return; }
-      const settings = readJson(SETTINGS_FILE, { cf_clearance: '' });
-      if (!settings.cf_clearance || settings.cf_clearance.length < 30) { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'cf_clearance missing' })); return; }
       const acct = accounts[idx];
+      const cf = acct && typeof acct.cf_clearance === 'string' ? acct.cf_clearance : '';
+      if (!cf || cf.length < 30) {
+        try { accounts[idx] = { ...acct, active: false }; writeJson(ACCOUNTS_FILE, accounts); } catch {}
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'cf_clearance missing for account' })); return; }
       (async () => {
         debugLog('refresh: begin got-scraping /me fetch', { accountId: id, name: acct && acct.name ? String(acct.name) : undefined });
         let me = null;
         try {
-          me = await fetchMe(settings.cf_clearance, acct.token);
+          me = await fetchMe(cf, acct.token);
         } catch (err) {
           const msg = (err && err.message) ? String(err.message) : String(err);
           const code = (err && err.code) ? String(err.code) : '';
