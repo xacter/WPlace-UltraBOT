@@ -88,7 +88,9 @@ Açılan pencerede üstten 'Application' sekmesini seçin (bulamazsanız sarı i
 ![Bölüm 4](https://i.imgur.com/sJvyiC6.png)
 
 Bota geri dönün.<br>
-"Accounts" butonuna, ardından "Settings" butonuna tıklayın. Kopyaladığınız `cf_clearance` değerini ilgili alana yapıştırıp kaydedin.<br>
+"Accounts" butonuna, ardından "Add Account" butonuna tıklayın. Kopyaladığınız değeri `cf_clearance` alanına yapıştırın.<br>
+Not!<br>
+Son güncelleme ile karşı önlemler alındığı için artık her hesap için bir `cf_clearance` değeri girmeniz gerekiyor. Bunu hızlıca yapmak için gizli sekmede wplace.live sayfasını açıp token'ı alın. Giriş yapmanız gerekmez.
 
 ---
 

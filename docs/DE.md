@@ -88,7 +88,9 @@ Klicke auf `cf_clearance` und kopiere den Wert unten.<br>
 ![Teil 4](https://i.imgur.com/sJvyiC6.png)
 
 Gehe zurück zum Bot.<br>
-Klicke auf die Schaltfläche „Accounts“ und dann auf „Settings“. Füge den kopierten Wert in das Feld `cf_clearance` ein und speichere.
+Klicke auf „Accounts“ und dann auf „Add Account“. Füge den kopierten Wert in das Feld `cf_clearance` ein.<br>
+Hinweis!<br>
+Mit dem neuesten Update wurden Gegenmaßnahmen eingeführt; daher musst du jetzt für jedes Konto einen `cf_clearance`-Wert eingeben. Am schnellsten geht es, wenn du die Seite wplace.live in einem Inkognito-Tab öffnest und dort den Token holst. Eine Anmeldung ist nicht erforderlich.
 
 ---
 

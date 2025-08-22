@@ -96,9 +96,10 @@
 
   ![第4步](https://i.imgur.com/sJvyiC6.png)
 
-  返回到bot界面。<br>
-  点击 “Accounts” 按钮，然后点击 “Settings” 按钮。
-  将你复制的值粘贴到标有 `cf_clearance` 的输入框中，然后保存。
+  返回到 bot 界面。<br>
+  点击 “Accounts”，然后点击 “Add Account”。将复制的值粘贴到 `cf_clearance` 字段中。<br>
+  注意！ <br>
+  随着最新更新引入了对策，现在需要为每个账户输入一个 `cf_clearance` 值。为了更快完成，只需在无痕窗口中打开 wplace.live 页面并获取 token，无需登录。
 
 
   ---
