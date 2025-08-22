@@ -152,6 +152,14 @@
     "purchaseSuccess": "Compra exitosa",
     "purchaseFail": "Compra fallida",
     "tokenPastedFromExtension": "Token pegado desde la extensión"
+  },
+  "favorites": {
+    "openTitle": "Abrir favoritos",
+    "starTitle": "Guardar ubicación",
+    "title": "Favoritos",
+    "saveTitle": "Guardar ubicación",
+    "nameLabel": "Nombre",
+    "load": "Cargar"
   }
 }
 

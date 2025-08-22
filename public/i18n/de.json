@@ -152,6 +152,14 @@
     "maxDesc": "Kapazität der maximalen Farbladungen erhöhen",
     "recTitle": "+30 Farbladungen",
     "recDesc": "Farbladungen aufladen"
+  },
+  "favorites": {
+    "openTitle": "Favoriten öffnen",
+    "starTitle": "Position speichern",
+    "title": "Favoriten",
+    "saveTitle": "Position speichern",
+    "nameLabel": "Name",
+    "load": "Laden"
   }
 }
 
