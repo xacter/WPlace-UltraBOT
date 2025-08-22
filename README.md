@@ -68,6 +68,9 @@
 
   ---
 
+  <details open>
+    <summary><h3>Chrome</h3></summary>
+    
   ![Part 2](https://i.imgur.com/taF0I2T.png)
 
   Open a new tab and go to this link: `chrome://extensions/`<br>
@@ -80,7 +83,16 @@
   ![](https://i.imgur.com/jPyzOr3.png)
 
   Select the `WPlace-Helper` folder. <br>
+  </details>
 
+  <details open>
+    <summary><h3>Firefox</h3></summary>
+    
+  Open a new tab and go to this link: `about:debugging#/runtime/this-firefox`<br>
+  Click `Load Temporary Add-on...` <br>
+  In `WPlace-Helper-FireFox` select `manifest.json` <br>
+  </details>
+  
   ---
 
   ![Part 3](https://i.imgur.com/YVyvw3a.png)
