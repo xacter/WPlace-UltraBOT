@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "WPlace Helper Firefix",
+  "version": "1.1",
+  "description": "Intercepts the pixel request and captures its token.",
+  "icons": {
+    "128": "images/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "cookies",
+	"contextualIdentities",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://wplace.live/*",
+    "https://*.wplace.live/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://wplace.live/*", "https://*.wplace.live/*"],
+      "js": ["scripts/content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["scripts/pageHook.js"],
+      "matches": ["https://wplace.live/*", "https://*.wplace.live/*"]
+    }
+  ],
+  "background": {
+    "scripts": ["scripts/background.js"]
+  },
+  "action": {
+    "default_popup": "public/popup.html"
+  }
+}
