@@ -1450,6 +1450,50 @@
     }
     resizeSelectionOverlay();
     window.addEventListener('resize', resizeSelectionOverlay);
+    // Background refresh and recent paint cache
+    const BACKGROUND_REFRESH_MS = 30 * 1000;
+    const RECENT_CACHE_MAX = 10000;
+    const OVERLAY_GRACE_MS = 3000;
+    let lastBackgroundRefresh = 0;
+    let isPainting = false;
+    const recentPaintCache = new Map();
+
+    function trimRecentPaint(now = Date.now()){
+      for (const [k, rec] of recentPaintCache){
+        if (now - rec.time > BACKGROUND_REFRESH_MS) recentPaintCache.delete(k);
+      }
+      while (recentPaintCache.size > RECENT_CACHE_MAX){
+        const oldest = recentPaintCache.keys().next().value;
+        if (oldest == null) break;
+        recentPaintCache.delete(oldest);
+      }
+    }
+    function addRecentPaint(x, y, colorId){
+      recentPaintCache.set(String(x)+','+String(y), { x, y, colorId, time: Date.now() });
+      trimRecentPaint();
+    }
+    function addRecentPaintBatch(g, coordsSlice, colorsSlice, tileW, tileH, base){
+      const colOffset = g.area - Number(base.x||0);
+      const rowOffset = g.no - Number(base.y||0);
+      const baseWx = colOffset * tileW;
+      const baseWy = rowOffset * tileH;
+      for (let i = 0; i < colorsSlice.length; i++){
+        const wx = baseWx + coordsSlice[i*2];
+        const wy = baseWy + coordsSlice[i*2+1];
+        addRecentPaint(wx, wy, colorsSlice[i]);
+      }
+    }
+    async function periodicBackgroundRefresh(){
+      const now = Date.now();
+      if (now - lastBackgroundRefresh < BACKGROUND_REFRESH_MS) return;
+      if (isPainting) return;
+      const ok = await reloadCurrentBackground();
+      if (ok){
+        drawSelectionOverlay();
+        setTimeout(() => { recentPaintCache.clear(); drawSelectionOverlay(); }, OVERLAY_GRACE_MS);
+      }
+    }
+    try { setInterval(() => { periodicBackgroundRefresh(); }, 1000); } catch {}
     const signLayer = document.getElementById('sign-layer');
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
@@ -2062,6 +2106,14 @@
       return { r: id.data[i], g: id.data[i+1], b: id.data[i+2], a: id.data[i+3] };
     }
     function getBasePixelColorAtWorld(wx, wy){
+      const key = String(Math.round(wx)) + ',' + String(Math.round(wy));
+      const rec = recentPaintCache.get(key);
+      if (rec){
+        try {
+          const rgb = getPaletteRgbById(rec.colorId);
+          if (rgb && rgb.length === 3) return { r: rgb[0], g: rgb[1], b: rgb[2], a: 255 };
+        } catch {}
+      }
       const baseId = ensureBaseImageData();
       if (!baseId) return null;
       const x = Math.round(wx);
@@ -2086,6 +2138,14 @@
     }
     // Composite color at world coords considering overlays when present
     function getCompositeColorAtWorld(wx, wy){
+      const key = String(Math.round(wx)) + ',' + String(Math.round(wy));
+      const rec = recentPaintCache.get(key);
+      if (rec){
+        try {
+          const rgb = getPaletteRgbById(rec.colorId);
+          if (rgb && rgb.length === 3) return { r: rgb[0], g: rgb[1], b: rgb[2], a: 255 };
+        } catch {}
+      }
       if (!img) return null;
       const w = img.width|0, h = img.height|0;
       try {
@@ -2176,6 +2236,21 @@
         const rect = canvas.getBoundingClientRect();
         selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
         selectionCtx.imageSmoothingEnabled = false;
+        try {
+          trimRecentPaint();
+          recentPaintCache.forEach(rec => {
+            const p = worldToScreen(rec.x, rec.y);
+            const x = Math.floor(p.x * dpr);
+            const y = Math.floor(p.y * dpr);
+            const s = Math.max(1, Math.floor(state.scale * dpr));
+            let rgb = null;
+            try { rgb = getPaletteRgbById(rec.colorId); } catch {}
+            if (rgb && rgb.length === 3) {
+              selectionCtx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+              selectionCtx.fillRect(x, y, s, s);
+            }
+          });
+        } catch {}
         const drawPixel = (xPx, yPx, sPx, colorId, fallbackColor) => {
           const s = Math.max(1, sPx|0);
           const x = xPx|0, y = yPx|0;
@@ -3710,6 +3785,7 @@
                 pendingZoomToItem = null;
               }
             } catch {}
+            lastBackgroundRefresh = Date.now();
             resolve(true);
           };
           image.onerror = () => resolve(false);
@@ -3756,6 +3832,7 @@
             pendingZoomToItem = null;
           }
         } catch {}
+        lastBackgroundRefresh = Date.now();
         resolve(true);
       };
       image.onerror = () => resolve(false);
@@ -6597,11 +6674,16 @@ if (startBtn) {
     } catch { return [{ area: (areaInput && areaInput.value) ? Number(areaInput.value) : 0, no: (noInput && noInput.value) ? Number(noInput.value) : 0, colors: data.colors.slice(), coords: data.coords.slice() }]; }
   })();
   (async () => {
+    isPainting = true;
+    const tileW = currentTileW || (img ? (img.width|0) : 0);
+    const tileH = currentTileH || (img ? (img.height|0) : 0);
+    const baseTile = getCurrentTileCoords();
+    try {
     // If selected image crosses into neighbors, ensure overlays are loaded before grouping
     try { if (!readyGlobalMode && sel) await ensureOverlaysForItemLoaded(sel); } catch {}
     let paintedAny = false;
     let missingTotal = 0;
-    let usedIds = []; 
+    let usedIds = [];
     let hadRequestError = false;
     let didReload = false;
     for (const g of groups) {
@@ -6631,9 +6713,11 @@ if (startBtn) {
             showToast(r.payload ? JSON.stringify(r.payload) : (r.text || r.error || t('messages.errorGeneric')), 'error', 3000);
             break;
           }
+        } else {
+          addRecentPaintBatch(g, coordsSlice, colorsSlice, tileW, tileH, baseTile);
         }
         offset += take;
-        usedIds.push(acc.id); 
+        usedIds.push(acc.id);
         try { await refreshAccountById(acc.id); } catch {}
       }
       if (offset > 0) paintedAny = true;
@@ -6641,7 +6725,6 @@ if (startBtn) {
     }
     if (paintedAny) {
       showToast(t('messages.painted'), 'success', 1800);
-      didReload = await reloadCurrentBackground();
       try { clearAllReadySelections(); } catch {}
       try { readyGlobalMode = false; } catch {}
       if (!autoMode) {
@@ -6661,7 +6744,7 @@ if (startBtn) {
         await loadAccounts();
         try { renderReadyAccountList(); } catch {}
         updateReadyPixelForSelectedAccounts();
-        const nextId = pickNextBestAccountId(usedIds); 
+        const nextId = pickNextBestAccountId(usedIds);
         if (nextId != null) {
           readySelectedAccountIds = [nextId];
           try { renderReadyAccountList(); } catch {}
@@ -6670,6 +6753,13 @@ if (startBtn) {
           if (autoSelectBtn) { autoSelectDeleteMode = false; autoSelectBtn.click(); }
         }
       } catch {}
+    }
+    } finally {
+      // Delay the next background refresh until 30s after the most recent
+      // paint batch completes so auto-selection doesn't race with a fresh
+      // background that might not yet reflect our paint.
+      lastBackgroundRefresh = Date.now();
+      isPainting = false;
     }
   })();
 /* else {
@@ -6735,7 +6825,6 @@ if (startBtn) {
         }
         if (assignedCount > 0) {
           showToast(t('messages.painted'), 'success', 1800);
-          didReload = await reloadCurrentBackground();
           try { clearAllReadySelections(); } catch {}
           try { readyGlobalMode = false; } catch {}
           if (!autoMode) {
