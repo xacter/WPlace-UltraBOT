@@ -153,5 +153,13 @@
     "purchaseSuccess": "购买成功",
     "purchaseFail": "购买失败",
     "tokenPastedFromExtension": "已从扩展粘贴 token"
+  },
+  "favorites": {
+    "openTitle": "打开收藏",
+    "starTitle": "保存位置",
+    "title": "收藏",
+    "saveTitle": "保存位置",
+    "nameLabel": "名称",
+    "load": "加载"
   }
 }

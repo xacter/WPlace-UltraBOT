@@ -153,6 +153,14 @@
     "purchaseSuccess": "Покупка успешна",
     "purchaseFail": "Покупка не удалась",
     "tokenPastedFromExtension": "Токен вставлен из расширения"
+  },
+  "favorites": {
+    "openTitle": "Открыть избранное",
+    "starTitle": "Сохранить местоположение",
+    "title": "Избранное",
+    "saveTitle": "Сохранить местоположение",
+    "nameLabel": "Имя",
+    "load": "Загрузить"
   }
 }
 

@@ -32,8 +32,7 @@
     "closeTitle": "Kapat"
   },
   "tabs": {
-    "accounts": "Hesaplar",
-    "settings": "Ayarlar"
+    "accounts": "Hesaplar"
   },
   "accounts": {
     "add": "Hesap ekle",
@@ -80,9 +79,7 @@
     "ditheringOn": "Dithering: ON",
     "ditheringOff": "Dithering: OFF"
   },
-  "settings": {
-    "cf_clearance": "cf_clearance"
-  },
+  "settings": {},
   "mosaic": {
     "title": "Mozaik",
     "use2": "2 kord kullan",
@@ -128,7 +125,7 @@
   "messages": {
     "selectAccountFirst": "Önce hesap seçin.",
     "maxPixelsReached": "Maksimum piksel sayısına ulaştınız: {limit}/{limit}",
-    "addCfClearancePrompt": "Önce Ayarlar sekmesinden cf_clearance değerini ekleyin (en az 30 karakter).",
+    
     "max12Accounts": "En fazla 12 hesap seçebilirsiniz.",
     "startRequirementsMissing": "Başlatmak için token girin, hesap seçin ve en az 1 piksel seçin.",
     "noSelectedImage": "Seçili resim yok.",
@@ -137,7 +134,7 @@
     "insufficientPixelPower": "Yetersiz piksel gücü: {n} piksel gönderilemedi.",
     "imageLoadFailed": "Resim yüklenemedi. Değerleri kontrol edin.",
     "tokenAlreadyExists": "Bu token ile daha önce hesap kaydedildi.",
-    "cfCannotBeClearedWithAccounts": "Hesap varken cf_clearance boş bırakılamaz.",
+    
     "cfClearanceChange": "Lütfen cf_clearance değiştirin.",
     "premiumColorLimitReached": "Seçilen premium renk için yeterli kapasite yok.",
     "accountNotFound": "Hesap bulunamadı",
@@ -156,6 +153,14 @@
     "maxDesc": "Maksimum boyama hakkı kapasitesini artır",
     "recTitle": "+30 Boyama Hakkı",
     "recDesc": "Boyama haklarını yenile"
+  },
+  "favorites": {
+    "openTitle": "Favorileri aç",
+    "starTitle": "Konumu kaydet",
+    "title": "Favoriler",
+    "saveTitle": "Konumu kaydet",
+    "nameLabel": "Ad",
+    "load": "Yükle"
   }
 }
 

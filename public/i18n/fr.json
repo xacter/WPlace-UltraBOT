@@ -153,6 +153,14 @@
     "purchaseSuccess": "Achat réussi",
     "purchaseFail": "Échec de l'achat",
     "tokenPastedFromExtension": "Jeton collé depuis l’extension"
+  },
+  "favorites": {
+    "openTitle": "Ouvrir les favoris",
+    "starTitle": "Enregistrer l’emplacement",
+    "title": "Favoris",
+    "saveTitle": "Enregistrer l’emplacement",
+    "nameLabel": "Nom",
+    "load": "Charger"
   }
 }
 

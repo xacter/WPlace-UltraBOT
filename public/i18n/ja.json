@@ -153,6 +153,14 @@
     "purchaseSuccess": "購入に成功しました",
     "purchaseFail": "購入に失敗しました",
     "tokenPastedFromExtension": "拡張機能からトークンを貼り付けました"
+  },
+  "favorites": {
+    "openTitle": "お気に入りを開く",
+    "starTitle": "場所を保存",
+    "title": "お気に入り",
+    "saveTitle": "場所を保存",
+    "nameLabel": "名前",
+    "load": "読み込む"
   }
 }
 

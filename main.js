@@ -97,6 +97,7 @@ async function getGotScrapingFn() {
 const DB_DIR = path.resolve(process.cwd(), 'db');
 const ACCOUNTS_FILE = path.join(DB_DIR, 'accounts.json');
 const SETTINGS_FILE = path.join(DB_DIR, 'settings.json');
+const FAVORITES_FILE = path.join(DB_DIR, 'favorites.json');
 
 function ensureDb() {
   try { fs.mkdirSync(DB_DIR, { recursive: true }); } catch {}
@@ -105,6 +106,9 @@ function ensureDb() {
   }
   if (!fs.existsSync(SETTINGS_FILE)) {
     try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ cf_clearance: '', worldX: null, worldY: null }, null, 2)); } catch {}
+  }
+  if (!fs.existsSync(FAVORITES_FILE)) {
+    try { fs.writeFileSync(FAVORITES_FILE, JSON.stringify([], null, 2)); } catch {}
   }
 }
 
@@ -344,6 +348,84 @@ function startServer(port, host) {
         res.writeHead(204, { 'Access-Control-Allow-Origin': '*' });
         res.end();
       }).catch(() => { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); });
+      return;
+    }
+
+    // Favorites API
+    if (parsed.pathname === '/api/favorites' && req.method === 'GET') {
+      const favorites = readJson(FAVORITES_FILE, []);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify(favorites));
+      return;
+    }
+    if (parsed.pathname === '/api/favorites' && req.method === 'POST') {
+      readJsonBody(req).then((body) => {
+        try {
+          const name = (body && typeof body.name === 'string') ? body.name : '';
+          const modeRaw = (body && typeof body.mode === 'string') ? body.mode : '';
+          const mode = (modeRaw === 'mosaic' || modeRaw === 'single') ? modeRaw : 'single';
+          const coordsIn = Array.isArray(body && body.coords) ? body.coords : [];
+          const coords = coordsIn.map((c) => ({ x: Number(c && c.x), y: Number(c && c.y) }))
+            .filter((c) => Number.isFinite(c.x) && Number.isFinite(c.y));
+          if (!coords.length) {
+            res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: 'invalid coords' }));
+            return;
+          }
+          const favs = readJson(FAVORITES_FILE, []);
+          const sameLoc = (a, b) => a && b && a.mode === b.mode && JSON.stringify(a.coords) === JSON.stringify(b.coords);
+          const incoming = { name, mode, coords };
+          const idx = favs.findIndex((f) => sameLoc(f, incoming));
+          let status = 200;
+          if (idx >= 0) {
+            // Update name if provided
+            const current = favs[idx] || {};
+            favs[idx] = { ...current, name: name || current.name || '' };
+          } else {
+            favs.push(incoming);
+            status = 201;
+          }
+          writeJson(FAVORITES_FILE, favs);
+          res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify(incoming));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'failed to save' }));
+        }
+      }).catch(() => {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'invalid json' }));
+      });
+      return;
+    }
+    if (parsed.pathname === '/api/favorites' && req.method === 'DELETE') {
+      readJsonBody(req).then((body) => {
+        try {
+          const modeRaw = (body && typeof body.mode === 'string') ? body.mode : '';
+          const mode = (modeRaw === 'mosaic' || modeRaw === 'single') ? modeRaw : '';
+          const coordsIn = Array.isArray(body && body.coords) ? body.coords : [];
+          const coords = coordsIn.map((c) => ({ x: Number(c && c.x), y: Number(c && c.y) }))
+            .filter((c) => Number.isFinite(c.x) && Number.isFinite(c.y));
+          if (!mode || !coords.length) {
+            res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: 'invalid payload' }));
+            return;
+          }
+          const favs = readJson(FAVORITES_FILE, []);
+          const sameLoc = (a, b) => a && b && a.mode === b.mode && JSON.stringify(a.coords) === JSON.stringify(b.coords);
+          const target = { mode, coords };
+          const next = favs.filter((f) => !sameLoc(f, target));
+          writeJson(FAVORITES_FILE, next);
+          res.writeHead(204);
+          res.end();
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'failed to delete' }));
+        }
+      }).catch(() => {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'invalid json' }));
+      });
       return;
     }
 
