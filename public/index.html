@@ -1453,15 +1453,11 @@
     // Background refresh and recent paint cache
     const BACKGROUND_REFRESH_MS = 30 * 1000;
     const RECENT_CACHE_MAX = 10000;
-    const OVERLAY_GRACE_MS = 3000;
-    let lastBackgroundRefresh = 0;
     let isPainting = false;
     const recentPaintCache = new Map();
+    let refreshTimer = null;
 
-    function trimRecentPaint(now = Date.now()){
-      for (const [k, rec] of recentPaintCache){
-        if (now - rec.time > BACKGROUND_REFRESH_MS) recentPaintCache.delete(k);
-      }
+    function trimRecentPaint(){
       while (recentPaintCache.size > RECENT_CACHE_MAX){
         const oldest = recentPaintCache.keys().next().value;
         if (oldest == null) break;
@@ -1483,17 +1479,27 @@
         addRecentPaint(wx, wy, colorsSlice[i]);
       }
     }
-    async function periodicBackgroundRefresh(){
-      const now = Date.now();
-      if (now - lastBackgroundRefresh < BACKGROUND_REFRESH_MS) return;
-      if (isPainting) return;
-      const ok = await reloadCurrentBackground();
-      if (ok){
-        drawSelectionOverlay();
-        setTimeout(() => { recentPaintCache.clear(); drawSelectionOverlay(); }, OVERLAY_GRACE_MS);
-      }
+    function scheduleBackgroundRefresh(delay = BACKGROUND_REFRESH_MS){
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(async () => {
+        if (isPainting){
+          scheduleBackgroundRefresh(1000);
+          return;
+        }
+        if (recentPaintCache.size > 0){
+          recentPaintCache.clear();
+          drawSelectionOverlay();
+          console.log('Pixel cache cleared');
+        }
+        const ok = await reloadCurrentBackground();
+        if (ok){
+          drawSelectionOverlay();
+          console.log('Background refreshed');
+        }
+        scheduleBackgroundRefresh();
+      }, delay);
     }
-    try { setInterval(() => { periodicBackgroundRefresh(); }, 1000); } catch {}
+    scheduleBackgroundRefresh();
     const signLayer = document.getElementById('sign-layer');
     const signOutline = document.getElementById('sign-outline');
     const signFileInput = document.getElementById('sign-file');
@@ -3743,7 +3749,8 @@
       render();
     }
 
- async function reloadCurrentBackground() {
+async function reloadCurrentBackground() {
+  if (recentPaintCache.size > 0) return false;
   try {
     const saved = JSON.parse(localStorage.getItem('lastFetch') || 'null');
     if (saved) {
@@ -3785,7 +3792,6 @@
                 pendingZoomToItem = null;
               }
             } catch {}
-            lastBackgroundRefresh = Date.now();
             resolve(true);
           };
           image.onerror = () => resolve(false);
@@ -3832,7 +3838,6 @@
             pendingZoomToItem = null;
           }
         } catch {}
-        lastBackgroundRefresh = Date.now();
         resolve(true);
       };
       image.onerror = () => resolve(false);
@@ -6675,6 +6680,7 @@ if (startBtn) {
   })();
   (async () => {
     isPainting = true;
+    clearTimeout(refreshTimer);
     const tileW = currentTileW || (img ? (img.width|0) : 0);
     const tileH = currentTileH || (img ? (img.height|0) : 0);
     const baseTile = getCurrentTileCoords();
@@ -6755,11 +6761,8 @@ if (startBtn) {
       } catch {}
     }
     } finally {
-      // Delay the next background refresh until 30s after the most recent
-      // paint batch completes so auto-selection doesn't race with a fresh
-      // background that might not yet reflect our paint.
-      lastBackgroundRefresh = Date.now();
       isPainting = false;
+      scheduleBackgroundRefresh();
     }
   })();
 /* else {
