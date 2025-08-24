@@ -6268,6 +6268,11 @@ function loadImage(area, no, preserveView = false) {
             }
           } catch {}
         });
+		
+		 es.addEventListener('accounts_updated', (ev) => {
+          showToast('Account list was updated remotely!', 'success', 2000);
+          loadAccounts(); 
+        });
       } catch {}
     })();
     const autoModeTrack = document.getElementById('auto-mode-toggle');
