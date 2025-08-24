@@ -380,7 +380,7 @@
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      width: min(800px, 95vw);
+      width: 95vw;
       max-width: 95vw;
       color: #e5e7eb;
       padding: 16px 20px;
@@ -517,7 +517,7 @@
       bottom: 16px;
       left: 20px;
     }
-    .modal-body { padding-bottom: 56px; min-height: 300px; max-height: 400px; overflow-y: auto; }
+    .modal-body { padding-bottom: 56px; min-height: 300px; max-height: 90vh; overflow-y: auto; }
     .modal-footer.split { justify-content: space-between; }
     .accounts-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; margin-right: 10px; }
     #btn-check-all { margin-left: 8px; }
@@ -856,10 +856,8 @@
           <div class="controls-row" id="select-mode-controls">
             <div class="select-mode-wrap">
               <span id="select-mode-label-left" class="select-mode-label active" data-i18n="ready.selectMode.multi">Önce çok yerden seç</span>
-              <button id="select-mode-toggle" class="select-mode-track" type="button" role="switch" aria-checked="false" aria-label="Select mode">
-                <span class="select-mode-knob"></span>
-              </button>
               <span id="select-mode-label-right" class="select-mode-label" data-i18n="ready.selectMode.frame">Önce çerçeveyi seç</span>
+              <span id="select-mode-label-random" class="select-mode-label" data-i18n="ready.selectMode.random">Önce rastgele seç</span>
             </div>
           </div>
         </div>
@@ -6276,21 +6274,20 @@ function loadImage(area, no, preserveView = false) {
     const autoStartTrack = document.getElementById('auto-start-toggle');
     const autoStartLabelLeft = document.getElementById('auto-start-label-left');
     const autoStartLabelRight = document.getElementById('auto-start-label-right');
-    const selectModeTrack = document.getElementById('select-mode-toggle');
     const selectModeLabelLeft = document.getElementById('select-mode-label-left');
     const selectModeLabelRight = document.getElementById('select-mode-label-right');
+    const selectModeLabelRandom = document.getElementById('select-mode-label-random');
     let selectMode = 'multi';
     let autoMode = false;
     let autoStart = false;
 
     function updateSelectModeUi(){
-      try { if (selectModeTrack) selectModeTrack.classList.toggle('on', selectMode === 'frame'); } catch {}
-      try { if (selectModeTrack) selectModeTrack.setAttribute('aria-checked', selectMode === 'frame' ? 'true' : 'false'); } catch {}
       try { if (selectModeLabelLeft) selectModeLabelLeft.classList.toggle('active', selectMode === 'multi'); } catch {}
       try { if (selectModeLabelRight) selectModeLabelRight.classList.toggle('active', selectMode === 'frame'); } catch {}
+      try { if (selectModeLabelRandom) selectModeLabelRandom.classList.toggle('active', selectMode === 'random'); } catch {}
     }
     function setSelectMode(mode){
-      selectMode = (mode === 'frame') ? 'frame' : 'multi';
+      selectMode = mode;
       updateSelectModeUi();
     }
     function updateAutoModeUi(){
@@ -6327,9 +6324,9 @@ function loadImage(area, no, preserveView = false) {
     if (autoModeLabelRight) autoModeLabelRight.addEventListener('click', () => { autoMode = true; try { localStorage.setItem('ready.autoMode','1'); } catch {}; updateAutoModeUi(); });
     if (autoStartLabelLeft) autoStartLabelLeft.addEventListener('click', () => { autoStart = false; try { localStorage.setItem('ready.autoStart','0'); } catch {}; updateAutoStartUi(); });
     if (autoStartLabelRight) autoStartLabelRight.addEventListener('click', () => { autoStart = true; try { localStorage.setItem('ready.autoStart','1'); } catch {}; updateAutoStartUi(); });
-    if (selectModeTrack) selectModeTrack.addEventListener('click', () => setSelectMode(selectMode === 'frame' ? 'multi' : 'frame'));
     if (selectModeLabelLeft) selectModeLabelLeft.addEventListener('click', () => setSelectMode('multi'));
     if (selectModeLabelRight) selectModeLabelRight.addEventListener('click', () => setSelectMode('frame'));
+    if (selectModeLabelRandom) selectModeLabelRandom.addEventListener('click', () => setSelectMode('random'));
 
     function getAccountById(id) {
       const idStr = String(id);
@@ -6654,9 +6651,22 @@ function loadImage(area, no, preserveView = false) {
         let sx = start.x|0, sy = start.y|0;
         const totalCells = w * h;
         let traversed = 0;
-        while (addedCount < need && traversed < totalCells) {
+        let notPainted = [];
+        while (traversed < totalCells) {
           if (isOpaquePixel(selItem, sx, sy) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, sx, sy))) {
-            const pid = (selectedOverrideColorId != null && selectedOverrideColorId !== 0)
+            notPainted.push({ sx, sy });
+          }
+          sx += 1;
+          if (sx >= w) { sx = 0; sy += 1; }
+          if (sy >= h) { sy = 0; }
+          traversed++;
+        }
+        if(selectMode === 'random'){
+          notPainted = shuffle(notPainted);
+        }
+        for (const { sx, sy } of notPainted) {
+          if(addedCount >= need) break;
+          const pid = (selectedOverrideColorId != null && selectedOverrideColorId !== 0)
               ? selectedOverrideColorId
               : getItemPixelPaletteId(selItem, sx, sy);
             if (pid != null && pid !== 0 && isPremiumColorId(pid)){
@@ -6669,13 +6679,8 @@ function loadImage(area, no, preserveView = false) {
               const didAdd = addPixelSelection(selItem, sx, sy, selectedOverrideColorId != null ? selectedOverrideColorId : null);
               if (didAdd) addedCount++;
             }
-          }
-          sx += 1;
-          if (sx >= w) { sx = 0; sy += 1; }
-          if (sy >= h) { sy = 0; }
-          traversed++;
-          }
         }
+      }
         updateReadySelectionLabel();
         updatePixelMarkers();
         render();
@@ -7404,6 +7409,14 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
       readyTokenInput.addEventListener('input', () => {
         updateStartEnabled();
       });
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
     }
   </script>
 </body>
