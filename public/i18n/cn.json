@@ -123,7 +123,8 @@
     "maxTitle": "+5 最大次数",
     "maxDesc": "提高最大上色次数容量",
     "recTitle": "+30 上色次数",
-    "recDesc": "充值上色次数"
+    "recDesc": "充值上色次数",
+    "autoBuy": "自动购买"
   },
   "controls": {
     "movement": "移动"

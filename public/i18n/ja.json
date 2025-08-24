@@ -123,7 +123,8 @@
     "maxTitle": "+5 最大チャージ",
     "maxDesc": "塗装チャージの最大容量を増やす",
     "recTitle": "+30 塗装チャージ",
-    "recDesc": "塗装チャージを補充"
+    "recDesc": "塗装チャージを補充",
+    "autoBuy": "自動購入"
   },
   "controls": {
     "movement": "移動"

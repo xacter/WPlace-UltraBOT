@@ -257,6 +257,76 @@ async function fetchMePuppeteer(cf_clearance, token) {
   }
 }
 
+async function purchaseProduct(cf_clearance, token, productId, amount) {
+  const payload = JSON.stringify({ product: { id: productId, amount } });
+  try {
+    const gotScraping = await getGotScrapingFn();
+    if (gotScraping) {
+      const r = await gotScraping({
+        url: 'https://backend.wplace.live/purchase',
+        method: 'POST',
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'application/json, text/plain, */*',
+          'Origin': 'https://wplace.live',
+          'Referer': 'https://wplace.live/',
+          'Content-Type': 'application/json',
+          'Cookie': `cf_clearance=${cf_clearance || ''}; j=${token || ''}`
+        },
+        body: payload,
+        throwHttpErrors: false,
+        decompress: true,
+        agent: { https: HTTPS_AGENT },
+        timeout: { request: 30000 }
+      });
+      const status = r && (r.statusCode || r.status) || 0;
+      if (status === 200) {
+        try {
+          const data = typeof r.body === 'string' ? JSON.parse(r.body) : r.body;
+          return data && data.success === true;
+        } catch {}
+      }
+      return false;
+    }
+  } catch {}
+
+  return new Promise((resolve) => {
+    try {
+      const options = {
+        hostname: 'backend.wplace.live',
+        path: '/purchase',
+        method: 'POST',
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'application/json, text/plain, */*',
+          'Origin': 'https://wplace.live',
+          'Referer': 'https://wplace.live/',
+          'Content-Type': 'application/json',
+          'Cookie': `cf_clearance=${cf_clearance || ''}; j=${token || ''}`
+        },
+        agent: HTTPS_AGENT
+      };
+      const req = https.request(options, (resp) => {
+        let buf = '';
+        resp.on('data', (d) => { buf += d; });
+        resp.on('end', () => {
+          let ok = false;
+          try {
+            const data = JSON.parse(buf);
+            ok = resp.statusCode === 200 && data && data.success === true;
+          } catch {}
+          resolve(ok);
+        });
+      });
+      req.on('error', () => resolve(false));
+      req.write(payload);
+      req.end();
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
 function startServer(port, host) {
   const server = http.createServer((req, res) => {
     const parsed = url.parse(req.url, true);
@@ -699,6 +769,8 @@ function startServer(port, host) {
         }
         if (body.pixelRight != null) updated.pixelRight = body.pixelRight;
         if (typeof body.active === 'boolean') updated.active = body.active;
+        if (body.autobuy === null) { updated.autobuy = null; }
+        else if (body.autobuy === 'max' || body.autobuy === 'rec') { updated.autobuy = body.autobuy; }
         try {
           const cf = updated && typeof updated.cf_clearance === 'string' ? updated.cf_clearance : '';
           if (!cf || cf.length < 30) updated.active = false;
@@ -733,7 +805,7 @@ function startServer(port, host) {
             return;
           }
         } catch {}
-        const account = { id: Date.now(), name, token, cf_clearance, pixelCount: null, pixelMax: null, droplets: null, extraColorsBitmap: null, active: false };
+        const account = { id: Date.now(), name, token, cf_clearance, pixelCount: null, pixelMax: null, droplets: null, extraColorsBitmap: null, active: false, autobuy: null };
         try {
           const me = await fetchMe(cf_clearance, token);
           if (me && me.charges) {
@@ -809,6 +881,37 @@ function startServer(port, host) {
         if (me && Object.prototype.hasOwnProperty.call(me, 'extraColorsBitmap')) {
           const b = Number(me.extraColorsBitmap);
           acct.extraColorsBitmap = Number.isFinite(b) ? Math.floor(b) : null;
+        }
+        if (acct.autobuy === 'max' || acct.autobuy === 'rec') {
+          const price = 500;
+          const productId = acct.autobuy === 'max' ? 70 : 80;
+          const droplets = Number(acct.droplets || 0);
+          const qty = Math.floor(droplets / price);
+          if (qty > 0) {
+            try {
+              const ok = await purchaseProduct(cf, acct.token, productId, qty);
+              if (ok) {
+                try {
+                  const me2 = await fetchMe(cf, acct.token);
+                  if (me2 && me2.charges) {
+                    acct.pixelCount = Math.floor(Number(me2.charges.count));
+                    acct.pixelMax = Math.floor(Number(me2.charges.max));
+                    acct.active = true;
+                  } else {
+                    acct.active = false;
+                  }
+                  if (me2 && Object.prototype.hasOwnProperty.call(me2, 'droplets')) {
+                    const d2 = Number(me2.droplets);
+                    acct.droplets = Number.isFinite(d2) ? Math.floor(d2) : null;
+                  }
+                  if (me2 && Object.prototype.hasOwnProperty.call(me2, 'extraColorsBitmap')) {
+                    const b2 = Number(me2.extraColorsBitmap);
+                    acct.extraColorsBitmap = Number.isFinite(b2) ? Math.floor(b2) : null;
+                  }
+                } catch {}
+              }
+            } catch {}
+          }
         }
         accounts[idx] = acct;
         writeJson(ACCOUNTS_FILE, accounts);

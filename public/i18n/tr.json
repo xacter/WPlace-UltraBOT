@@ -151,7 +151,8 @@
     "maxTitle": "+5 Maks. Hak",
     "maxDesc": "Maksimum boyama hakkı kapasitesini artır",
     "recTitle": "+30 Boyama Hakkı",
-    "recDesc": "Boyama haklarını yenile"
+    "recDesc": "Boyama haklarını yenile",
+    "autoBuy": "Oto satın al"
   },
   "favorites": {
     "openTitle": "Favorileri aç",

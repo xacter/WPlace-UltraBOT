@@ -151,7 +151,8 @@
     "maxTitle": "+5 Max. Ladungen",
     "maxDesc": "Kapazität der maximalen Farbladungen erhöhen",
     "recTitle": "+30 Farbladungen",
-    "recDesc": "Farbladungen aufladen"
+    "recDesc": "Farbladungen aufladen",
+    "autoBuy": "Automatisch kaufen"
   },
   "favorites": {
     "openTitle": "Favoriten öffnen",

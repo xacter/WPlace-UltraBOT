@@ -123,7 +123,8 @@
     "maxTitle": "+5 Charges Max.",
     "maxDesc": "Augmenter la capacité maximale de charges de peinture",
     "recTitle": "+30 Charges de peinture",
-    "recDesc": "Recharger les charges de peinture"
+    "recDesc": "Recharger les charges de peinture",
+    "autoBuy": "Achat auto"
   },
   "controls": {
     "movement": "Déplacement"
