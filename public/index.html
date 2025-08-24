@@ -6532,45 +6532,82 @@ function loadImage(area, no, preserveView = false) {
       const size = w * h;
       const idxOf = (x, y) => y * w + x;
       const mask = new Uint8Array(size);
-      
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          if (isOpaquePixel(selItem, x, y) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, x, y))) {
+          if (isOpaquePixel(selItem, x, y)) {
             mask[idxOf(x,y)] = 1;
           }
         }
       }
-      let added = 0;
-      const isBoundary = (x, y) => {
+      const layer = new Int32Array(size);
+      for (let i = 0; i < size; i++) layer[i] = -1;
+      const qx = new Int32Array(size);
+      const qy = new Int32Array(size);
+      let qh = 0, qt = 0;
+      function push(x, y, l){
         const i = idxOf(x,y);
-        if (mask[i] === 0) return false;
-        if (x === 0 || mask[i-1] === 0) return true;
-        if (x === w-1 || mask[i+1] === 0) return true;
-        if (y === 0 || mask[i-w] === 0) return true;
-        if (y === h-1 || mask[i+w] === 0) return true;
-        return false;
-      };
-      while (added < need) {
-        const boundary = [];
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            if (isBoundary(x, y)) boundary.push({ x, y });
+        layer[i] = l;
+        qx[qt] = x; qy[qt] = y; qt++;
+      }
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = idxOf(x,y);
+          if (!mask[i]) continue;
+          if (x === 0 || x === w-1 || y === 0 || y === h-1 ||
+              !mask[idxOf(x-1,y)] || !mask[idxOf(x+1,y)] ||
+              !mask[idxOf(x,y-1)] || !mask[idxOf(x,y+1)]) {
+            push(x, y, 0);
           }
         }
-        if (boundary.length === 0) break;
-        for (let k = 0; k < boundary.length && added < need; k++) {
-          const p = boundary[k];
-          if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)){
-            const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
-            if (!(remain > 0)) { added = need; break; }
-          }
-          const did = addPixelSelection(selItem, p.x, p.y, selectedOverrideColorId != null ? selectedOverrideColorId : null);
-          if (did) added++;
+      }
+      while (qh < qt) {
+        const x = qx[qh];
+        const y = qy[qh];
+        const l = layer[idxOf(x,y)];
+        qh++;
+        const nl = l + 1;
+        if (x > 0) {
+          const i = idxOf(x-1,y);
+          if (mask[i] && layer[i] === -1) push(x-1, y, nl);
         }
-        for (let k = 0; k < boundary.length; k++) {
-          const p = boundary[k];
-          mask[idxOf(p.x, p.y)] = 0;
+        if (x < w-1) {
+          const i = idxOf(x+1,y);
+          if (mask[i] && layer[i] === -1) push(x+1, y, nl);
         }
+        if (y > 0) {
+          const i = idxOf(x,y-1);
+          if (mask[i] && layer[i] === -1) push(x, y-1, nl);
+        }
+        if (y < h-1) {
+          const i = idxOf(x,y+1);
+          if (mask[i] && layer[i] === -1) push(x, y+1, nl);
+        }
+      }
+      const buckets = [];
+      for (let i = 0; i < size; i++) {
+        const l = layer[i];
+        if (l >= 0) {
+          if (!buckets[l]) buckets[l] = [];
+          buckets[l].push({ x: i % w, y: (i / w) | 0 });
+        }
+      }
+      const order = [];
+      for (let i = 0; i < buckets.length; i++) {
+        const b = buckets[i];
+        if (b) for (let j = 0; j < b.length; j++) order.push(b[j]);
+      }
+      const map = getSelectedMap(selItem);
+      let added = 0;
+      for (let i = 0; i < order.length && added < need; i++) {
+        const p = order[i];
+        if (map && map.has(keyFor(p.x, p.y))) continue;
+        if (selectedOverrideColorId == null && isSamePaletteIdAsBase(selItem, p.x, p.y)) continue;
+        if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)) {
+          const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+          if (!(remain > 0)) break;
+        }
+        const did = addPixelSelection(selItem, p.x, p.y, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+        if (did) added++;
       }
       return added;
     }
