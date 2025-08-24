@@ -1811,17 +1811,22 @@
         try { if (btn._mvInt) { clearInterval(btn._mvInt); btn._mvInt = null; } } catch {}
         try { if (btn._mvTmo) { clearTimeout(btn._mvTmo); btn._mvTmo = null; } } catch {}
       };
-      btn.addEventListener('click', (e) => { e.preventDefault(); moveSelectedBy(dx, dy, e && e.shiftKey ? 5 : 1); });
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (btn._skipNextClick) { btn._skipNextClick = false; return; }
+        moveSelectedBy(dx, dy, e && e.shiftKey ? 5 : 1);
+      });
       btn.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         const step = e && e.shiftKey ? 5 : 1;
         moveSelectedBy(dx, dy, step);
+        btn._skipNextClick = true;
         try { btn.setPointerCapture(e.pointerId); } catch {}
         btn._mvTmo = setTimeout(() => {
           btn._mvInt = setInterval(() => moveSelectedBy(dx, dy, step), 50);
         }, 250);
       });
-      const end = () => { stop(); };
+      const end = () => { stop(); setTimeout(() => { btn._skipNextClick = false; }, 0); };
       btn.addEventListener('pointerup', end);
       btn.addEventListener('pointercancel', end);
       btn.addEventListener('pointerleave', end);
@@ -4072,8 +4077,9 @@ function loadImage(area, no, preserveView = false) {
         }
         if (!(it.locked || it.lockedByReady)) {
           signDragging = true;
-          signWorldOffsetX = Math.floor(worldX) - (it.worldX || 0);
-          signWorldOffsetY = Math.floor(worldY) - (it.worldY || 0);
+          // Preserve fractional click offset to avoid pixel jumps when dragging
+          signWorldOffsetX = worldX - (it.worldX || 0);
+          signWorldOffsetY = worldY - (it.worldY || 0);
         }
         render();
         if (isReadyOpen()) {
