@@ -154,7 +154,8 @@
     "maxTitle": "+5 Max. Charges",
     "maxDesc": "Increase your maximum paint charges capacity",
     "recTitle": "+30 Paint Charges",
-    "recDesc": "Recharge paint charges"
+    "recDesc": "Recharge paint charges",
+    "autoBuy": "Auto-buy"
   },
   "favorites": {
     "openTitle": "Open favorites",

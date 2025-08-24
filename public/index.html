@@ -623,7 +623,9 @@
     .select-mode-label.active { color: #22d3ee; opacity: 1; }
     .select-mode-track { position: relative; width: 44px; height: 24px; border-radius: 9999px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; padding: 0; }
     .select-mode-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #e5e7eb; transition: transform 0.18s ease; }
+    .select-mode-track.on { background: rgba(34,211,238,0.35); border-color: rgba(34,211,238,0.45); }
     .select-mode-track.on .select-mode-knob { transform: translateX(20px); }
+    .shop-auto-wrap { margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; }
     /* Auto mode controls reuse select-mode styles */
     #auto-mode-controls { justify-content: center; }
     .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
@@ -932,6 +934,10 @@
                 <button class="app-btn shop-qty-btn" id="shop-max-max" type="button">MAX</button>
               </div>
               <div class="shop-pill" id="shop-max-price" role="button" tabindex="0">💧 500 Droplets</div>
+              <div class="shop-auto-wrap">
+                <span class="select-mode-label" data-i18n="shop.autoBuy">Auto-buy</span>
+                <button class="select-mode-track" id="shop-max-auto" type="button" role="switch" aria-checked="false" aria-label="Auto-buy"><span class="select-mode-knob"></span></button>
+              </div>
             </div>
             <div class="shop-card" id="shop-card-recharge">
               <div class="shop-icon">🩸</div>
@@ -944,6 +950,10 @@
                 <button class="app-btn shop-qty-btn" id="shop-rec-max" type="button">MAX</button>
               </div>
               <div class="shop-pill" id="shop-rec-price">💧 500 Droplets</div>
+              <div class="shop-auto-wrap">
+                <span class="select-mode-label" data-i18n="shop.autoBuy">Auto-buy</span>
+                <button class="select-mode-track" id="shop-rec-auto" type="button" role="switch" aria-checked="false" aria-label="Auto-buy"><span class="select-mode-knob"></span></button>
+              </div>
             </div>
             <div class="shop-card" id="shop-card-premium">
               <div class="shop-icon">🌈</div>
@@ -1914,6 +1924,8 @@
     const shopRecMaxBtn = document.getElementById('shop-rec-max');
     const shopRecQtyEl = document.getElementById('shop-rec-qty');
     const shopRecPriceEl = document.getElementById('shop-rec-price');
+    const shopMaxAutoBtn = document.getElementById('shop-max-auto');
+    const shopRecAutoBtn = document.getElementById('shop-rec-auto');
     const shopPremiumPaletteWrap = document.getElementById('shop-premium-palette');
     const shopPremiumOwnedWrap = document.getElementById('shop-premium-owned');
     const shopPremiumBuyBtn = document.getElementById('shop-premium-buy');
@@ -5166,12 +5178,17 @@ function loadImage(area, no, preserveView = false) {
         const unitMax = 500, unitRec = 500;
         if (shopMaxPriceEl) shopMaxPriceEl.textContent = '💧 ' + (unitMax * 1) + ' Droplets';
         if (shopRecPriceEl) shopRecPriceEl.textContent = '💧 ' + (unitRec * 1) + ' Droplets';
+        const maxNameEl = document.getElementById('shop-max-name');
+        if (maxNameEl) maxNameEl.textContent = t('shop.maxTitle');
+        const recNameEl = document.getElementById('shop-rec-name');
+        if (recNameEl) recNameEl.textContent = t('shop.recTitle');
       } catch {}
       // set account-specific premium colors bitmap for filtering
       try { shopExtraColorsBitmap = Number(row && row.extraColorsBitmap != null ? row.extraColorsBitmap : 0) || 0; } catch { shopExtraColorsBitmap = 0; }
       try { renderPremiumPalette(); } catch {}
       try { updateShopButtonsDisabled(); } catch {}
       try { shopSelectedPremiumColorId = null; updatePremiumPaletteSelectionUi(); } catch {}
+      try { updateShopAutobuyUi(); } catch {}
       try {
         if (shopPremiumBuyBtn) {
           shopPremiumBuyBtn.setAttribute('aria-disabled', 'true');
@@ -5311,10 +5328,47 @@ function loadImage(area, no, preserveView = false) {
       } catch {}
     }
 
+    function updateShopAutobuyUi(){
+      const val = shopCurrentAccount && shopCurrentAccount.autobuy;
+      try {
+        const onMax = val === 'max';
+        if (shopMaxAutoBtn) {
+          shopMaxAutoBtn.setAttribute('aria-checked', onMax ? 'true' : 'false');
+          shopMaxAutoBtn.classList.toggle('on', onMax);
+        }
+        const onRec = val === 'rec';
+        if (shopRecAutoBtn) {
+          shopRecAutoBtn.setAttribute('aria-checked', onRec ? 'true' : 'false');
+          shopRecAutoBtn.classList.toggle('on', onRec);
+        }
+      } catch {}
+    }
+
+    async function toggleAutobuy(which){
+      const account = shopCurrentAccount;
+      if (!account) return;
+      const newVal = account.autobuy === which ? null : which;
+      try {
+        const res = await fetch('/api/accounts/' + encodeURIComponent(String(account.id)), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ autobuy: newVal })
+        });
+        const data = await res.json();
+        if (res.ok && data) {
+          shopCurrentAccount = data;
+          const idx = Array.isArray(accountsData) ? accountsData.findIndex(a => a && a.id === data.id) : -1;
+          if (idx !== -1) accountsData[idx] = data;
+          updateShopAutobuyUi();
+        }
+      } catch {}
+    }
+
     // Wire buttons
     if (shopMaxDecBtn) shopMaxDecBtn.addEventListener('click', () => changeQty('max', -1));
     if (shopMaxIncBtn) shopMaxIncBtn.addEventListener('click', () => changeQty('max', +1));
     if (shopMaxMaxBtn) shopMaxMaxBtn.addEventListener('click', () => setMaxAffordable('max'));
+    if (shopMaxAutoBtn) shopMaxAutoBtn.addEventListener('click', () => toggleAutobuy('max'));
     if (shopMaxPriceEl) shopMaxPriceEl.addEventListener('click', async () => {
       // Make purchase for +5 Max. Charges using amount from qty
       try {
@@ -5345,6 +5399,8 @@ function loadImage(area, no, preserveView = false) {
             const dRaw2 = updated && updated.droplets != null ? Number(updated.droplets) : null;
             shopCurrentDroplets = Number.isFinite(dRaw2) ? Math.floor(dRaw2) : 0;
             updateShopButtonsDisabled();
+            if (shopMaxQtyEl) shopMaxQtyEl.textContent = '1';
+            updatePrice('max');
           } catch {}
         } else {
           const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
@@ -5357,6 +5413,7 @@ function loadImage(area, no, preserveView = false) {
     if (shopRecDecBtn) shopRecDecBtn.addEventListener('click', () => changeQty('rec', -1));
     if (shopRecIncBtn) shopRecIncBtn.addEventListener('click', () => changeQty('rec', +1));
     if (shopRecMaxBtn) shopRecMaxBtn.addEventListener('click', () => setMaxAffordable('rec'));
+    if (shopRecAutoBtn) shopRecAutoBtn.addEventListener('click', () => toggleAutobuy('rec'));
     if (shopRecPriceEl) shopRecPriceEl.addEventListener('click', async () => {
       // Purchase +30 Paint Charges (product id 80) using rec qty
       try {
@@ -5387,6 +5444,8 @@ function loadImage(area, no, preserveView = false) {
             const dRaw2 = updated && updated.droplets != null ? Number(updated.droplets) : null;
             shopCurrentDroplets = Number.isFinite(dRaw2) ? Math.floor(dRaw2) : 0;
             updateShopButtonsDisabled();
+            if (shopRecQtyEl) shopRecQtyEl.textContent = '1';
+            updatePrice('rec');
           } catch {}
         } else {
           const msg = (data && data.error) ? String(data.error) : t('messages.purchaseFail');
