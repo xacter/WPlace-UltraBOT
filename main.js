@@ -327,6 +327,69 @@ async function purchaseProduct(cf_clearance, token, productId, amount) {
   });
 }
 
+// Refresh function for DNR purposes.
+async function refreshAccount(account) {
+  if (!account) return account;
+
+  const cf = account.cf_clearance || '';
+  if (!cf || cf.length < 30 || !account.token) {
+    account.active = false;
+    return account;
+  }
+  
+  debugLog(`[Refresh] Checking account: "${account.name}"`);
+  let me = null;
+  try {
+    me = await fetchMe(cf, account.token);
+  } catch (err) {
+    debugLog(`[Refresh] Fetch error for account "${account.name}":`, err.message);
+    account.active = false;
+    return account;
+  }
+
+  if (me && me.charges) {
+    account.pixelCount = Math.floor(Number(me.charges.count));
+    account.pixelMax = Math.floor(Number(me.charges.max));
+    account.active = true;
+  } else {
+    account.active = false;
+  }
+  
+  if (me && Object.prototype.hasOwnProperty.call(me, 'droplets')) {
+    const d = Number(me.droplets);
+    account.droplets = Number.isFinite(d) ? Math.floor(d) : null;
+  }
+  if (me && Object.prototype.hasOwnProperty.call(me, 'extraColorsBitmap')) {
+    const b = Number(me.extraColorsBitmap);
+    account.extraColorsBitmap = Number.isFinite(b) ? Math.floor(b) : null;
+  }
+  
+  if (account.active && (account.autobuy === 'max' || account.autobuy === 'rec')) {
+    const price = 500;
+    const productId = account.autobuy === 'max' ? 70 : 80;
+    const droplets = Number(account.droplets || 0);
+    const qty = Math.floor(droplets / price);
+
+    if (qty > 0) {
+      const ok = await purchaseProduct(cf, account.token, productId, qty);
+      if (ok) {
+        const me2 = await fetchMe(cf, account.token);
+        if (me2) {
+            if(me2.charges) {
+                account.pixelCount = Math.floor(Number(me2.charges.count));
+                account.pixelMax = Math.floor(Number(me2.charges.max));
+            }
+            if(Object.prototype.hasOwnProperty.call(me2, 'droplets')) {
+                account.droplets = Math.floor(Number(me2.droplets));
+            }
+        }
+      }
+    }
+  }
+  
+  return account;
+}
+
 function startServer(port, host) {
   const server = http.createServer((req, res) => {
     const parsed = url.parse(req.url, true);
@@ -499,7 +562,7 @@ function startServer(port, host) {
       return;
     }
 
-    
+
     if (parsed.pathname && /^\/api\/pixel\/([^\/]+)\/([^\/]+)$/.test(parsed.pathname) && req.method === 'POST') {
       const m = parsed.pathname.match(/^\/api\/pixel\/([^\/]+)\/([^\/]+)$/);
       const area = m && m[1] ? m[1] : '';
@@ -834,90 +897,85 @@ function startServer(port, host) {
       });
       return;
     }
+
+
+	// Firefix account syncing endpoint.
+    if (parsed.pathname === '/api/sync-accounts' && req.method === 'POST') {
+      readJsonBody(req).then(async (syncedAccounts) => {
+        if (!Array.isArray(syncedAccounts)) return res.writeHead(400).end();
+
+        try {
+          const accounts = readJson(ACCOUNTS_FILE, []);
+          const accountsMap = new Map(accounts.map(acc => [acc.name, acc]));
+          let updatedCount = 0, addedCount = 0;
+
+          for (const syncedAccount of syncedAccounts) {
+            if (!syncedAccount.name || !syncedAccount.token || !syncedAccount.cf_clearance) continue;
+
+            if (accountsMap.has(syncedAccount.name)) {
+              const accountToUpdate = accountsMap.get(syncedAccount.name);
+              let changed = false;
+              if (accountToUpdate.token !== syncedAccount.token) { accountToUpdate.token = syncedAccount.token; changed = true; }
+              if (accountToUpdate.cf_clearance !== syncedAccount.cf_clearance) { accountToUpdate.cf_clearance = syncedAccount.cf_clearance; changed = true; }
+              if (changed) updatedCount++;
+            } else {
+              addedCount++;
+              const newAccount = {
+                id: Date.now() + addedCount, name: syncedAccount.name,
+                token: syncedAccount.token, cf_clearance: syncedAccount.cf_clearance,
+                pixelCount: null, pixelMax: null, droplets: null, 
+                extraColorsBitmap: null, active: false, autobuy: null
+              };
+              await refreshAccount(newAccount);
+              accountsMap.set(newAccount.name, newAccount);
+            }
+          }
+
+          if (updatedCount > 0 || addedCount > 0) {
+            writeJson(ACCOUNTS_FILE, Array.from(accountsMap.values()));
+            debugLog(`[SYNC] Complete. Updated: ${updatedCount}, Added: ${addedCount}.`);
+            sseBroadcast('accounts_updated', { status: 'refreshed' });
+          } else {
+            debugLog('[SYNC] Complete. No changes necessary.');
+          }
+
+          res.writeHead(204).end();
+        } catch (error) {
+          debugLog('[SYNC] Error during account sync:', error);
+          res.writeHead(500).end();
+        }
+      }).catch(() => res.writeHead(400).end());
+      return;
+    }
+	
+	
+
+
+    // Modifed and creating a single function to sync accounts for the api function to not repeat.
     if (parsed.pathname && /^\/api\/accounts\/\d+\/refresh$/.test(parsed.pathname) && req.method === 'POST') {
       const parts = parsed.pathname.split('/');
       const id = Number(parts[3]);
-      const accounts = readJson(ACCOUNTS_FILE, []);
-      const idx = accounts.findIndex(a => a.id === id);
-      if (idx === -1) { res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'not found' })); return; }
-      const acct = accounts[idx];
-      const cf = acct && typeof acct.cf_clearance === 'string' ? acct.cf_clearance : '';
-      if (!cf || cf.length < 30) {
-        try { accounts[idx] = { ...acct, active: false }; writeJson(ACCOUNTS_FILE, accounts); } catch {}
-        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ error: 'cf_clearance missing for account' })); return; }
+      
       (async () => {
-        debugLog('refresh: begin got-scraping /me fetch', { accountId: id, name: acct && acct.name ? String(acct.name) : undefined });
-        let me = null;
-        try {
-          me = await fetchMe(cf, acct.token);
-        } catch (err) {
-          const msg = (err && err.message) ? String(err.message) : String(err);
-          const code = (err && err.code) ? String(err.code) : '';
-          if (!(code === 'ECONNRESET' || (msg && msg.toUpperCase && msg.toUpperCase().includes('ECONNRESET')))) {
-            console.log('refresh fetch error:', msg);
-          }
+        const accounts = readJson(ACCOUNTS_FILE, []);
+        const idx = accounts.findIndex(a => a.id === id);
+
+        if (idx === -1) { 
+          res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' }); 
+          res.end(JSON.stringify({ error: 'not found' })); 
+          return; 
         }
-        debugLog('refresh: got-scraping result', {
-          ok: !!me,
-          meta: me ? {
-            name: me.name,
-            charges: me.charges ? { count: me.charges.count, max: me.charges.max } : undefined,
-            droplets: Object.prototype.hasOwnProperty.call(me, 'droplets') ? me.droplets : undefined,
-            extraColorsBitmap: Object.prototype.hasOwnProperty.call(me, 'extraColorsBitmap') ? me.extraColorsBitmap : undefined
-          } : null
-        });
-        if (me && me.charges) {
-          
-          acct.pixelCount = Math.floor(Number(me.charges.count));
-          acct.pixelMax = Math.floor(Number(me.charges.max));
-          acct.active = true;
-        } else {
-          acct.active = false;
-        }
-        if (me && Object.prototype.hasOwnProperty.call(me, 'droplets')) {
-          const d = Number(me.droplets);
-          acct.droplets = Number.isFinite(d) ? Math.floor(d) : null;
-        }
-        if (me && Object.prototype.hasOwnProperty.call(me, 'extraColorsBitmap')) {
-          const b = Number(me.extraColorsBitmap);
-          acct.extraColorsBitmap = Number.isFinite(b) ? Math.floor(b) : null;
-        }
-        if (acct.autobuy === 'max' || acct.autobuy === 'rec') {
-          const price = 500;
-          const productId = acct.autobuy === 'max' ? 70 : 80;
-          const droplets = Number(acct.droplets || 0);
-          const qty = Math.floor(droplets / price);
-          if (qty > 0) {
-            try {
-              const ok = await purchaseProduct(cf, acct.token, productId, qty);
-              if (ok) {
-                try {
-                  const me2 = await fetchMe(cf, acct.token);
-                  if (me2 && me2.charges) {
-                    acct.pixelCount = Math.floor(Number(me2.charges.count));
-                    acct.pixelMax = Math.floor(Number(me2.charges.max));
-                    acct.active = true;
-                  } else {
-                    acct.active = false;
-                  }
-                  if (me2 && Object.prototype.hasOwnProperty.call(me2, 'droplets')) {
-                    const d2 = Number(me2.droplets);
-                    acct.droplets = Number.isFinite(d2) ? Math.floor(d2) : null;
-                  }
-                  if (me2 && Object.prototype.hasOwnProperty.call(me2, 'extraColorsBitmap')) {
-                    const b2 = Number(me2.extraColorsBitmap);
-                    acct.extraColorsBitmap = Number.isFinite(b2) ? Math.floor(b2) : null;
-                  }
-                } catch {}
-              }
-            } catch {}
-          }
-        }
-        accounts[idx] = acct;
+
+        const accountToRefresh = accounts[idx];
+        const refreshedAccount = await refreshAccount(accountToRefresh);
+        
+        accounts[idx] = refreshedAccount;
         writeJson(ACCOUNTS_FILE, accounts);
+
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify(acct));
-      })().catch(() => {
+        res.end(JSON.stringify(refreshedAccount));
+      })().catch((e) => {
+        debugLog("Refresh endpoint error:", e);
         res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({ error: 'upstream error' }));
       });
