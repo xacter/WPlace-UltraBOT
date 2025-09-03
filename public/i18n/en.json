@@ -146,7 +146,7 @@
     "tokenPastedFromExtension": "Token pasted from extension"
   },
   "shop": {
-    "Shopall": "All Shops",
+    "autoBuyAll": "Auto Buy All",
     "premiumTitle": "Premium Colors",
     "purchased": "Purchased colors",
     "exclusive": "Exclusive palette",

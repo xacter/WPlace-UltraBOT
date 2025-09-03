@@ -143,7 +143,7 @@
     "tokenPastedFromExtension": "Token eklentiden yapıştırıldı"
   },
   "shop": {
-    "Shopall": "Tüm mağazalar",
+    "autoBuyAll": "Hepsini otomatik satın al",
     "premiumTitle": "Premium Renkler",
     "purchased": "Satın alınan renkler",
     "exclusive": "Özel palet",

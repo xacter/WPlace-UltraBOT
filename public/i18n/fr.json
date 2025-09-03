@@ -115,7 +115,7 @@
     "free": "Utiliser la couleur gratuite"
   },
   "shop": {
-    "Shopall": "Toutes les boutiques",
+    "autoBuyAll": "Acheter tout automatiquement",
     "premiumTitle": "Couleurs Premium",
     "purchased": "Couleurs achetées",
     "exclusive": "Palette exclusive",

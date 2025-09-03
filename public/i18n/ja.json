@@ -115,7 +115,7 @@
     "free": "無料色を使用"
   },
   "shop": {
-    "Shopall": "すべてのショップ",
+    "autoBuyAll": "すべて自動購入",
     "premiumTitle": "プレミアムカラー",
     "purchased": "購入済みの色",
     "exclusive": "限定パレット",

@@ -115,7 +115,7 @@
     "free": "使用免费颜色"
   },
   "shop": {
-    "Shopall": "所有商店",
+    "autoBuyAll": "自动购买全部",
     "premiumTitle": "高级颜色",
     "purchased": "已购买颜色",
     "exclusive": "专属调色板",

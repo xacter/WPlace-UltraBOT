@@ -146,7 +146,7 @@
     "tokenPastedFromExtension": "Token đã được dán từ tiện ích"
   },
   "shop": {
-    "Shopall": "Tất cả shop",
+    "autoBuyAll": "Tự động mua tất cả",
     "premiumTitle": "Màu cao cấp",
     "purchased": "Màu đã mua",
     "exclusive": "Bảng màu độc quyền",

@@ -899,7 +899,7 @@
         <div id="accounts-section">
           <div class="accounts-actions">
             <button id="btn-account-add" class="app-btn" type="button" data-i18n="accounts.add">Hesap ekle</button>
-            <button id="btn-shop-all" class="app-btn" type="button" data-i18n="shop.Shopall">All Shops</button>
+            <button id="btn-auto-buy-all" class="app-btn" type="button" data-i18n="shop.autoBuyAll">Auto-buy all</button>
             <button id="btn-check-all" class="app-btn" type="button" data-i18n-title="accounts.checkAllTitle"><span class="label" data-i18n="accounts.checkAll">Check All Accounts</span> <span class="spin-indicator">⟳</span></button>
           </div>
           <div class="table-responsive">
@@ -982,7 +982,7 @@
             </div>
           </div>
         </div>
-        <div id="shop-all-view-section" hidden>
+        <div id="auto-buy-all-view-section" hidden>
           <div class="shop-header">
             <div class="shop-title" data-i18n="shop.itemsTitle">Shop All Accounts</div>
             <div class="shop-sub" data-i18n="shop.autoBuy">Set autobuy for all accounts at once</div>
@@ -994,7 +994,7 @@
               <div class="shop-desc" data-i18n="shop.maxDesc">Increase maximum paint charges capacity</div>
               <div class="shop-auto-wrap">
                 <span class="select-mode-label" data-i18n="shop.autoBuy">Autobuy for ALL</span>
-                <button class="select-mode-track" id="shop-all-max-auto" type="button" role="switch" aria-checked="false" aria-label="Autobuy for all accounts"><span class="select-mode-knob"></span></button>
+                <button class="select-mode-track" id="auto-buy-all-max-auto" type="button" role="switch" aria-checked="false" aria-label="Autobuy for all accounts"><span class="select-mode-knob"></span></button>
               </div>
             </div>
             <div class="shop-card">
@@ -1003,7 +1003,7 @@
               <div class="shop-desc" data-i18n="shop.recDesc">Recharge paint charges</div>
               <div class="shop-auto-wrap">
                 <span class="select-mode-label" data-i18n="shop.autoBuy">Autobuy for ALL</span>
-                <button class="select-mode-track" id="shop-all-rec-auto" type="button" role="switch" aria-checked="false" aria-label="Autobuy for all accounts"><span class="select-mode-knob"></span></button>
+                <button class="select-mode-track" id="auto-buy-all-rec-auto" type="button" role="switch" aria-checked="false" aria-label="Autobuy for all accounts"><span class="select-mode-knob"></span></button>
               </div>
             </div>
           </div>
@@ -7478,10 +7478,10 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
     }
     // --- START: NEW CODE FOR SHOP ALL FUNCTION ---
 
-    const shopAllBtn = document.getElementById('btn-shop-all');
-    const shopAllViewSection = document.getElementById('shop-all-view-section');
-    const shopAllMaxAutoBtn = document.getElementById('shop-all-max-auto');
-    const shopAllRecAutoBtn = document.getElementById('shop-all-rec-auto');
+    const shopAllBtn = document.getElementById('btn-auto-buy-all');
+    const shopAllViewSection = document.getElementById('auto-buy-all-view-section');
+    const shopAllMaxAutoBtn = document.getElementById('auto-buy-all-max-auto');
+    const shopAllRecAutoBtn = document.getElementById('auto-buy-all-rec-auto');
 
     // Update the status of the toggles in the "Shop All" interface
     function updateShopAllAutobuyUi() {
