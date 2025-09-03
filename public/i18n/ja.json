@@ -1,6 +1,7 @@
 {
   "nav": {
-    "accounts": "アカウント"
+    "accounts": "アカウント",
+    "accountCount": "現在のアカウント: {count}"
   },
   "pixel": {
     "powerLabel": "ピクセルパワー: {count} / {max}"
@@ -114,6 +115,7 @@
     "free": "無料色を使用"
   },
   "shop": {
+    "Shopall": "すべてのショップ",
     "premiumTitle": "プレミアムカラー",
     "purchased": "購入済みの色",
     "exclusive": "限定パレット",

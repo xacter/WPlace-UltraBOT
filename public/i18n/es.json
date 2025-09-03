@@ -1,6 +1,7 @@
 {
   "nav": {
-    "accounts": "Cuentas"
+    "accounts": "Cuentas",
+    "accountCount": "Total de cuentas: {count}"
   },
   "pixel": {
     "powerLabel": "Potencia de píxel: {count} / {max}"
@@ -114,6 +115,7 @@
     "free": "Usar color gratis"
   },
   "shop": {
+    "Shopall": "Todas las tiendas",
     "premiumTitle": "Colores Premium",
     "purchased": "Colores comprados",
     "exclusive": "Paleta exclusiva",

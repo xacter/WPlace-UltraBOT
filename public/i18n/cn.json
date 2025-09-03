@@ -1,6 +1,7 @@
 {
   "nav": {
-    "accounts": "账户"
+    "accounts": "账户",
+    "accountCount": "当前账户: {count}"
   },
   "pixel": {
     "powerLabel": "点数：{count} / {max}"
@@ -114,6 +115,7 @@
     "free": "使用免费颜色"
   },
   "shop": {
+    "Shopall": "所有商店",
     "premiumTitle": "高级颜色",
     "purchased": "已购买颜色",
     "exclusive": "专属调色板",

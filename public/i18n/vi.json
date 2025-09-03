@@ -1,0 +1,170 @@
+{
+  "nav": {
+    "accounts": "Tài khoản",
+    "accountCount": "Tổng tài khoản: {count}"
+  },
+  "pixel": {
+    "powerLabel": "Sức mạnh pixel: {count} / {max}"
+  },
+  "ready": {
+    "prepare": "Sẵn sàng",
+    "selectAccount": "Chọn tài khoản",
+    "autoSelectAccounts": "Tự động chọn tài khoản",
+    "autoSelect": "Tự động chọn",
+    "deleteAllSelected": "Bỏ chọn tất cả",
+    "start": "Bắt đầu",
+    "tokenPlaceholder": "Mã token",
+    "accountLabelDefault": "Tài khoản",
+    "selectMode": {
+      "multi": "Chọn từ đầu",
+      "frame": "Chọn theo khung"
+    },
+    "autoMode": {
+      "on": "Chế độ tự động: BẬT",
+      "off": "Chế độ tự động: TẮT"
+    },
+    "autoStart": {
+      "on": "Tự động bắt đầu: BẬT",
+      "off": "Tự động bắt đầu: TẮT"
+    }
+  },
+  "modal": {
+    "closeTitle": "Đóng"
+  },
+  "tabs": {
+    "accounts": "Tài khoản",
+    "settings": "Cài đặt"
+  },
+  "accounts": {
+    "add": "Thêm tài khoản",
+    "checkAll": "Kiểm tra tất cả",
+    "checkAllTitle": "Kiểm tra dung lượng pixel của tất cả tài khoản"
+  },
+  "table": {
+    "accountName": "Tên tài khoản",
+    "accountToken": "Mã token",
+    "droplets": "Giọt",
+    "pixelRight": "Giới hạn pixel",
+    "status": "Trạng thái",
+    "actions": "Hành động",
+    "statusActive": "Hoạt động",
+    "statusPassive": "Không hoạt động"
+  },
+  "form": {
+    "accountNameLabel": "Tên tài khoản",
+    "accountNamePlaceholder": "Ví dụ: Tài khoản chính",
+    "accountTokenLabel": "Mã token",
+    "accountTokenPlaceholder": "Ví dụ: eyJhbGciOi...",
+    "worldXLabel": "Tọa độ X",
+    "worldYLabel": "Tọa độ Y",
+    "fetchButton": "Lấy dữ liệu",
+    "uploadImage": "Tải ảnh lên",
+    "mosaicButton": "Ghép ảnh"
+  },
+  "preview": {
+    "scale": "Tỉ lệ (%)",
+    "keepRatio": "Giữ tỉ lệ",
+    "width": "Chiều rộng",
+    "height": "Chiều cao",
+    "fillBackground": "Tô nền",
+    "color": "Màu",
+    "addToMap": "Thêm vào bản đồ",
+    "maxSizeExceeded": "Kích thước tối đa là 1000x1000 pixels.",
+    "alphaThreshold": "Độ trong suốt",
+    "colorMetric": "Thuật toán màu",
+    "metricRgb": "RGB (nhanh)",
+    "metricLab": "Lab (CIE76)",
+    "metricOklab": "Oklab",
+    "metricCiede2000": "CIEDE2000 (chính xác hơn, chậm hơn)",
+    "dithering": "Nhiễu màu",
+    "ditheringOn": "Nhiễu màu: BẬT",
+    "ditheringOff": "Nhiễu màu: TẮT"
+  },
+  "settings": {
+    "cf_clearance": "cf_clearance"
+  },
+  "mosaic": {
+    "title": "Ghép ảnh",
+    "use2": "Dùng 2 tọa độ",
+    "use4": "Dùng 4 tọa độ",
+    "fetch": "Lấy dữ liệu"
+  },
+  "buttons": {
+    "back": "Quay lại",
+    "save": "Lưu",
+    "add": "Thêm",
+    "saveSettings": "Lưu cài đặt",
+    "edit": "Chỉnh sửa",
+    "checkPixels": "Kiểm tra",
+    "shop": "Cửa hàng",
+    "delete": "Xóa"
+  },
+  "thumb": {
+    "imageAlt": "Hình {n}",
+    "lock": "Khóa"
+  },
+  "labels": {
+    "colorPalette": "Bảng màu"
+  },
+  "palette": {
+    "transparentTitle": "Trong suốt (màu gốc ảnh)",
+    "colorTitle": "Màu #{id}",
+    "premiumColorTitle": "Màu cao cấp (còn {remain}/{total})"
+  },
+  "paletteMode": {
+    "premium": "Dùng màu cao cấp",
+    "free": "Dùng màu miễn phí"
+  },
+  "controls": {
+    "movement": "Di chuyển"
+  },
+  "movement": {
+    "title": "Di chuyển ảnh",
+    "up": "Di chuyển lên",
+    "down": "Di chuyển xuống",
+    "left": "Di chuyển trái",
+    "right": "Di chuyển phải"
+  },
+  "messages": {
+    "selectAccountFirst": "Vui lòng chọn tài khoản trước.",
+    "maxPixelsReached": "Bạn đã đạt giới hạn pixel: {limit}/{limit}",
+    "addCfClearancePrompt": "Hãy thêm giá trị cf_clearance trong Cài đặt (tối thiểu 30 ký tự).",
+    "max12Accounts": "Bạn có thể chọn tối đa 12 tài khoản.",
+    "startRequirementsMissing": "Nhập token, chọn tài khoản và chọn ít nhất 1 pixel để bắt đầu.",
+    "noSelectedImage": "Chưa chọn ảnh.",
+    "errorGeneric": "Lỗi",
+    "painted": "Đã tô.",
+    "insufficientPixelPower": "Không đủ sức mạnh pixel: {n} pixel không thể gửi.",
+    "imageLoadFailed": "Không thể tải ảnh. Kiểm tra lại thông tin.",
+    "tokenAlreadyExists": "Token này đã tồn tại.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance không được để trống khi có tài khoản.",
+    "cfClearanceChange": "Hãy thay đổi cf_clearance.",
+    "premiumColorLimitReached": "Không đủ dung lượng cho màu cao cấp đã chọn.",
+    "accountNotFound": "Không tìm thấy tài khoản",
+    "purchaseSuccess": "Mua thành công",
+    "purchaseFail": "Mua thất bại",
+    "tokenPastedFromExtension": "Token đã được dán từ tiện ích"
+  },
+  "shop": {
+    "Shopall": "Tất cả shop",
+    "premiumTitle": "Màu cao cấp",
+    "purchased": "Màu đã mua",
+    "exclusive": "Bảng màu độc quyền",
+    "buyPremium": "💧 2000 Giọt",
+    "itemsTitle": "Vật phẩm",
+    "itemsSub": "Nhận thêm lượt sạc",
+    "maxTitle": "+5 Giới hạn sạc",
+    "maxDesc": "Tăng dung lượng sạc tối đa",
+    "recTitle": "+30 Lượt sạc",
+    "recDesc": "Nạp thêm lượt sạc",
+    "autoBuy": "Tự động mua"
+  },
+  "favorites": {
+    "openTitle": "Mở mục yêu thích",
+    "starTitle": "Lưu vị trí",
+    "title": "Yêu thích",
+    "saveTitle": "Lưu vị trí",
+    "nameLabel": "Tên",
+    "load": "Tải"
+  }
+}

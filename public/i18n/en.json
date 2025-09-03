@@ -1,6 +1,7 @@
 {
   "nav": {
-    "accounts": "Accounts"
+    "accounts": "Accounts",
+    "accountCount": "Total accounts: {count}"
   },
   "pixel": {
     "powerLabel": "Pixel power: {count} / {max}"
@@ -145,6 +146,7 @@
     "tokenPastedFromExtension": "Token pasted from extension"
   },
   "shop": {
+    "Shopall": "All Shops",
     "premiumTitle": "Premium Colors",
     "purchased": "Purchased colors",
     "exclusive": "Exclusive palette",

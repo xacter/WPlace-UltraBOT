@@ -1,6 +1,7 @@
 {
   "nav": {
-    "accounts": "Аккаунты"
+    "accounts": "Аккаунты",
+    "accountCount": "Текущий аккаунт: {count}"
   },
   "pixel": {
     "powerLabel": "Мощность пикселей: {count} / {max}"
@@ -114,6 +115,7 @@
     "free": "Использовать бесплатный цвет"
   },
   "shop": {
+    "Shopall": "Все магазины",
     "premiumTitle": "Премиум цвета",
     "purchased": "Купленные цвета",
     "exclusive": "Эксклюзивная палитра",

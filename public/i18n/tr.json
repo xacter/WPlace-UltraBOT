@@ -1,6 +1,7 @@
 {
   "nav": {
-    "accounts": "Hesaplar"
+    "accounts": "Hesaplar",
+    "accountCount": "Toplam hesap: {count}"
   },
   "pixel": {
     "powerLabel": "Piksel gücü: {count} / {max}"
@@ -142,6 +143,7 @@
     "tokenPastedFromExtension": "Token eklentiden yapıştırıldı"
   },
   "shop": {
+    "Shopall": "Tüm mağazalar",
     "premiumTitle": "Premium Renkler",
     "purchased": "Satın alınan renkler",
     "exclusive": "Özel palet",
