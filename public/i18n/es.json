@@ -1,22 +1,23 @@
 {
   "nav": {
-    "accounts": "Cuentas"
+    "accounts": "Cuentas",
+    "accountCount": "Número de cuentas: {count}"
   },
   "pixel": {
-    "powerLabel": "Potencia de píxel: {count} / {max}"
+    "powerLabel": "Poder de píxel: {count} / {max}"
   },
   "ready": {
     "prepare": "Listo",
     "selectAccount": "Seleccionar cuenta",
-    "autoSelectAccounts": "Seleccionar cuentas automáticamente",
+    "autoSelectAccounts": "Seleccionar cuenta automáticamente",
     "autoSelect": "Selección automática",
     "deleteAllSelected": "Deseleccionar todo",
-    "start": "Iniciar",
+    "start": "Comenzar",
     "tokenPlaceholder": "Token",
     "accountLabelDefault": "Cuenta",
     "selectMode": {
-      "multi": "Seleccionar desde inicio",
-      "frame": "Seleccionar desde contorno"
+      "multi": "Seleccionar desde el inicio",
+      "frame": "Seleccionar desde el contorno"
     },
     "autoMode": {
       "on": "Modo automático activado",
@@ -32,17 +33,17 @@
   },
   "tabs": {
     "accounts": "Cuentas",
-    "settings": "Ajustes"
+    "settings": "Configuración"
   },
   "accounts": {
-    "add": "Agregar cuenta",
-    "checkAll": "Comprobar todas las cuentas",
-    "checkAllTitle": "Comprobar capacidad de píxeles de todas las cuentas"
+    "add": "Añadir cuenta",
+    "checkAll": "Verificar todas las cuentas",
+    "checkAllTitle": "Verificar capacidad de píxeles de todas las cuentas"
   },
   "table": {
-    "accountName": "Nombre de la cuenta",
-    "accountToken": "Token de la cuenta",
-    "droplets": "Droplets",
+    "accountName": "Nombre de cuenta",
+    "accountToken": "Token de cuenta",
+    "droplets": "Gotas",
     "pixelRight": "Límite de píxeles",
     "status": "Estado",
     "actions": "Acción",
@@ -50,42 +51,42 @@
     "statusPassive": "Inactivo"
   },
   "form": {
-    "accountNameLabel": "Nombre de la cuenta",
-    "accountNamePlaceholder": "Ej.: Cuenta principal",
-    "accountTokenLabel": "Token de la cuenta",
-    "accountTokenPlaceholder": "Ej.: eyJhbGciOi...",
-    "worldXLabel": "World X",
-    "worldYLabel": "World Y",
+    "accountNameLabel": "Nombre de cuenta",
+    "accountNamePlaceholder": "ej., Cuenta principal",
+    "accountTokenLabel": "Token de cuenta",
+    "accountTokenPlaceholder": "ej., eyJhbGciOi...",
+    "worldXLabel": "Mundo X",
+    "worldYLabel": "Mundo Y",
     "fetchButton": "Obtener",
     "uploadImage": "Subir imagen",
     "mosaicButton": "Mosaico"
   },
   "preview": {
     "scale": "Escala (%)",
-    "keepRatio": "Mantener proporción",
+    "keepRatio": "Mantener relación",
     "width": "Ancho",
     "height": "Alto",
     "fillBackground": "Rellenar fondo",
     "color": "Color",
     "addToMap": "Añadir al mapa",
     "maxSizeExceeded": "El tamaño máximo es 1000x1000 píxeles.",
-    "alphaThreshold": "Transparencia",
-    "colorMetric": "Algoritmo color",
-    "metricRgb": "RGB (rápido, \"seguro\")",
+    "alphaThreshold": "Umbral de transparencia",
+    "colorMetric": "Algoritmo de color",
+    "metricRgb": "RGB (rápido)",
     "metricLab": "Lab (CIE76)",
     "metricOklab": "Oklab",
     "metricCiede2000": "CIEDE2000 (más preciso, más lento)",
-    "dithering": "Dithering",
-    "ditheringOn": "Dithering: ON",
-    "ditheringOff": "Dithering: OFF"
+    "dithering": "Difuminado (Dithering)",
+    "ditheringOn": "Difuminado: ACTIVADO",
+    "ditheringOff": "Difuminado: DESACTIVADO"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
   },
   "mosaic": {
     "title": "Mosaico",
-    "use2": "Usar 2 coord",
-    "use4": "Usar 4 coord",
+    "use2": "Usar 2 coordenadas",
+    "use4": "Usar 4 coordenadas",
     "fetch": "Obtener"
   },
   "buttons": {
@@ -94,7 +95,7 @@
     "add": "Añadir",
     "saveSettings": "Guardar",
     "edit": "Editar",
-    "checkPixels": "Comprobar",
+    "checkPixels": "Verificar",
     "shop": "Tienda",
     "delete": "Eliminar"
   },
@@ -106,53 +107,56 @@
     "colorPalette": "Paleta de colores"
   },
   "palette": {
-    "transparentTitle": "Transparente (color de la imagen)",
-    "colorTitle": "Color #{id}"
+    "transparentTitle": "Transparente (color de imagen)",
+    "colorTitle": "Color #{id}",
+    "premiumColorTitle": "Color premium (quedan {remain}/{total})"
   },
   "paletteMode": {
     "premium": "Usar color premium",
     "free": "Usar color gratis"
-  },
-  "shop": {
-    "premiumTitle": "Colores Premium",
-    "purchased": "Colores comprados",
-    "exclusive": "Paleta exclusiva",
-    "buyPremium": "💧 2000 Droplets",
-    "itemsTitle": "Artículos",
-    "itemsSub": "Obtén más cargas",
-    "maxTitle": "+5 Cargas Máx.",
-    "maxDesc": "Aumenta la capacidad máxima de cargas de pintura",
-    "recTitle": "+30 Cargas de Pintura",
-    "recDesc": "Recarga cargas de pintura",
-    "autoBuy": "Compra automática"
   },
   "controls": {
     "movement": "Movimiento"
   },
   "movement": {
     "title": "Mover imagen",
-    "up": "Arriba",
-    "down": "Abajo",
-    "left": "Izquierda",
-    "right": "Derecha"
+    "up": "Mover arriba",
+    "down": "Mover abajo",
+    "left": "Mover izquierda",
+    "right": "Mover derecha"
   },
   "messages": {
     "selectAccountFirst": "Selecciona una cuenta primero.",
-    "maxPixelsReached": "Has alcanzado el máximo de píxeles: {limit}/{limit}",
-    "addCfClearancePrompt": "Primero agrega el valor cf_clearance en Configuración (mín. 30 caracteres).",
+    "maxPixelsReached": "Has alcanzado el conteo máximo de píxeles: {limit}/{limit}",
+    "addCfClearancePrompt": "Primero añade el valor cf_clearance en Configuración (mín. 30 caracteres).",
     "max12Accounts": "Puedes seleccionar hasta 12 cuentas.",
-    "startRequirementsMissing": "Para empezar ingresa el token, selecciona cuentas y al menos 1 píxel.",
-    "noSelectedImage": "No hay imagen seleccionada.",
+    "startRequirementsMissing": "Ingresa token, selecciona cuentas y elige al menos 1 píxel para comenzar.",
+    "noSelectedImage": "Ninguna imagen seleccionada.",
     "errorGeneric": "Error",
     "painted": "Pintado.",
-    "insufficientPixelPower": "Poder de píxeles insuficiente: {n} píxeles no se pudieron enviar.",
+    "insufficientPixelPower": "Poder de píxel insuficiente: no se pudieron enviar {n} píxeles.",
     "imageLoadFailed": "No se pudo cargar la imagen. Verifica los valores.",
     "tokenAlreadyExists": "Ya existe una cuenta con este token.",
     "cfCannotBeClearedWithAccounts": "cf_clearance no puede estar vacío mientras existan cuentas.",
-    "cfClearanceChange": "Por favor cambia cf_clearance.",
+    "cfClearanceChange": "Por favor, cambia cf_clearance.",
+    "premiumColorLimitReached": "No hay suficiente capacidad para el color premium seleccionado.",
+    "accountNotFound": "Cuenta no encontrada",
     "purchaseSuccess": "Compra exitosa",
     "purchaseFail": "Compra fallida",
     "tokenPastedFromExtension": "Token pegado desde la extensión"
+  },
+  "shop": {
+    "premiumTitle": "Colores Premium",
+    "purchased": "Colores comprados",
+    "exclusive": "Paleta exclusiva",
+    "buyPremium": "💧 2000 Gotas",
+    "itemsTitle": "Artículos",
+    "itemsSub": "Obtener más cargas",
+    "maxTitle": "+5 Cargas Máx.",
+    "maxDesc": "Aumenta tu capacidad máxima de cargas de pintura",
+    "recTitle": "+30 Cargas de Pintura",
+    "recDesc": "Recargar cargas de pintura",
+    "autoBuy": "Compra automática"
   },
   "favorites": {
     "openTitle": "Abrir favoritos",
@@ -161,7 +165,10 @@
     "saveTitle": "Guardar ubicación",
     "nameLabel": "Nombre",
     "load": "Cargar"
+  },
+  "autobuy": {
+    "All": "Comprar todo automáticamente",
+    "AllAccountsTitle": "Comprar todas las cuentas automáticamente",
+    "AllAccountsSub": "Establecer compra automática para todas las cuentas a la vez"
   }
 }
-
-

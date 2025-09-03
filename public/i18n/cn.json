@@ -1,12 +1,13 @@
 {
   "nav": {
-    "accounts": "账户"
+    "accounts": "账户",
+    "accountCount": "账户数量: {count}"
   },
   "pixel": {
-    "powerLabel": "点数：{count} / {max}"
+    "powerLabel": "像素能量: {count} / {max}"
   },
   "ready": {
-    "prepare": "准备",
+    "prepare": "准备就绪",
     "selectAccount": "选择账户",
     "autoSelectAccounts": "自动选择账户",
     "autoSelect": "自动选择",
@@ -15,16 +16,16 @@
     "tokenPlaceholder": "令牌",
     "accountLabelDefault": "账户",
     "selectMode": {
-      "multi": "从头选择",
+      "multi": "从起点选择",
       "frame": "从轮廓选择"
     },
     "autoMode": {
-      "on": "自动模式 开",
-      "off": "自动模式 关"
+      "on": "自动模式 开启",
+      "off": "自动模式 关闭"
     },
     "autoStart": {
-      "on": "自动开始 开",
-      "off": "自动开始 关"
+      "on": "自动开始 开启",
+      "off": "自动开始 关闭"
     }
   },
   "modal": {
@@ -37,31 +38,31 @@
   "accounts": {
     "add": "添加账户",
     "checkAll": "检查所有账户",
-    "checkAllTitle": "检查所有账户的最大点数"
+    "checkAllTitle": "检查所有账户的像素容量"
   },
   "table": {
     "accountName": "账户名称",
     "accountToken": "账户令牌",
-    "droplets": "Droplets",
-    "pixelRight": "像素上限",
+    "droplets": "水滴",
+    "pixelRight": "像素限制",
     "status": "状态",
     "actions": "操作",
-    "statusActive": "启用",
-    "statusPassive": "停用"
+    "statusActive": "活跃",
+    "statusPassive": "非活跃"
   },
   "form": {
     "accountNameLabel": "账户名称",
     "accountNamePlaceholder": "例如：主账户",
     "accountTokenLabel": "账户令牌",
     "accountTokenPlaceholder": "例如：eyJhbGciOi...",
-    "worldXLabel": "世界 X",
-    "worldYLabel": "世界 Y",
+    "worldXLabel": "世界 X 坐标",
+    "worldYLabel": "世界 Y 坐标",
     "fetchButton": "获取",
     "uploadImage": "上传图片",
-    "mosaicButton": "拼图"
+    "mosaicButton": "马赛克"
   },
   "preview": {
-    "scale": "缩放（%）",
+    "scale": "缩放比例 (%)",
     "keepRatio": "保持比例",
     "width": "宽度",
     "height": "高度",
@@ -69,23 +70,23 @@
     "color": "颜色",
     "addToMap": "添加到地图",
     "maxSizeExceeded": "最大尺寸为 1000x1000 像素。",
-    "alphaThreshold": "透明度",
+    "alphaThreshold": "透明度阈值",
     "colorMetric": "颜色算法",
-    "metricRgb": "RGB (fast)",
+    "metricRgb": "RGB (快)",
     "metricLab": "Lab (CIE76)",
     "metricOklab": "Oklab",
-    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
-    "dithering": "Dithering",
-    "ditheringOn": "Dithering: ON",
-    "ditheringOff": "Dithering: OFF"
+    "metricCiede2000": "CIEDE2000 (更准确，更慢)",
+    "dithering": "抖动",
+    "ditheringOn": "抖动: 开",
+    "ditheringOff": "抖动: 关"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
   },
   "mosaic": {
-    "title": "拼图",
-    "use2": "使用2坐标",
-    "use4": "使用4坐标",
+    "title": "马赛克",
+    "use2": "使用 2 个坐标",
+    "use4": "使用 4 个坐标",
     "fetch": "获取"
   },
   "buttons": {
@@ -106,25 +107,13 @@
     "colorPalette": "调色板"
   },
   "palette": {
-    "transparentTitle": "透明（图片颜色）",
-    "colorTitle": "颜色 #{id}"
+    "transparentTitle": "透明 (图片颜色)",
+    "colorTitle": "颜色 #{id}",
+    "premiumColorTitle": "高级颜色 (剩余 {remain}/{total})"
   },
   "paletteMode": {
     "premium": "使用高级颜色",
     "free": "使用免费颜色"
-  },
-  "shop": {
-    "premiumTitle": "高级颜色",
-    "purchased": "已购买颜色",
-    "exclusive": "专属调色板",
-    "buyPremium": "💧 2000 Droplets",
-    "itemsTitle": "物品",
-    "itemsSub": "获取更多次数",
-    "maxTitle": "+5 最大次数",
-    "maxDesc": "提高最大上色次数容量",
-    "recTitle": "+30 上色次数",
-    "recDesc": "充值上色次数",
-    "autoBuy": "自动购买"
   },
   "controls": {
     "movement": "移动"
@@ -137,29 +126,49 @@
     "right": "右移"
   },
   "messages": {
-    "selectAccountFirst": "请先选择账号。",
-    "maxPixelsReached": "已达到最大像素数：{limit}/{limit}",
-    "addCfClearancePrompt": "请先在设置中添加 cf_clearance（至少30个字符）。",
-    "max12Accounts": "最多可选择12个账号。",
-    "startRequirementsMissing": "开始前请输入令牌，选择账号并选择至少1个像素。",
+    "selectAccountFirst": "请先选择一个账户。",
+    "maxPixelsReached": "您已达到最大像素数: {limit}/{limit}",
+    "addCfClearancePrompt": "请先在设置中添加 cf_clearance 值 (至少 30 个字符)。",
+    "max12Accounts": "最多可选择 12 个账户。",
+    "startRequirementsMissing": "输入令牌、选择账户并选择至少 1 个像素才能开始。",
     "noSelectedImage": "未选择图片。",
     "errorGeneric": "错误",
-    "painted": "已上色。",
-    "insufficientPixelPower": "像素功率不足：{n} 个像素未发送。",
-    "imageLoadFailed": "图片加载失败。请检查数值。",
-    "tokenAlreadyExists": "该令牌对应的账号已存在。",
-    "cfCannotBeClearedWithAccounts": "存在账号时，cf_clearance 不能为空。",
+    "painted": "已绘制。",
+    "insufficientPixelPower": "像素能量不足: {n} 个像素无法发送。",
+    "imageLoadFailed": "无法加载图片。请检查数值。",
+    "tokenAlreadyExists": "已存在使用此令牌的账户。",
+    "cfCannotBeClearedWithAccounts": "存在账户时，cf_clearance 不能为空。",
     "cfClearanceChange": "请更改 cf_clearance。",
+    "premiumColorLimitReached": "所选高级颜色的容量不足。",
+    "accountNotFound": "未找到账户",
     "purchaseSuccess": "购买成功",
     "purchaseFail": "购买失败",
-    "tokenPastedFromExtension": "已从扩展粘贴 token"
+    "tokenPastedFromExtension": "令牌已从扩展程序粘贴"
+  },
+  "shop": {
+    "premiumTitle": "高级颜色",
+    "purchased": "已购买的颜色",
+    "exclusive": "专属调色板",
+    "buyPremium": "💧 2000 水滴",
+    "itemsTitle": "物品",
+    "itemsSub": "获取更多充能",
+    "maxTitle": "+5 最大充能",
+    "maxDesc": "增加您的最大绘画充能容量",
+    "recTitle": "+30 绘画充能",
+    "recDesc": "补充绘画充能",
+    "autoBuy": "自动购买"
   },
   "favorites": {
-    "openTitle": "打开收藏",
+    "openTitle": "打开收藏夹",
     "starTitle": "保存位置",
-    "title": "收藏",
+    "title": "收藏夹",
     "saveTitle": "保存位置",
     "nameLabel": "名称",
     "load": "加载"
+  },
+  "autobuy": {
+    "All": "自动购买全部",
+    "AllAccountsTitle": "自动购买所有账户",
+    "AllAccountsSub": "一次性为所有账户设置自动购买"
   }
 }

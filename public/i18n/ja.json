@@ -1,76 +1,77 @@
 {
   "nav": {
-    "accounts": "アカウント"
+    "accounts": "Accounts",
+    "accountCount": "アカウント数: {count}"
   },
   "pixel": {
-    "powerLabel": "ピクセルパワー: {count} / {max}"
+    "powerLabel": "Pixel power: {count} / {max}"
   },
   "ready": {
-    "prepare": "準備",
-    "selectAccount": "アカウントを選択",
-    "autoSelectAccounts": "アカウントを自動選択",
-    "autoSelect": "自動選択",
-    "deleteAllSelected": "すべて解除",
-    "start": "開始",
-    "tokenPlaceholder": "トークン",
-    "accountLabelDefault": "アカウント",
+    "prepare": "Ready",
+    "selectAccount": "Select account",
+    "autoSelectAccounts": "Auto select account",
+    "autoSelect": "Auto select",
+    "deleteAllSelected": "Deselect all",
+    "start": "Start",
+    "tokenPlaceholder": "Token",
+    "accountLabelDefault": "Account",
     "selectMode": {
-      "multi": "開始位置から選択",
-      "frame": "枠から選択"
+      "multi": "Select from start",
+      "frame": "Select from outline"
     },
     "autoMode": {
-      "on": "自動モード ON",
-      "off": "自動モード OFF"
+      "on": "Auto mode on",
+      "off": "Auto mode off"
     },
     "autoStart": {
-      "on": "自動開始 ON",
-      "off": "自動開始 OFF"
+      "on": "Auto start on",
+      "off": "Auto start off"
     }
   },
   "modal": {
-    "closeTitle": "閉じる"
+    "closeTitle": "Close"
   },
   "tabs": {
-    "accounts": "アカウント",
-    "settings": "設定"
+    "accounts": "Accounts",
+    "settings": "Settings"
   },
   "accounts": {
-    "add": "アカウント追加",
-    "checkAll": "すべてのアカウントを確認",
-    "checkAllTitle": "すべてのアカウントのピクセル容量を確認"
+    "add": "Add account",
+    "checkAll": "Check All Accounts",
+    "checkAllTitle": "Check pixel capacity of all accounts"
   },
   "table": {
-    "accountName": "アカウント名",
-    "accountToken": "アカウントトークン",
+    "accountName": "Account name",
+    "accountToken": "Account token",
     "droplets": "Droplets",
-    "pixelRight": "ピクセル上限",
-    "status": "ステータス",
-    "actions": "操作",
-    "statusActive": "アクティブ",
-    "statusPassive": "非アクティブ"
+    "pixelRight": "Pixel limit",
+    "status": "Status",
+    "actions": "Action",
+    "statusActive": "Active",
+    "statusPassive": "Inactive"
   },
   "form": {
-    "accountNameLabel": "アカウント名",
-    "accountNamePlaceholder": "例: メインアカウント",
-    "accountTokenLabel": "アカウントトークン",
-    "accountTokenPlaceholder": "例: eyJhbGciOi...",
+    "accountNameLabel": "Account name",
+    "accountNamePlaceholder": "e.g., Main account",
+    "accountTokenLabel": "Account token",
+    "accountTokenPlaceholder": "e.g., eyJhbGciOi...",
     "worldXLabel": "World X",
     "worldYLabel": "World Y",
-    "fetchButton": "取得",
-    "uploadImage": "画像をアップロード",
-    "mosaicButton": "モザイク"
+    "fetchButton": "Fetch",
+    "uploadImage": "Upload image",
+    "mosaicButton": "Mosaic"
   },
   "preview": {
-    "scale": "スケール (%)",
-    "keepRatio": "比率を維持",
-    "width": "幅",
-    "height": "高さ",
-    "fillBackground": "背景を塗りつぶす",
-    "color": "色",
-    "addToMap": "マップに追加",
-    "maxSizeExceeded": "最大サイズは 1000x1000 ピクセルです。",
-    "alphaThreshold": "透過",
-    "colorMetric": "色アルゴリズム",
+    "scale": "Scale (%)",
+    "keepRatio": "Keep ratio",
+    "width": "Width",
+    "height": "Height",
+    "fillBackground": "Fill background",
+    "color": "Color",
+    "addToMap": "Add to map",
+    "maxSizeExceeded": "Maximum size is 1000x1000 pixels.",
+    "alphaThreshold": "Transparency",
+    "colorMetric": "Color algorithm",
     "metricRgb": "RGB (fast)",
     "metricLab": "Lab (CIE76)",
     "metricOklab": "Oklab",
@@ -83,84 +84,92 @@
     "cf_clearance": "cf_clearance"
   },
   "mosaic": {
-    "title": "モザイク",
-    "use2": "2座標を使用",
-    "use4": "4座標を使用",
-    "fetch": "取得"
+    "title": "Mosaic",
+    "use2": "Use 2 coords",
+    "use4": "Use 4 coords",
+    "fetch": "Fetch"
   },
   "buttons": {
-    "back": "戻る",
-    "save": "保存",
-    "add": "追加",
-    "saveSettings": "保存",
-    "edit": "編集",
-    "checkPixels": "確認",
-    "shop": "ショップ",
-    "delete": "削除"
+    "back": "Back",
+    "save": "Save",
+    "add": "Add",
+    "saveSettings": "Save",
+    "edit": "Edit",
+    "checkPixels": "Check",
+    "shop": "Shop",
+    "delete": "Delete"
   },
   "thumb": {
-    "imageAlt": "画像 {n}",
-    "lock": "ロック"
+    "imageAlt": "Image {n}",
+    "lock": "Lock"
   },
   "labels": {
-    "colorPalette": "カラーパレット"
+    "colorPalette": "Color palette"
   },
   "palette": {
-    "transparentTitle": "透明（画像色）",
-    "colorTitle": "色 #{id}"
+    "transparentTitle": "Transparent (image color)",
+    "colorTitle": "Color #{id}",
+    "premiumColorTitle": "Premium color (remain {remain}/{total})"
   },
   "paletteMode": {
-    "premium": "プレミアム色を使用",
-    "free": "無料色を使用"
-  },
-  "shop": {
-    "premiumTitle": "プレミアムカラー",
-    "purchased": "購入済みの色",
-    "exclusive": "限定パレット",
-    "buyPremium": "💧 2000 Droplets",
-    "itemsTitle": "アイテム",
-    "itemsSub": "チャージを増やす",
-    "maxTitle": "+5 最大チャージ",
-    "maxDesc": "塗装チャージの最大容量を増やす",
-    "recTitle": "+30 塗装チャージ",
-    "recDesc": "塗装チャージを補充",
-    "autoBuy": "自動購入"
+    "premium": "Use premium color",
+    "free": "Use free color"
   },
   "controls": {
-    "movement": "移動"
+    "movement": "Movement"
   },
   "movement": {
-    "title": "画像を移動",
-    "up": "上へ",
-    "down": "下へ",
-    "left": "左へ",
-    "right": "右へ"
+    "title": "Move image",
+    "up": "Move up",
+    "down": "Move down",
+    "left": "Move left",
+    "right": "Move right"
   },
   "messages": {
-    "selectAccountFirst": "先にアカウントを選択してください。",
-    "maxPixelsReached": "最大ピクセル数に達しました: {limit}/{limit}",
-    "addCfClearancePrompt": "まず設定で cf_clearance を追加してください（30文字以上）。",
-    "max12Accounts": "最大12アカウントまで選択できます。",
-    "startRequirementsMissing": "開始するにはトークンを入力し、アカウントを選択し、少なくとも1ピクセル選んでください。",
-    "noSelectedImage": "選択された画像はありません。",
-    "errorGeneric": "エラー",
-    "painted": "塗り完了。",
-    "insufficientPixelPower": "ピクセルパワー不足: {n} ピクセルを送れませんでした。",
-    "imageLoadFailed": "画像を読み込めませんでした。値を確認してください。",
-    "tokenAlreadyExists": "このトークンのアカウントは既に存在します。",
-    "cfCannotBeClearedWithAccounts": "アカウントがある場合、cf_clearance は空にできません。",
-    "cfClearanceChange": "cf_clearance を変更してください。",
-    "purchaseSuccess": "購入に成功しました",
-    "purchaseFail": "購入に失敗しました",
-    "tokenPastedFromExtension": "拡張機能からトークンを貼り付けました"
+    "selectAccountFirst": "Select an account first.",
+    "maxPixelsReached": "You have reached the maximum pixel count: {limit}/{limit}",
+    "addCfClearancePrompt": "First add the cf_clearance value in Settings (min 30 chars).",
+    "max12Accounts": "You can select up to 12 accounts.",
+    "startRequirementsMissing": "Enter token, select accounts and pick at least 1 pixel to start.",
+    "noSelectedImage": "No selected image.",
+    "errorGeneric": "Error",
+    "painted": "Painted.",
+    "insufficientPixelPower": "Insufficient pixel power: {n} pixels could not be sent.",
+    "imageLoadFailed": "Image could not be loaded. Check the values.",
+    "tokenAlreadyExists": "An account with this token already exists.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance cannot be left empty while accounts exist.",
+    "cfClearanceChange": "Please change cf_clearance.",
+    "premiumColorLimitReached": "Not enough capacity for the selected premium color.",
+    "accountNotFound": "Account not found",
+    "purchaseSuccess": "Purchase successful",
+    "purchaseFail": "Purchase failed",
+    "tokenPastedFromExtension": "Token pasted from extension"
+  },
+  "shop": {
+    "premiumTitle": "Premium Colors",
+    "purchased": "Purchased colors",
+    "exclusive": "Exclusive palette",
+    "buyPremium": "💧 2000 Droplets",
+    "itemsTitle": "Items",
+    "itemsSub": "Get more charges",
+    "maxTitle": "+5 Max. Charges",
+    "maxDesc": "Increase your maximum paint charges capacity",
+    "recTitle": "+30 Paint Charges",
+    "recDesc": "Recharge paint charges",
+    "autoBuy": "Auto-buy"
   },
   "favorites": {
-    "openTitle": "お気に入りを開く",
-    "starTitle": "場所を保存",
-    "title": "お気に入り",
-    "saveTitle": "場所を保存",
-    "nameLabel": "名前",
-    "load": "読み込む"
+    "openTitle": "Open favorites",
+    "starTitle": "Save location",
+    "title": "Favorites",
+    "saveTitle": "Save location",
+    "nameLabel": "Name",
+    "load": "Load"
+  },
+  "autobuy": {
+    "All": "Auto Buy All",
+    "AllAccountsTitle": "Auto Buy All Accounts",
+    "AllAccountsSub": "Set autobuy for all accounts at once"
   }
 }
 

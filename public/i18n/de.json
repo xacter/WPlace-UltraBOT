@@ -1,29 +1,30 @@
 {
   "nav": {
-    "accounts": "Konten"
+    "accounts": "Konten",
+    "accountCount": "Kontenanzahl: {count}"
   },
   "pixel": {
     "powerLabel": "Pixelkraft: {count} / {max}"
   },
   "ready": {
     "prepare": "Bereit",
-    "selectAccount": "Konto wählen",
-    "autoSelectAccounts": "Konten automatisch wählen",
-    "autoSelect": "Automatisch wählen",
+    "selectAccount": "Konto auswählen",
+    "autoSelectAccounts": "Konto automatisch auswählen",
+    "autoSelect": "Automatisch auswählen",
     "deleteAllSelected": "Alle abwählen",
-    "start": "Start",
+    "start": "Starten",
     "tokenPlaceholder": "Token",
     "accountLabelDefault": "Konto",
     "selectMode": {
-      "multi": "Ab Start wählen",
-      "frame": "Aus Rahmen wählen"
+      "multi": "Ab Start auswählen",
+      "frame": "Ab Umriss auswählen"
     },
     "autoMode": {
-      "on": "Auto-Modus an",
-      "off": "Auto-Modus aus"
+      "on": "Automodus ein",
+      "off": "Automodus aus"
     },
     "autoStart": {
-      "on": "Auto-Start an",
+      "on": "Auto-Start ein",
       "off": "Auto-Start aus"
     }
   },
@@ -42,8 +43,8 @@
   "table": {
     "accountName": "Kontoname",
     "accountToken": "Konto-Token",
-    "droplets": "Droplets",
-    "pixelRight": "Pixellimit",
+    "droplets": "Tropfen",
+    "pixelRight": "Pixel-Limit",
     "status": "Status",
     "actions": "Aktion",
     "statusActive": "Aktiv",
@@ -51,11 +52,11 @@
   },
   "form": {
     "accountNameLabel": "Kontoname",
-    "accountNamePlaceholder": "z. B. Hauptkonto",
+    "accountNamePlaceholder": "z.B., Hauptkonto",
     "accountTokenLabel": "Konto-Token",
-    "accountTokenPlaceholder": "z. B. eyJhbGciOi...",
-    "worldXLabel": "World X",
-    "worldYLabel": "World Y",
+    "accountTokenPlaceholder": "z.B., eyJhbGciOi...",
+    "worldXLabel": "Welt X",
+    "worldYLabel": "Welt Y",
     "fetchButton": "Abrufen",
     "uploadImage": "Bild hochladen",
     "mosaicButton": "Mosaik"
@@ -69,23 +70,23 @@
     "color": "Farbe",
     "addToMap": "Zur Karte hinzufügen",
     "maxSizeExceeded": "Maximale Größe ist 1000x1000 Pixel.",
-    "alphaThreshold": "Transparenz",
+    "alphaThreshold": "Transparenz-Schwellenwert",
     "colorMetric": "Farbalgorithmus",
-    "metricRgb": "RGB (fast)",
+    "metricRgb": "RGB (schnell)",
     "metricLab": "Lab (CIE76)",
     "metricOklab": "Oklab",
-    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "metricCiede2000": "CIEDE2000 (genauer, langsamer)",
     "dithering": "Dithering",
-    "ditheringOn": "Dithering: ON",
-    "ditheringOff": "Dithering: OFF"
+    "ditheringOn": "Dithering: EIN",
+    "ditheringOff": "Dithering: AUS"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
   },
   "mosaic": {
     "title": "Mosaik",
-    "use2": "2 Koordinaten",
-    "use4": "4 Koordinaten",
+    "use2": "2 Koordinaten verwenden",
+    "use4": "4 Koordinaten verwenden",
     "fetch": "Abrufen"
   },
   "buttons": {
@@ -107,61 +108,67 @@
   },
   "palette": {
     "transparentTitle": "Transparent (Bildfarbe)",
-    "colorTitle": "Farbe #{id}"
+    "colorTitle": "Farbe #{id}",
+    "premiumColorTitle": "Premium-Farbe (verbleibend {remain}/{total})"
+  },
+  "paletteMode": {
+    "premium": "Premium-Farbe verwenden",
+    "free": "Kostenlose Farbe verwenden"
   },
   "controls": {
     "movement": "Bewegung"
   },
   "movement": {
-    "title": "Bild bewegen",
+    "title": "Bild verschieben",
     "up": "Nach oben",
     "down": "Nach unten",
     "left": "Nach links",
     "right": "Nach rechts"
   },
   "messages": {
-    "selectAccountFirst": "Wähle zuerst ein Konto.",
-    "maxPixelsReached": "Du hast die maximale Pixelanzahl erreicht: {limit}/{limit}",
-    "addCfClearancePrompt": "Füge zuerst den cf_clearance-Wert in den Einstellungen hinzu (min. 30 Zeichen).",
-    "max12Accounts": "Du kannst bis zu 12 Konten auswählen.",
-    "startRequirementsMissing": "Zum Starten Token eingeben, Konten auswählen und mindestens 1 Pixel wählen.",
+    "selectAccountFirst": "Bitte zuerst ein Konto auswählen.",
+    "maxPixelsReached": "Maximale Pixelanzahl erreicht: {limit}/{limit}",
+    "addCfClearancePrompt": "Bitte zuerst den cf_clearance-Wert in den Einstellungen hinzufügen (min. 30 Zeichen).",
+    "max12Accounts": "Sie können bis zu 12 Konten auswählen.",
+    "startRequirementsMissing": "Token eingeben, Konten auswählen und mindestens 1 Pixel auswählen, um zu starten.",
     "noSelectedImage": "Kein Bild ausgewählt.",
     "errorGeneric": "Fehler",
-    "painted": "Gefärbt.",
+    "painted": "Gemalt.",
     "insufficientPixelPower": "Unzureichende Pixelkraft: {n} Pixel konnten nicht gesendet werden.",
-    "imageLoadFailed": "Bild konnte nicht geladen werden. Werte prüfen.",
+    "imageLoadFailed": "Bild konnte nicht geladen werden. Bitte Werte überprüfen.",
     "tokenAlreadyExists": "Ein Konto mit diesem Token existiert bereits.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance darf bei vorhandenen Konten nicht leer sein.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance kann nicht leer sein, solange Konten existieren.",
     "cfClearanceChange": "Bitte cf_clearance ändern.",
+    "premiumColorLimitReached": "Nicht genug Kapazität für die ausgewählte Premium-Farbe.",
+    "accountNotFound": "Konto nicht gefunden",
     "purchaseSuccess": "Kauf erfolgreich",
     "purchaseFail": "Kauf fehlgeschlagen",
     "tokenPastedFromExtension": "Token aus Erweiterung eingefügt"
   },
-  "paletteMode": {
-    "premium": "Premium-Farbe verwenden",
-    "free": "Kostenlose Farbe verwenden"
-  },
   "shop": {
-    "premiumTitle": "Premiumfarben",
+    "premiumTitle": "Premium-Farben",
     "purchased": "Gekaufte Farben",
     "exclusive": "Exklusive Palette",
-    "buyPremium": "💧 2000 Droplets",
-    "itemsTitle": "Artikel",
-    "itemsSub": "Weitere Ladungen erhalten",
-    "maxTitle": "+5 Max. Ladungen",
-    "maxDesc": "Kapazität der maximalen Farbladungen erhöhen",
-    "recTitle": "+30 Farbladungen",
-    "recDesc": "Farbladungen aufladen",
-    "autoBuy": "Automatisch kaufen"
+    "buyPremium": "💧 2000 Tropfen",
+    "itemsTitle": "Gegenstände",
+    "itemsSub": "Mehr Aufladungen erhalten",
+    "maxTitle": "+5 Max. Aufladungen",
+    "maxDesc": "Erhöht Ihre maximale Mal-Aufladungskapazität",
+    "recTitle": "+30 Mal-Aufladungen",
+    "recDesc": "Mal-Aufladungen nachfüllen",
+    "autoBuy": "Auto-Kauf"
   },
   "favorites": {
     "openTitle": "Favoriten öffnen",
-    "starTitle": "Position speichern",
+    "starTitle": "Ort speichern",
     "title": "Favoriten",
-    "saveTitle": "Position speichern",
+    "saveTitle": "Ort speichern",
     "nameLabel": "Name",
     "load": "Laden"
+  },
+  "autobuy": {
+    "All": "Alles automatisch kaufen",
+    "AllAccountsTitle": "Alle Konten automatisch kaufen",
+    "AllAccountsSub": "Auto-Kauf für alle Konten auf einmal einstellen"
   }
 }
-
-

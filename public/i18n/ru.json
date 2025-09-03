@@ -1,26 +1,27 @@
 {
   "nav": {
-    "accounts": "Аккаунты"
+    "accounts": "Аккаунты",
+    "accountCount": "Количество аккаунтов: {count}"
   },
   "pixel": {
-    "powerLabel": "Мощность пикселей: {count} / {max}"
+    "powerLabel": "Сила пикселей: {count} / {max}"
   },
   "ready": {
     "prepare": "Готово",
-    "selectAccount": "Выбрать аккаунт",
-    "autoSelectAccounts": "Автовыбор аккаунтов",
+    "selectAccount": "Выберите аккаунт",
+    "autoSelectAccounts": "Автовыбор аккаунта",
     "autoSelect": "Автовыбор",
-    "deleteAllSelected": "Снять выделение",
+    "deleteAllSelected": "Снять все выделения",
     "start": "Старт",
     "tokenPlaceholder": "Токен",
     "accountLabelDefault": "Аккаунт",
     "selectMode": {
-      "multi": "Выбрать с начала",
-      "frame": "Выбрать по рамке"
+      "multi": "Выбор с начала",
+      "frame": "Выбор по контуру"
     },
     "autoMode": {
-      "on": "Авторежим включен",
-      "off": "Авторежим выключен"
+      "on": "Автоматический режим включен",
+      "off": "Автоматический режим выключен"
     },
     "autoStart": {
       "on": "Автостарт включен",
@@ -37,12 +38,12 @@
   "accounts": {
     "add": "Добавить аккаунт",
     "checkAll": "Проверить все аккаунты",
-    "checkAllTitle": "Проверить пиксельную емкость всех аккаунтов"
+    "checkAllTitle": "Проверить емкость пикселей всех аккаунтов"
   },
   "table": {
     "accountName": "Имя аккаунта",
     "accountToken": "Токен аккаунта",
-    "droplets": "Droplets",
+    "droplets": "Капли",
     "pixelRight": "Лимит пикселей",
     "status": "Статус",
     "actions": "Действие",
@@ -51,12 +52,12 @@
   },
   "form": {
     "accountNameLabel": "Имя аккаунта",
-    "accountNamePlaceholder": "Напр., Основной аккаунт",
+    "accountNamePlaceholder": "например, Основной аккаунт",
     "accountTokenLabel": "Токен аккаунта",
-    "accountTokenPlaceholder": "Напр., eyJhbGciOi...",
-    "worldXLabel": "World X",
-    "worldYLabel": "World Y",
-    "fetchButton": "Получить",
+    "accountTokenPlaceholder": "например, eyJhbGciOi...",
+    "worldXLabel": "Мир X",
+    "worldYLabel": "Мир Y",
+    "fetchButton": "Загрузить",
     "uploadImage": "Загрузить изображение",
     "mosaicButton": "Мозаика"
   },
@@ -65,28 +66,28 @@
     "keepRatio": "Сохранять пропорции",
     "width": "Ширина",
     "height": "Высота",
-    "fillBackground": "Залить фон",
+    "fillBackground": "Заполнить фон",
     "color": "Цвет",
     "addToMap": "Добавить на карту",
-    "maxSizeExceeded": "Максимальный размер 1000x1000 пикселей.",
+    "maxSizeExceeded": "Максимальный размер — 1000x1000 пикселей.",
     "alphaThreshold": "Прозрачность",
     "colorMetric": "Алгоритм цвета",
-    "metricRgb": "RGB (fast)",
+    "metricRgb": "RGB (быстро)",
     "metricLab": "Lab (CIE76)",
     "metricOklab": "Oklab",
-    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
-    "dithering": "Dithering",
-    "ditheringOn": "Dithering: ON",
-    "ditheringOff": "Dithering: OFF"
+    "metricCiede2000": "CIEDE2000 (точнее, но медленнее)",
+    "dithering": "Дизеринг",
+    "ditheringOn": "Дизеринг: ВКЛ",
+    "ditheringOff": "Дизеринг: ВЫКЛ"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
   },
   "mosaic": {
     "title": "Мозаика",
-    "use2": "Исп. 2 коорд",
-    "use4": "Исп. 4 коорд",
-    "fetch": "Получить"
+    "use2": "Использовать 2 координаты",
+    "use4": "Использовать 4 координаты",
+    "fetch": "Загрузить"
   },
   "buttons": {
     "back": "Назад",
@@ -100,31 +101,19 @@
   },
   "thumb": {
     "imageAlt": "Изображение {n}",
-    "lock": "Блокировка"
+    "lock": "Заблокировать"
   },
   "labels": {
     "colorPalette": "Цветовая палитра"
   },
   "palette": {
     "transparentTitle": "Прозрачный (цвет изображения)",
-    "colorTitle": "Цвет #{id}"
+    "colorTitle": "Цвет #{id}",
+    "premiumColorTitle": "Премиум цвет (осталось {remain}/{total})"
   },
   "paletteMode": {
-    "premium": "Использовать премиум-цвет",
+    "premium": "Использовать премиум цвет",
     "free": "Использовать бесплатный цвет"
-  },
-  "shop": {
-    "premiumTitle": "Премиум цвета",
-    "purchased": "Купленные цвета",
-    "exclusive": "Эксклюзивная палитра",
-    "buyPremium": "💧 2000 Droplets",
-    "itemsTitle": "Товары",
-    "itemsSub": "Получить больше зарядов",
-    "maxTitle": "+5 Макс. зарядов",
-    "maxDesc": "Увеличить максимальную емкость зарядов краски",
-    "recTitle": "+30 Зарядов краски",
-    "recDesc": "Пополнить заряды краски",
-    "autoBuy": "Автопокупка"
   },
   "controls": {
     "movement": "Движение"
@@ -138,30 +127,48 @@
   },
   "messages": {
     "selectAccountFirst": "Сначала выберите аккаунт.",
-    "maxPixelsReached": "Достигнут максимум пикселей: {limit}/{limit}",
+    "maxPixelsReached": "Вы достигли максимального количества пикселей: {limit}/{limit}",
     "addCfClearancePrompt": "Сначала добавьте значение cf_clearance в Настройках (минимум 30 символов).",
-    "max12Accounts": "Можно выбрать до 12 аккаунтов.",
-    "startRequirementsMissing": "Чтобы начать, введите токен, выберите аккаунты и хотя бы 1 пиксель.",
+    "max12Accounts": "Можно выбрать максимум 12 аккаунтов.",
+    "startRequirementsMissing": "Введите токен, выберите аккаунты и хотя бы 1 пиксель для старта.",
     "noSelectedImage": "Изображение не выбрано.",
     "errorGeneric": "Ошибка",
-    "painted": "Покрашено.",
-    "insufficientPixelPower": "Недостаточная мощность пикселей: {n} пикселей не отправлено.",
+    "painted": "Закрашено.",
+    "insufficientPixelPower": "Недостаточно силы пикселей: {n} пикселей не удалось отправить.",
     "imageLoadFailed": "Не удалось загрузить изображение. Проверьте значения.",
     "tokenAlreadyExists": "Аккаунт с этим токеном уже существует.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance не может быть пустым при наличии аккаунтов.",
-    "cfClearanceChange": "Пожалуйста, смените cf_clearance.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance не может быть пустым, пока существуют аккаунты.",
+    "cfClearanceChange": "Пожалуйста, измените cf_clearance.",
+    "premiumColorLimitReached": "Недостаточно емкости для выбранного премиум цвета.",
+    "accountNotFound": "Аккаунт не найден",
     "purchaseSuccess": "Покупка успешна",
     "purchaseFail": "Покупка не удалась",
     "tokenPastedFromExtension": "Токен вставлен из расширения"
+  },
+  "shop": {
+    "premiumTitle": "Премиум цвета",
+    "purchased": "Купленные цвета",
+    "exclusive": "Эксклюзивная палитра",
+    "buyPremium": "💧 2000 Капель",
+    "itemsTitle": "Предметы",
+    "itemsSub": "Получить больше зарядов",
+    "maxTitle": "+5 Макс. зарядов",
+    "maxDesc": "Увеличить максимальную емкость зарядов краски",
+    "recTitle": "+30 Зарядов краски",
+    "recDesc": "Восстановить заряды краски",
+    "autoBuy": "Автопокупка"
   },
   "favorites": {
     "openTitle": "Открыть избранное",
     "starTitle": "Сохранить местоположение",
     "title": "Избранное",
     "saveTitle": "Сохранить местоположение",
-    "nameLabel": "Имя",
+    "nameLabel": "Название",
     "load": "Загрузить"
+  },
+  "autobuy": {
+    "All": "Автопокупка всего",
+    "AllAccountsTitle": "Автопокупка для всех аккаунтов",
+    "AllAccountsSub": "Настроить автопокупку для всех аккаунтов сразу"
   }
 }
-
-

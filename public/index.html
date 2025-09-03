@@ -248,6 +248,21 @@
       font-size: 12px;
       border: 1px solid rgba(255,255,255,0.1);
     }
+
+    #account-count {
+      position: static;
+      display: inline-flex;
+      align-items: center;
+      background: rgba(0,0,0,0.45);
+      color: #e5e7eb;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      white-space: normal;
+      text-align: center;
+      max-width: 100%;
+    }
     
     #pixel-power {
       position: static;
@@ -519,8 +534,7 @@
     }
     .modal-body { padding-bottom: 56px; min-height: 300px; max-height: 400px; overflow-y: auto; }
     .modal-footer.split { justify-content: space-between; }
-    .accounts-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; margin-right: 10px; }
-    #btn-check-all { margin-left: 8px; }
+    .accounts-actions { display: flex; justify-content: flex-end; margin-bottom: 8px; margin-right: 10px; gap: 8px}
     .app-btn .spin-indicator { display: none; margin-left: 6px; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .app-btn.spinning .spin-indicator { display: inline-block; animation: spin 1s linear infinite; }
@@ -817,6 +831,7 @@
     <div id="control-panel">
       <div class="controls-row">
         <button id="btn-accounts" class="app-btn" type="button" data-i18n="nav.accounts">Hesaplar</button>
+         <div id="account-count" class="pixel-power" role="status" data-i18n-dynamic="nav.accountCount" data-count="0"></div>
         <div id="pixel-power" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
       </div>
       <div>
@@ -884,6 +899,7 @@
         <div id="accounts-section">
           <div class="accounts-actions">
             <button id="btn-account-add" class="app-btn" type="button" data-i18n="accounts.add">Hesap ekle</button>
+            <button id="btn-autobuy-all" class="app-btn" type="button" data-i18n="autobuy.All">Auto Buy All</button>
             <button id="btn-check-all" class="app-btn" type="button" data-i18n-title="accounts.checkAllTitle"><span class="label" data-i18n="accounts.checkAll">Check All Accounts</span> <span class="spin-indicator">⟳</span></button>
           </div>
           <div class="table-responsive">
@@ -963,6 +979,32 @@
               <div class="shop-desc" style="margin-top:8px;" data-i18n="shop.exclusive">Exclusive palette</div>
               <div id="shop-premium-palette" class="shop-palette-grid" aria-label="Premium color palette"></div>
               <div id="shop-premium-buy" class="shop-pill" role="button" tabindex="0" data-i18n="shop.buyPremium">💧 2000 Droplets</div>
+            </div>
+          </div>
+        </div>
+        <div id="autobuy-all-view-section" hidden>
+          <div class="shop-header">
+            <div class="shop-title" data-i18n="autobuy.AllAccountsTitle">Auto Buy All Accounts</div>
+            <div class="shop-sub" data-i18n="autobuy.AllAccountsSub">Set autobuy for all accounts at once</div>
+          </div>
+          <div class="shop-grid">
+            <div class="shop-card">
+              <div class="shop-icon">⬆️</div>
+              <div class="shop-name" data-i18n="shop.maxTitle">+5 Max. Charges</div>
+              <div class="shop-desc" data-i18n="shop.maxDesc">Increase maximum paint charges capacity</div>
+              <div class="shop-auto-wrap">
+                <span class="select-mode-label" data-i18n="shop.autoBuy">Autobuy for ALL</span>
+                <button class="select-mode-track" id="autobuy-all-max" type="button" role="switch" aria-checked="false" aria-label="Autobuy for all accounts"><span class="select-mode-knob"></span></button>
+              </div>
+            </div>
+            <div class="shop-card">
+              <div class="shop-icon">🩸</div>
+              <div class="shop-name" data-i18n="shop.recTitle">+30 Paint Charges</div>
+              <div class="shop-desc" data-i18n="shop.recDesc">Recharge paint charges</div>
+              <div class="shop-auto-wrap">
+                <span class="select-mode-label" data-i18n="shop.autoBuy">Autobuy for ALL</span>
+                <button class="select-mode-track" id="autobuy-all-rec" type="button" role="switch" aria-checked="false" aria-label="Autobuy for all accounts"><span class="select-mode-knob"></span></button>
+              </div>
             </div>
           </div>
         </div>
@@ -1099,7 +1141,8 @@
       { value: 'fr', label: 'Français' },
       { value: 'ru', label: 'Русский' },
       { value: 'cn', label: '中文' },
-      { value: 'ja', label: '日本語' }
+      { value: 'ja', label: '日本語' },
+      { value: 'vi', label: 'Tiếng Việt' },
     ];
     function getSavedLang(){ try { return localStorage.getItem('lang') || I18N_DEFAULT_LANG; } catch { return I18N_DEFAULT_LANG; } }
     function saveLang(lang){ try { localStorage.setItem('lang', lang); } catch {} }
@@ -1156,6 +1199,17 @@
           rp.textContent = t('pixel.powerLabel', { count, max });
         }
       } catch {}
+      try {
+        const ac = document.getElementById('account-count');
+        if (ac) {
+          const count = Number(ac.getAttribute('data-count') || '0');
+          // Use the t() function to get the translation of the keyword 'nav.accountCount'
+          ac.textContent = t('nav.accountCount', { count });
+        }
+      } catch {}
+
+      // Re-layout floating UI elements after text size changes
+      try { layoutSoundControl(); } catch {}
       // Re-layout floating UI elements after text size changes
       try { layoutSoundControl(); } catch {}
       try { layoutLangSwitch(); } catch {}
@@ -5355,6 +5409,7 @@ function loadImage(area, no, preserveView = false) {
       if (!accountsSection || !accountFormSection) return;
       accountFormSection.hidden = true;
       if (shopViewSection) shopViewSection.hidden = true;
+      if (autobuyAllViewSection) autobuyAllViewSection.hidden = true;
       accountsSection.hidden = false;
       try { if (shopBackBtn) shopBackBtn.hidden = true; } catch {}
       try { if (shopDropletsInfo) shopDropletsInfo.hidden = true; } catch {}
@@ -5575,6 +5630,17 @@ function loadImage(area, no, preserveView = false) {
         return aActive ? 1 : -1; // Inactive first
       }) : [];
       accountsData = sortedRows.slice();
+      try {
+          const countEl = document.getElementById('account-count');
+          if (countEl) {
+              // Update content with total accounts
+              countEl.setAttribute('data-count', accountsData.length);
+          }
+          applyTranslations(); 
+      } catch (e) {
+          console.error("Failed to update account count:", e);
+      }
+      try { recomputeActivePalette(); } catch {}
       try { recomputeActivePalette(); } catch {}
       accountsTbody.innerHTML = '';
       sortedRows.forEach(row => {
@@ -6267,6 +6333,11 @@ function loadImage(area, no, preserveView = false) {
               try { localStorage.setItem('last.captured.token', token); } catch {}
             }
           } catch {}
+        });
+		
+		 es.addEventListener('accounts_updated', (ev) => {
+          showToast('Account list was updated remotely!', 'success', 2000);
+          loadAccounts(); 
         });
       } catch {}
     })();
@@ -7400,11 +7471,76 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
       } catch {}
     }
 
-    if (readyTokenInput) {
+    if (readyTokenInput) 
       readyTokenInput.addEventListener('input', () => {
         updateStartEnabled();
       });
+
+    const autobuyAllBtn = document.getElementById('btn-autobuy-all');
+    const autobuyAllViewSection = document.getElementById('autobuy-all-view-section');
+    const autobuyAllMaxBtn = document.getElementById('autobuy-all-max');
+    const autobuyAllRecBtn = document.getElementById('autobuy-all-rec');
+
+    function updateAutobuyAllUi() {
+      if (!accountsData || !autobuyAllMaxBtn || !autobuyAllRecBtn) return;
+
+      const maxOn = accountsData.some(acc => acc && acc.autobuy === 'max');
+      const recOn = accountsData.some(acc => acc && acc.autobuy === 'rec');
+
+      autobuyAllMaxBtn.classList.toggle('on', maxOn);
+      autobuyAllMaxBtn.setAttribute('aria-checked', maxOn ? 'true' : 'false');
+
+      autobuyAllRecBtn.classList.toggle('on', recOn);
+      autobuyAllRecBtn.setAttribute('aria-checked', recOn ? 'true' : 'false');
     }
+
+    async function setAutobuyForAll(which) {
+
+      if (!accountsData || accountsData.length === 0) {
+        showToast('No accounts available.', 'error');
+        return;
+      }
+
+      const currentlyOn = accountsData.some(acc => acc && acc.autobuy === which);
+      const newAutobuyValue = currentlyOn ? null : which;
+      const statusText = newAutobuyValue ? newAutobuyValue.toUpperCase() : 'OFF';
+
+      showToast(`Setting autobuy ${statusText} for ${which} on all accounts...`, 'success', 4000);
+
+      const updatePromises = accountsData.map(account => {
+        if (!account || !account.id) {
+          return Promise.resolve(); 
+        }
+        return fetch('/api/accounts/' + encodeURIComponent(String(account.id)), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ autobuy: newAutobuyValue })
+        }).catch(err => console.error(`Failed to update account ${account.id}:`, err));
+      });
+
+      await Promise.all(updatePromises);
+
+      await loadAccounts();
+      updateAutobuyAllUi();
+      showToast('Bulk autobuy update complete!', 'success', 2000);
+    }
+
+      if (autobuyAllBtn) {
+        autobuyAllBtn.addEventListener('click', () => {
+          if (accountsSection) accountsSection.hidden = true;
+          if (autobuyAllViewSection) autobuyAllViewSection.hidden = false;
+          if (shopBackBtn) shopBackBtn.hidden = false;
+          updateAutobuyAllUi();
+        });
+      }
+
+    if (autobuyAllMaxBtn) {
+      autobuyAllMaxBtn.addEventListener('click', () => setAutobuyForAll('max'));
+    }
+    if (autobuyAllRecBtn) {
+      autobuyAllRecBtn.addEventListener('click', () => setAutobuyForAll('rec'));
+    }
+  
   </script>
 </body>
-</html> 
+</html>
