@@ -218,4 +218,66 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loadCfClearanceCookie();
   loadAllAccountCookies();
+  
+  //Account Syncing for automatic updating of accounts.
+  const syncAccountsButton = document.getElementById('sync-accounts-button');
+
+  if (syncAccountsButton) {
+    syncAccountsButton.addEventListener('click', async () => {
+      setStatus('Gathering container data...');
+      syncAccountsButton.disabled = true;
+
+      try {
+        if (!chrome.contextualIdentities) {
+          setStatus('Error: This feature requires Firefox.');
+          return;
+        }
+
+        const identities = await chrome.contextualIdentities.query({});
+        const containers = new Map(identities.map(id => [id.cookieStoreId, id.name]));
+        const storeIds = identities.map(id => id.cookieStoreId);
+        storeIds.push("firefox-default");
+
+        const accountsToSync = [];
+
+        for (const storeId of storeIds) {
+          const containerName = containers.get(storeId) || 'Default';
+
+          const [jCookieArr, cfCookieArr] = await Promise.all([
+            chrome.cookies.getAll({ name: 'j', domain: 'backend.wplace.live', storeId: storeId }),
+            chrome.cookies.getAll({ name: 'cf_clearance', domain: 'wplace.live', storeId: storeId, partitionKey: { topLevelSite: "https://wplace.live" } })
+          ]);
+
+          const accountToken = jCookieArr.length > 0 ? jCookieArr[0].value : null;
+          const cfToken = cfCookieArr.length > 0 ? cfCookieArr[0].value : null;
+
+          if (accountToken || cfToken) {
+            accountsToSync.push({ name: containerName, token: accountToken, cf_clearance: cfToken });
+          }
+        }
+
+        if (accountsToSync.length === 0) {
+          setStatus('No accounts found in containers.');
+          return;
+        }
+
+        const payload = JSON.stringify(accountsToSync);
+        const headers = { 'Content-Type': 'application/json' };
+        const endpoint = '/api/sync-accounts';
+        const options = { method: 'POST', headers, body: payload, mode: 'no-cors' };
+
+        try { fetch('http://localhost:3000' + endpoint, options).catch(() => {}); } catch (_) {}
+        try { fetch('http://127.0.0.1:3000' + endpoint, options).catch(() => {}); } catch (_) {}
+        setStatus('Sync signal sent to application!');
+
+      } catch (error) {
+        console.error('Sync failed:', error);
+        setStatus('Error preparing sync data.');
+      } finally {
+        setTimeout(() => {
+          syncAccountsButton.disabled = false;
+        }, 1000);
+      }
+    });
+  }
 });
