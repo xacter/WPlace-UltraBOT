@@ -16,7 +16,8 @@
     "accountLabelDefault": "Account",
     "selectMode": {
       "multi": "Select from start",
-      "frame": "Select from outline"
+      "frame": "Select from outline",
+      "random": "Random selection"
     },
     "autoMode": {
       "on": "Auto mode on",

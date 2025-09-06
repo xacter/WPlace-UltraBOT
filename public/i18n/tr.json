@@ -16,7 +16,8 @@
     "accountLabelDefault": "Hesap",
     "selectMode": {
       "multi": "Önce başlangıçtan seç",
-      "frame": "Önce çerçeveden seç"
+      "frame": "Önce çerçeveden seç",
+      "random": "Rastgele seçim"
     },
     "autoMode": {
       "on": "Auto mode açık",
