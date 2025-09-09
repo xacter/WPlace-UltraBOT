@@ -27,6 +27,13 @@ function maskCookieHeader(cookieHeader) {
 }
 function debugLog(...args) { if (DEBUG) { try { console.log('[debug]', ...args); } catch {} } }
 
+const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const API_KEY = process.env.API_KEY || '';
+function isAuthorized(req) {
+  if (!API_KEY) return true;
+  return req.headers['x-api-key'] === API_KEY;
+}
+
 const HTTPS_AGENT = new https.Agent({ secureProtocol: 'TLSv1_2_method' });
 let axiosClient = null;
 if (axios) {
@@ -376,11 +383,12 @@ function startServer(port, host) {
     }
     // Server-Sent Events for live notifications
     if (parsed.pathname === '/api/events' && req.method === 'GET') {
+      if (!isAuthorized(req)) { res.writeHead(401); res.end('Unauthorized'); return; }
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN
       });
       try { res.write(': ok\n\n'); } catch {}
       sseClients.add(res);
@@ -391,10 +399,11 @@ function startServer(port, host) {
 
     // CORS preflight for token endpoint
     if (parsed.pathname === '/api/token' && req.method === 'OPTIONS') {
+      if (!isAuthorized(req)) { res.writeHead(401, { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }); res.end(); return; }
       res.writeHead(204, {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-API-Key',
         'Access-Control-Max-Age': '600'
       });
       res.end();
@@ -402,13 +411,14 @@ function startServer(port, host) {
     }
     // Receive token captured by extension and notify connected UIs
       if (parsed.pathname === '/api/token' && req.method === 'POST') {
+        if (!isAuthorized(req)) { res.writeHead(401, { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }); res.end(); return; }
         readJsonBody(req).then((body) => {
           const token = body && typeof body.token === 'string' ? body.token : '';
           const xpaw = body && typeof body.xpaw === 'string' ? body.xpaw : '';
           const fp = body && typeof body.fp === 'string' ? body.fp : '';
           const worldX = (body && (typeof body.worldX === 'string' || typeof body.worldX === 'number')) ? body.worldX : null;
           const worldY = (body && (typeof body.worldY === 'string' || typeof body.worldY === 'number')) ? body.worldY : null;
-          if (!token) { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); return; }
+          if (!token) { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }); res.end(JSON.stringify({ ok: false })); return; }
           try {
             const existing = readJson(SETTINGS_FILE, { cf_clearance: '', worldX: null, worldY: null });
             const merged = { ...existing };
@@ -417,9 +427,9 @@ function startServer(port, host) {
             writeJson(SETTINGS_FILE, merged);
           } catch {}
           sseBroadcast('token', { token, xpaw, fp, worldX, worldY });
-          res.writeHead(204, { 'Access-Control-Allow-Origin': '*' });
+          res.writeHead(204, { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN });
           res.end();
-        }).catch(() => { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify({ ok: false })); });
+        }).catch(() => { res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }); res.end(JSON.stringify({ ok: false })); });
         return;
       }
 
