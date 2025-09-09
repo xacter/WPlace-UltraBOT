@@ -2708,7 +2708,7 @@
       const worldY = (py - state.translateY) / state.scale;
       const lx = Math.floor(worldX - (sel.worldX || 0));
       const ly = Math.floor(worldY - (sel.worldY || 0));
-      if (lx >= 0 && ly >= 0 && lx < sel.image.naturalWidth && ly < sel.image.naturalHeight && isOpaquePixel(sel, lx, ly)) {
+      if (lx >= 0 && ly >= 0 && lx < sel.image.naturalWidth && ly < sel.image.naturalHeight && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(sel, lx, ly))) {
         readyHoverPixel.x = lx; readyHoverPixel.y = ly;
         positionPixelMarker(pixelHoverEl, sel, lx, ly);
         try {
@@ -4316,8 +4316,8 @@ function loadImage(area, no, preserveView = false) {
             if (selItem && selItem.image && selItem.image.complete) {
               const lx = Math.floor(worldX - (selItem.worldX || 0));
               const ly = Math.floor(worldY - (selItem.worldY || 0));
-              if (lx >= 0 && ly >= 0 && lx < selItem.image.naturalWidth && ly < selItem.image.naturalHeight) {
-                if (isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSameColorAsBase(selItem, lx, ly))) {
+                if (lx >= 0 && ly >= 0 && lx < selItem.image.naturalWidth && ly < selItem.image.naturalHeight) {
+                  if (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, lx, ly)) {
                   const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
                   const map = getSelectedMap(selItem);
                   const already = map ? map.size : 0;
@@ -5995,13 +5995,17 @@ function loadImage(area, no, preserveView = false) {
       } catch {}
       // Compose optional background fill for display
       let disp = off;
-      if (imgFillToggle && imgFillToggle.checked && imgFillColorId != null) {
+      if (imgFillToggle && imgFillToggle.checked) {
         const bg = document.createElement('canvas');
         bg.width = targetW; bg.height = targetH;
         const bctx = bg.getContext('2d', { willReadFrequently: true });
-        const rgb = getPaletteRgbById(imgFillColorId);
-        bctx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
-        bctx.fillRect(0,0,targetW,targetH);
+        if (imgFillColorId == null) {
+          bctx.clearRect(0, 0, targetW, targetH);
+        } else {
+          const rgb = getPaletteRgbById(imgFillColorId);
+          bctx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+          bctx.fillRect(0,0,targetW,targetH);
+        }
         bctx.drawImage(off, 0, 0);
         disp = bg;
       }
@@ -6154,10 +6158,14 @@ function loadImage(area, no, preserveView = false) {
         off.width = targetW; off.height = targetH;
         const octx = off.getContext('2d', { willReadFrequently: true });
         octx.imageSmoothingEnabled = false;
-        if (imgFillToggle && imgFillToggle.checked && imgFillColorId != null) {
-          const rgb = getPaletteRgbById(imgFillColorId);
-          octx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
-          octx.fillRect(0, 0, targetW, targetH);
+        if (imgFillToggle && imgFillToggle.checked) {
+          if (imgFillColorId == null) {
+            octx.clearRect(0, 0, targetW, targetH);
+          } else {
+            const rgb = getPaletteRgbById(imgFillColorId);
+            octx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+            octx.fillRect(0, 0, targetW, targetH);
+          }
         }
         octx.drawImage(previewSourceImage, 0, 0, previewSourceImage.naturalWidth, previewSourceImage.naturalHeight, 0, 0, targetW, targetH);
         const blob = await new Promise((resolve)=>{ off.toBlob((b)=>resolve(b), 'image/png'); });
@@ -6658,8 +6666,8 @@ function loadImage(area, no, preserveView = false) {
         let sx = start.x|0, sy = start.y|0;
         const totalCells = w * h;
         let traversed = 0;
-        while (addedCount < need && traversed < totalCells) {
-          if (isOpaquePixel(selItem, sx, sy) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, sx, sy))) {
+          while (addedCount < need && traversed < totalCells) {
+          if (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, sx, sy)) {
             const pid = (selectedOverrideColorId != null && selectedOverrideColorId !== 0)
               ? selectedOverrideColorId
               : getItemPixelPaletteId(selItem, sx, sy);
@@ -6698,7 +6706,7 @@ function loadImage(area, no, preserveView = false) {
       const mask = new Uint8Array(size);
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          if (isOpaquePixel(selItem, x, y)) {
+          if (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, x, y)) {
             mask[idxOf(x,y)] = 1;
           }
         }
@@ -7280,7 +7288,7 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
         const lx = readyHoverPixel.x|0;
         const ly = readyHoverPixel.y|0;
         if (lx < 0 || ly < 0 || lx >= selItem.image.naturalWidth || ly >= selItem.image.naturalHeight) return false;
-        if (!(isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, lx, ly)))) return false;
+        if (selectedOverrideColorId == null && isSamePaletteIdAsBase(selItem, lx, ly)) return false;
         const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
         const map = getSelectedMap(selItem);
         const already = map ? map.size : 0;
