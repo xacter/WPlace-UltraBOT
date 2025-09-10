@@ -57,7 +57,7 @@
     2. Start the app (optionally set `CORS_ORIGIN` and `API_KEY` to restrict access):
 
       ```bash
-      CORS_ORIGIN=http://localhost:3000 API_KEY=secret npm start
+      npm start
       ```
     3. Open `http://localhost:3000` in your browser.
 
