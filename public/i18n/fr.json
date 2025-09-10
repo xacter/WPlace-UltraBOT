@@ -16,7 +16,8 @@
     "accountLabelDefault": "Compte",
     "selectMode": {
       "multi": "Sélection depuis le départ",
-      "frame": "Sélection depuis le cadre"
+      "frame": "Sélection depuis le cadre",
+      "color": "Sélectionner par couleur"
     },
     "autoMode": {
       "on": "Mode auto activé",
