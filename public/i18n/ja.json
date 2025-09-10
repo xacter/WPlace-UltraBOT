@@ -16,7 +16,8 @@
     "accountLabelDefault": "アカウント",
     "selectMode": {
       "multi": "開始位置から選択",
-      "frame": "枠から選択"
+      "frame": "枠から選択",
+      "color": "色で選択"
     },
     "autoMode": {
       "on": "自動モード ON",

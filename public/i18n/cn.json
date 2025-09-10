@@ -16,7 +16,8 @@
     "accountLabelDefault": "账户",
     "selectMode": {
       "multi": "从头选择",
-      "frame": "从轮廓选择"
+      "frame": "从轮廓选择",
+      "color": "按颜色选择"
     },
     "autoMode": {
       "on": "自动模式 开",

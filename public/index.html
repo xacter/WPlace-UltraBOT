@@ -855,11 +855,9 @@
                 </div>
                 <div class="controls-row" id="select-mode-controls">
                     <div class="select-mode-wrap">
-                        <span id="select-mode-label-left" class="select-mode-label active" data-i18n="ready.selectMode.multi">Önce çok yerden seç</span>
-                        <button id="select-mode-toggle" class="select-mode-track" type="button" role="switch" aria-checked="false" aria-label="Select mode">
-                            <span class="select-mode-knob"></span>
-                        </button>
-                        <span id="select-mode-label-right" class="select-mode-label" data-i18n="ready.selectMode.frame">Önce çerçeveyi seç</span>
+                        <span id="select-mode-label-multi" class="select-mode-label active" data-i18n="ready.selectMode.multi">Önce çok yerden seç</span>
+                        <span id="select-mode-label-frame" class="select-mode-label" data-i18n="ready.selectMode.frame">Önce çerçeveyi seç</span>
+                        <span id="select-mode-label-color" class="select-mode-label" data-i18n="ready.selectMode.color">Renge göre seç</span>
                     </div>
                 </div>
             </div>
@@ -6280,21 +6278,20 @@
     const autoStartTrack = document.getElementById('auto-start-toggle');
     const autoStartLabelLeft = document.getElementById('auto-start-label-left');
     const autoStartLabelRight = document.getElementById('auto-start-label-right');
-    const selectModeTrack = document.getElementById('select-mode-toggle');
-    const selectModeLabelLeft = document.getElementById('select-mode-label-left');
-    const selectModeLabelRight = document.getElementById('select-mode-label-right');
+    const selectModeLabelMulti = document.getElementById('select-mode-label-multi');
+    const selectModeLabelFrame = document.getElementById('select-mode-label-frame');
+    const selectModeLabelColor = document.getElementById('select-mode-label-color');
     let selectMode = 'multi';
     let autoMode = false;
     let autoStart = false;
 
     function updateSelectModeUi(){
-        try { if (selectModeTrack) selectModeTrack.classList.toggle('on', selectMode === 'frame'); } catch {}
-        try { if (selectModeTrack) selectModeTrack.setAttribute('aria-checked', selectMode === 'frame' ? 'true' : 'false'); } catch {}
-        try { if (selectModeLabelLeft) selectModeLabelLeft.classList.toggle('active', selectMode === 'multi'); } catch {}
-        try { if (selectModeLabelRight) selectModeLabelRight.classList.toggle('active', selectMode === 'frame'); } catch {}
+        try { if (selectModeLabelMulti) selectModeLabelMulti.classList.toggle('active', selectMode === 'multi'); } catch {}
+        try { if (selectModeLabelFrame) selectModeLabelFrame.classList.toggle('active', selectMode === 'frame'); } catch {}
+        try { if (selectModeLabelColor) selectModeLabelColor.classList.toggle('active', selectMode === 'color'); } catch {}
     }
     function setSelectMode(mode){
-        selectMode = (mode === 'frame') ? 'frame' : 'multi';
+        selectMode = (mode === 'frame' || mode === 'color') ? mode : 'multi';
         updateSelectModeUi();
     }
     function updateAutoModeUi(){
@@ -6331,9 +6328,48 @@
     if (autoModeLabelRight) autoModeLabelRight.addEventListener('click', () => { autoMode = true; try { localStorage.setItem('ready.autoMode','1'); } catch {}; updateAutoModeUi(); });
     if (autoStartLabelLeft) autoStartLabelLeft.addEventListener('click', () => { autoStart = false; try { localStorage.setItem('ready.autoStart','0'); } catch {}; updateAutoStartUi(); });
     if (autoStartLabelRight) autoStartLabelRight.addEventListener('click', () => { autoStart = true; try { localStorage.setItem('ready.autoStart','1'); } catch {}; updateAutoStartUi(); });
-    if (selectModeTrack) selectModeTrack.addEventListener('click', () => setSelectMode(selectMode === 'frame' ? 'multi' : 'frame'));
-    if (selectModeLabelLeft) selectModeLabelLeft.addEventListener('click', () => setSelectMode('multi'));
-    if (selectModeLabelRight) selectModeLabelRight.addEventListener('click', () => setSelectMode('frame'));
+    if (selectModeLabelMulti) selectModeLabelMulti.addEventListener('click', () => setSelectMode('multi'));
+    if (selectModeLabelFrame) selectModeLabelFrame.addEventListener('click', () => setSelectMode('frame'));
+    if (selectModeLabelColor) selectModeLabelColor.addEventListener('click', () => setSelectMode('color'));
+
+    function autoSelectColorFirst(selItem, need){
+        if (!selItem || !selItem.image) return 0;
+        const w = selItem.image.naturalWidth|0;
+        const h = selItem.image.naturalHeight|0;
+        if (!(w && h)) return 0;
+        const map = getSelectedMap(selItem);
+        const buckets = {};
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                if (!isOpaquePixel(selItem, x, y)) continue;
+                if (map && map.has(keyFor(x, y))) continue;
+                if (selectedOverrideColorId == null && isSamePaletteIdAsBase(selItem, x, y)) continue;
+                const pid = getItemPixelPaletteId(selItem, x, y);
+                if (pid == null || pid === 0) continue;
+                if (!buckets[pid]) buckets[pid] = [];
+                buckets[pid].push({ x, y });
+            }
+        }
+        const pids = Object.keys(buckets).map(n => Number(n)).sort((a,b) => a - b);
+        let added = 0;
+        for (let i = 0; i < pids.length && added < need; i++) {
+            const pid = pids[i];
+            const bucket = buckets[pid];
+            for (let j = 0; j < bucket.length && added < need; j++) {
+                const p = bucket[j];
+                if (selectedOverrideColorId != null && selectedOverrideColorId !== 0 && isPremiumColorId(selectedOverrideColorId)) {
+                    const remain = getPremiumColorRemainingLimit(selectedOverrideColorId);
+                    if (!(remain > 0)) return added;
+                } else if (selectedOverrideColorId == null && isPremiumColorId(pid)) {
+                    const remain = getPremiumColorRemainingLimit(pid);
+                    if (!(remain > 0)) continue;
+                }
+                const did = addPixelSelection(selItem, p.x, p.y, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+                if (did) added++;
+            }
+        }
+        return added;
+    }
 
     function getAccountById(id) {
         const idStr = String(id);
@@ -6654,6 +6690,8 @@
             if (selectMode === 'frame') {
                 const prev = autoSelectDeleteMode; // unused placeholder
                 addedCount = autoSelectFrameFirst(selItem, need);
+            } else if (selectMode === 'color') {
+                addedCount = autoSelectColorFirst(selItem, need);
             } else {
                 let sx = start.x|0, sy = start.y|0;
                 const totalCells = w * h;
