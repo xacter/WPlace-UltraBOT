@@ -4,20 +4,20 @@
     "accountCount": "Nombre de comptes : {count}"
   },
   "pixel": {
-    "powerLabel": "Puissance pixel : {count} / {max}"
+    "powerLabel": "Puissance de pixels : {count} / {max}"
   },
   "ready": {
     "prepare": "Prêt",
     "selectAccount": "Sélectionner un compte",
-    "autoSelectAccounts": "Sélection automatique du compte",
-    "autoSelect": "Sélection automatique",
+    "autoSelectAccounts": "Sélection automatique des comptes",
+    "autoSelect": "Sélection auto",
     "deleteAllSelected": "Tout désélectionner",
-    "start": "Commencer",
+    "start": "Démarrer",
     "tokenPlaceholder": "Jeton",
     "accountLabelDefault": "Compte",
     "selectMode": {
-      "multi": "Sélectionner depuis le début",
-      "frame": "Sélectionner depuis le contour"
+      "multi": "Sélection depuis le départ",
+      "frame": "Sélection depuis le cadre"
     },
     "autoMode": {
       "on": "Mode auto activé",
@@ -38,12 +38,12 @@
   "accounts": {
     "add": "Ajouter un compte",
     "checkAll": "Vérifier tous les comptes",
-    "checkAllTitle": "Vérifier la capacité pixel de tous les comptes"
+    "checkAllTitle": "Vérifier la capacité de pixels de tous les comptes"
   },
   "table": {
     "accountName": "Nom du compte",
     "accountToken": "Jeton du compte",
-    "droplets": "Gouttelettes",
+    "droplets": "Droplets",
     "pixelRight": "Limite de pixels",
     "status": "Statut",
     "actions": "Action",
@@ -52,48 +52,48 @@
   },
   "form": {
     "accountNameLabel": "Nom du compte",
-    "accountNamePlaceholder": "ex., Compte principal",
+    "accountNamePlaceholder": "Ex. : Compte principal",
     "accountTokenLabel": "Jeton du compte",
-    "accountTokenPlaceholder": "ex., eyJhbGciOi...",
-    "worldXLabel": "Monde X",
-    "worldYLabel": "Monde Y",
+    "accountTokenPlaceholder": "Ex. : eyJhbGciOi...",
+    "worldXLabel": "World X",
+    "worldYLabel": "World Y",
     "fetchButton": "Récupérer",
-    "uploadImage": "Télécharger l'image",
+    "uploadImage": "Téléverser une image",
     "mosaicButton": "Mosaïque"
   },
   "preview": {
     "scale": "Échelle (%)",
-    "keepRatio": "Conserver le ratio",
+    "keepRatio": "Conserver les proportions",
     "width": "Largeur",
     "height": "Hauteur",
-    "fillBackground": "Remplir l'arrière-plan",
+    "fillBackground": "Remplir l’arrière-plan",
     "color": "Couleur",
     "addToMap": "Ajouter à la carte",
     "maxSizeExceeded": "La taille maximale est de 1000x1000 pixels.",
-    "alphaThreshold": "Seuil de transparence",
-    "colorMetric": "Algorithme de couleur",
-    "metricRgb": "RGB (rapide)",
+    "alphaThreshold": "Transparence",
+    "colorMetric": "Algorithme couleur",
+    "metricRgb": "RGB (fast)",
     "metricLab": "Lab (CIE76)",
     "metricOklab": "Oklab",
-    "metricCiede2000": "CIEDE2000 (plus précis, plus lent)",
-    "dithering": "Tramage (Dithering)",
-    "ditheringOn": "Tramage: ACTIVÉ",
-    "ditheringOff": "Tramage: DÉSACTIVÉ"
+    "metricCiede2000": "CIEDE2000 (more accurate, slower)",
+    "dithering": "Dithering",
+    "ditheringOn": "Dithering: ON",
+    "ditheringOff": "Dithering: OFF"
   },
   "settings": {
     "cf_clearance": "cf_clearance"
   },
   "mosaic": {
     "title": "Mosaïque",
-    "use2": "Utiliser 2 coordonnées",
-    "use4": "Utiliser 4 coordonnées",
+    "use2": "Utiliser 2 coord",
+    "use4": "Utiliser 4 coord",
     "fetch": "Récupérer"
   },
   "buttons": {
     "back": "Retour",
-    "save": "Sauvegarder",
+    "save": "Enregistrer",
     "add": "Ajouter",
-    "saveSettings": "Sauvegarder",
+    "saveSettings": "Enregistrer",
     "edit": "Modifier",
     "checkPixels": "Vérifier",
     "shop": "Boutique",
@@ -107,68 +107,65 @@
     "colorPalette": "Palette de couleurs"
   },
   "palette": {
-    "transparentTitle": "Transparent (couleur d'image)",
-    "colorTitle": "Couleur #{id}",
-    "premiumColorTitle": "Couleur premium (reste {remain}/{total})"
+    "transparentTitle": "Transparent (couleur de l'image)",
+    "colorTitle": "Couleur #{id}"
   },
   "paletteMode": {
-    "premium": "Utiliser couleur premium",
-    "free": "Utiliser couleur gratuite"
-  },
-  "controls": {
-    "movement": "Mouvement"
-  },
-  "movement": {
-    "title": "Déplacer l'image",
-    "up": "Déplacer vers le haut",
-    "down": "Déplacer vers le bas",
-    "left": "Déplacer vers la gauche",
-    "right": "Déplacer vers la droite"
-  },
-  "messages": {
-    "selectAccountFirst": "Veuillez d'abord sélectionner un compte.",
-    "maxPixelsReached": "Vous avez atteint le nombre maximum de pixels : {limit}/{limit}",
-    "addCfClearancePrompt": "Veuillez d'abord ajouter la valeur cf_clearance dans Paramètres (min. 30 caractères).",
-    "max12Accounts": "Vous pouvez sélectionner jusqu'à 12 comptes.",
-    "startRequirementsMissing": "Entrez un jeton, sélectionnez des comptes et choisissez au moins 1 pixel pour commencer.",
-    "noSelectedImage": "Aucune image sélectionnée.",
-    "errorGeneric": "Erreur",
-    "painted": "Peint.",
-    "insufficientPixelPower": "Puissance pixel insuffisante : {n} pixels n'ont pas pu être envoyés.",
-    "imageLoadFailed": "Impossible de charger l'image. Vérifiez les valeurs.",
-    "tokenAlreadyExists": "Un compte avec ce jeton existe déjà.",
-    "cfCannotBeClearedWithAccounts": "cf_clearance ne peut pas être vide tant que des comptes existent.",
-    "cfClearanceChange": "Veuillez modifier cf_clearance.",
-    "premiumColorLimitReached": "Capacité insuffisante pour la couleur premium sélectionnée.",
-    "accountNotFound": "Compte non trouvé",
-    "purchaseSuccess": "Achat réussi",
-    "purchaseFail": "Échec de l'achat",
-    "tokenPastedFromExtension": "Jeton collé depuis l'extension"
+    "premium": "Utiliser la couleur premium",
+    "free": "Utiliser la couleur gratuite"
   },
   "shop": {
     "premiumTitle": "Couleurs Premium",
     "purchased": "Couleurs achetées",
     "exclusive": "Palette exclusive",
-    "buyPremium": "💧 2000 Gouttelettes",
+    "buyPremium": "💧 2000 Droplets",
     "itemsTitle": "Articles",
-    "itemsSub": "Obtenir plus de recharges",
-    "maxTitle": "+5 Recharges Max.",
-    "maxDesc": "Augmente votre capacité maximale de recharges de peinture",
-    "recTitle": "+30 Recharges de Peinture",
-    "recDesc": "Recharger les recharges de peinture",
-    "autoBuy": "Achat automatique"
+    "itemsSub": "Obtenir plus de charges",
+    "maxTitle": "+5 Charges Max.",
+    "maxDesc": "Augmenter la capacité maximale de charges de peinture",
+    "recTitle": "+30 Charges de peinture",
+    "recDesc": "Recharger les charges de peinture",
+    "autoBuy": "Achat auto"
+  },
+  "controls": {
+    "movement": "Déplacement"
+  },
+  "movement": {
+    "title": "Déplacer l’image",
+    "up": "Haut",
+    "down": "Bas",
+    "left": "Gauche",
+    "right": "Droite"
+  },
+  "messages": {
+    "selectAccountFirst": "Sélectionnez d'abord un compte.",
+    "maxPixelsReached": "Vous avez atteint le nombre maximum de pixels : {limit}/{limit}",
+    "addCfClearancePrompt": "Ajoutez d'abord la valeur cf_clearance dans Paramètres (min. 30 caractères).",
+    "max12Accounts": "Vous pouvez sélectionner jusqu'à 12 comptes.",
+    "startRequirementsMissing": "Pour démarrer, saisissez un jeton, sélectionnez des comptes et au moins 1 pixel.",
+    "noSelectedImage": "Aucune image sélectionnée.",
+    "errorGeneric": "Erreur",
+    "painted": "Peint.",
+    "insufficientPixelPower": "Puissance de pixel insuffisante : {n} pixels n'ont pas pu être envoyés.",
+    "imageLoadFailed": "L'image n'a pas pu être chargée. Vérifiez les valeurs.",
+    "tokenAlreadyExists": "Un compte avec ce jeton existe déjà.",
+    "cfCannotBeClearedWithAccounts": "cf_clearance ne peut pas être vide si des comptes existent.",
+    "cfClearanceChange": "Veuillez changer cf_clearance.",
+    "purchaseSuccess": "Achat réussi",
+    "purchaseFail": "Échec de l'achat",
+    "tokenPastedFromExtension": "Jeton collé depuis l’extension"
   },
   "favorites": {
     "openTitle": "Ouvrir les favoris",
-    "starTitle": "Enregistrer l'emplacement",
+    "starTitle": "Enregistrer l’emplacement",
     "title": "Favoris",
-    "saveTitle": "Enregistrer l'emplacement",
+    "saveTitle": "Enregistrer l’emplacement",
     "nameLabel": "Nom",
     "load": "Charger"
   },
   "autobuy": {
     "All": "Tout acheter automatiquement",
-    "AllAccountsTitle": "Acheter tous les comptes automatiquement",
-    "AllAccountsSub": "Définir l'achat automatique pour tous les comptes à la fois"
+    "AllAccountsTitle": "Tout acheter automatiquement pour tous les comptes",
+    "AllAccountsSub": "Configurer l'achat automatique pour tous les comptes"
   }
 }

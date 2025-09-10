@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const worldYInput = document.getElementById('world-y');
   const copyWorldX = document.getElementById('copy-world-x');
   const copyWorldY = document.getElementById('copy-world-y');
+  const xpawInput = document.getElementById('xpaw-input');
+  const copyXpaw = document.getElementById('copy-xpaw');
   const toggleCapture = document.getElementById('toggle-capture');
   const toggleWrap = document.getElementById('toggle-capture-wrap');
   const toggleLabel = document.getElementById('toggle-capture-label');
@@ -18,10 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (text) setTimeout(() => { if (statusDiv) statusDiv.textContent = ''; }, 2000);
   }
 
-  chrome.storage.local.get(['wplace_token', 'wplace_world_x', 'wplace_world_y'], function(result) {
-    if (!tokenInput) return;
-    if (result && result.wplace_token) {
+  chrome.storage.local.get(['wplace_token', 'wplace_xpaw_token', 'wplace_world_x', 'wplace_world_y'], function(result) {
+    if (tokenInput && result && result.wplace_token) {
       tokenInput.value = result.wplace_token;
+    }
+    if (xpawInput && result && result.wplace_xpaw_token) {
+      xpawInput.value = result.wplace_xpaw_token;
     }
     if (worldXInput) worldXInput.value = (result && result.wplace_world_x) ? result.wplace_world_x : '-';
     if (worldYInput) worldYInput.value = (result && result.wplace_world_y) ? result.wplace_world_y : '-';
@@ -36,8 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   chrome.storage.onChanged.addListener(function(changes, area) {
     if (!tokenInput) return;
-    if (area === 'local' && changes && changes.wplace_token) {
+    if (area === 'local' && changes && changes.wplace_token && tokenInput) {
       tokenInput.value = changes.wplace_token.newValue || 'No token captured yet...';
+    }
+    if (area === 'local' && changes && changes.wplace_xpaw_token && xpawInput) {
+      xpawInput.value = changes.wplace_xpaw_token.newValue || 'No xpaw token captured yet...';
     }
     if (area === 'local' && (changes.wplace_world_x || changes.wplace_world_y)) {
       if (worldXInput && changes.wplace_world_x) {
@@ -66,6 +73,19 @@ document.addEventListener('DOMContentLoaded', function() {
           setStatus('Pixel token copied!');
           tokenInput.value = 'No token captured yet...';
           chrome.storage.local.remove('wplace_token');
+        });
+      }
+    });
+  }
+
+  if (copyXpaw) {
+    copyXpaw.addEventListener('click', function() {
+      if (!xpawInput) return;
+      if (xpawInput.value && xpawInput.value !== 'No xpaw token captured yet...') {
+        navigator.clipboard.writeText(xpawInput.value).then(function() {
+          setStatus('xpaw token copied!');
+          xpawInput.value = 'No xpaw token captured yet...';
+          chrome.storage.local.remove('wplace_xpaw_token');
         });
       }
     });

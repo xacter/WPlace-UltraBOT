@@ -10,11 +10,20 @@
 })();
 
 window.addEventListener('message', function(ev) {
-	if (!ev || !ev.data) return;
-	const msg = ev.data;
-	if (msg && msg.__wplace && msg.type === 'token_found' && msg.token) {
-		try { chrome.runtime.sendMessage({ type: 'wplace_token_found', token: msg.token, worldX: msg.worldX, worldY: msg.worldY }); } catch (e) {}
-	}
+        if (!ev || !ev.data) return;
+        const msg = ev.data;
+        if (msg && msg.__wplace && msg.type === 'token_found' && msg.token) {
+                try {
+                        chrome.runtime.sendMessage({
+                                type: 'wplace_token_found',
+                                token: msg.token,
+                                xpaw: msg.xpaw,
+                                fp: msg.fp,
+                                worldX: msg.worldX,
+                                worldY: msg.worldY,
+                        });
+                } catch (e) {}
+        }
 });
 
 (function syncToggle() {

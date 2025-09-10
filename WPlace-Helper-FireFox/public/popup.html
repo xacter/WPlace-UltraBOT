@@ -153,6 +153,16 @@
         </button>
       </div>
       <div class="input-row">
+        <input type="text" id="xpaw-input" readonly value="No xpaw token captured yet...">
+        <button id="copy-xpaw" class="btn" title="Copy xpaw token">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 8.5A2.5 2.5 0 0 1 11.5 6h5A2.5 2.5 0 0 1 19 8.5v8A2.5 2.5 0 0 1 16.5 19h-5A2.5 2.5 0 0 1 9 16.5v-8Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M7.5 16.5A2.5 2.5 0 0 1 5 14V7.5A2.5 2.5 0 0 1 7.5 5H14" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span>Copy</span>
+        </button>
+      </div>
+      <div class="input-row">
         <div class="input-pair">
           <input type="text" id="world-x" readonly value="-" title="World X" placeholder="World X">
           <button id="copy-world-x" class="btn btn-icon" title="Copy World X">
@@ -176,7 +186,22 @@
       </div>
       <div id="status" role="status" aria-live="polite" aria-atomic="true"></div>
     </section>
-	
+
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">Synchronization</div>
+        <div class="card-subtitle">From Firefox Containers</div>
+      </div>
+      <div class="input-row">
+        <button id="sync-accounts-button" class="btn" title="Send container tokens to the UltraBOT application">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2.5C16.9706 2.5 21 6.52944 21 11.5C21 16.4706 16.9706 20.5 12 20.5C7.02944 20.5 3 16.4706 3 11.5C3 8.13613 4.88059 5.25333 7.5 3.81882M12 2.5V11.5L7.5 3.81882M12 2.5L16.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span>Sync Accounts</span>
+        </button>
+      </div>
+    </section>
+
 	 <section class="card">
       <div class="card-header">
         <div class="card-title">Cloudflare Token</div>

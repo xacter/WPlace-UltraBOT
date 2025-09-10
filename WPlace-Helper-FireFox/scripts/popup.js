@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const worldYInput = document.getElementById('world-y');
   const copyWorldX = document.getElementById('copy-world-x');
   const copyWorldY = document.getElementById('copy-world-y');
+  const xpawInput = document.getElementById('xpaw-input');
+  const copyXpaw = document.getElementById('copy-xpaw');
   const toggleCapture = document.getElementById('toggle-capture');
   const toggleWrap = document.getElementById('toggle-capture-wrap');
   const toggleLabel = document.getElementById('toggle-capture-label');
@@ -23,10 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (text) setTimeout(() => { if (statusDiv) statusDiv.textContent = ''; }, 2000);
   }
 
-  chrome.storage.local.get(['wplace_token', 'wplace_world_x', 'wplace_world_y'], function(result) {
-    if (!tokenInput) return;
-    if (result && result.wplace_token) {
+  chrome.storage.local.get(['wplace_token', 'wplace_xpaw_token', 'wplace_world_x', 'wplace_world_y'], function(result) {
+    if (tokenInput && result && result.wplace_token) {
       tokenInput.value = result.wplace_token;
+    }
+    if (xpawInput && result && result.wplace_xpaw_token) {
+      xpawInput.value = result.wplace_xpaw_token;
     }
     if (worldXInput) worldXInput.value = (result && result.wplace_world_x) ? result.wplace_world_x : '-';
     if (worldYInput) worldYInput.value = (result && result.wplace_world_y) ? result.wplace_world_y : '-';
@@ -41,8 +45,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   chrome.storage.onChanged.addListener(function(changes, area) {
     if (!tokenInput) return;
-    if (area === 'local' && changes && changes.wplace_token) {
+    if (area === 'local' && changes && changes.wplace_token && tokenInput) {
       tokenInput.value = changes.wplace_token.newValue || 'No token captured yet...';
+    }
+    if (area === 'local' && changes && changes.wplace_xpaw_token && xpawInput) {
+      xpawInput.value = changes.wplace_xpaw_token.newValue || 'No xpaw token captured yet...';
     }
     if (area === 'local' && (changes.wplace_world_x || changes.wplace_world_y)) {
       if (worldXInput && changes.wplace_world_x) {
@@ -71,6 +78,19 @@ document.addEventListener('DOMContentLoaded', function() {
           setStatus('Pixel token copied!');
           tokenInput.value = 'No token captured yet...';
           chrome.storage.local.remove('wplace_token');
+        });
+      }
+    });
+  }
+
+  if (copyXpaw) {
+    copyXpaw.addEventListener('click', function() {
+      if (!xpawInput) return;
+      if (xpawInput.value && xpawInput.value !== 'No xpaw token captured yet...') {
+        navigator.clipboard.writeText(xpawInput.value).then(function() {
+          setStatus('xpaw token copied!');
+          xpawInput.value = 'No xpaw token captured yet...';
+          chrome.storage.local.remove('wplace_xpaw_token');
         });
       }
     });
@@ -218,4 +238,66 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loadCfClearanceCookie();
   loadAllAccountCookies();
+
+  //Account Syncing for automatic updating of accounts.
+  const syncAccountsButton = document.getElementById('sync-accounts-button');
+
+  if (syncAccountsButton) {
+    syncAccountsButton.addEventListener('click', async () => {
+      setStatus('Gathering container data...');
+      syncAccountsButton.disabled = true;
+
+      try {
+        if (!chrome.contextualIdentities) {
+          setStatus('Error: This feature requires Firefox.');
+          return;
+        }
+
+        const identities = await chrome.contextualIdentities.query({});
+        const containers = new Map(identities.map(id => [id.cookieStoreId, id.name]));
+        const storeIds = identities.map(id => id.cookieStoreId);
+        storeIds.push("firefox-default");
+
+        const accountsToSync = [];
+
+        for (const storeId of storeIds) {
+          const containerName = containers.get(storeId) || 'Default';
+
+          const [jCookieArr, cfCookieArr] = await Promise.all([
+            chrome.cookies.getAll({ name: 'j', domain: 'backend.wplace.live', storeId: storeId }),
+            chrome.cookies.getAll({ name: 'cf_clearance', domain: 'wplace.live', storeId: storeId, partitionKey: { topLevelSite: "https://wplace.live" } })
+          ]);
+
+          const accountToken = jCookieArr.length > 0 ? jCookieArr[0].value : null;
+          const cfToken = cfCookieArr.length > 0 ? cfCookieArr[0].value : null;
+
+          if (accountToken || cfToken) {
+            accountsToSync.push({ name: containerName, token: accountToken, cf_clearance: cfToken });
+          }
+        }
+
+        if (accountsToSync.length === 0) {
+          setStatus('No accounts found in containers.');
+          return;
+        }
+
+        const payload = JSON.stringify(accountsToSync);
+        const headers = { 'Content-Type': 'application/json' };
+        const endpoint = '/api/sync-accounts';
+        const options = { method: 'POST', headers, body: payload, mode: 'no-cors' };
+
+        try { fetch('http://localhost:3000' + endpoint, options).catch(() => {}); } catch (_) {}
+        try { fetch('http://127.0.0.1:3000' + endpoint, options).catch(() => {}); } catch (_) {}
+        setStatus('Sync signal sent to application!');
+
+      } catch (error) {
+        console.error('Sync failed:', error);
+        setStatus('Error preparing sync data.');
+      } finally {
+        setTimeout(() => {
+          syncAccountsButton.disabled = false;
+        }, 1000);
+      }
+    });
+  }
 });
