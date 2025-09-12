@@ -3,7 +3,8 @@
     "accounts": "Accounts"
   },
   "pixel": {
-    "powerLabel": "Pixel power: {count} / {max}"
+    "powerLabel": "Pixel power: {count} / {max}",
+    "brushSize": "Brush Size (Shift+Space):"
   },
   "ready": {
     "prepare": "Ready",
