@@ -7275,92 +7275,92 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
       showToast(t('messages.maxPixelsReached', { limit }), 'error', 2000);
     }
 
-function selectLocalPixelsInRadius(selItem, centerX, centerY, radius) {
-    if (!selItem || !selItem.image || !selItem.image.complete) return false;
+    function selectLocalPixelsInRadius(selItem, centerX, centerY, radius) {
+      if (!selItem || !selItem.image || !selItem.image.complete) return false;
 
-    const imageWidth = selItem.image.naturalWidth;
-    const imageHeight = selItem.image.naturalHeight;
-    const map = getSelectedMap(selItem);
-    const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+      const imageWidth = selItem.image.naturalWidth;
+      const imageHeight = selItem.image.naturalHeight;
+      const map = getSelectedMap(selItem);
+      const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
 
-    let pixelsAdded = 0;
-    const radiusSq = radius * radius; // Use squared radius for more efficient distance check
+      let pixelsAdded = 0;
+      const radiusSq = radius * radius; // Use squared radius for more efficient distance check
 
-    // Loop through the bounding box of the circle
-    for (let y = centerY - radius; y <= centerY + radius; y++) {
-        for (let x = centerX - radius; x <= centerX + radius; x++) {
-            // Check if the current pixel is inside the circle's radius
-            const dx = x - centerX;
-            const dy = y - centerY;
-            if (dx * dx + dy * dy > radiusSq) {
-                continue;
-            }
+      // Loop through the bounding box of the circle
+      for (let y = centerY - radius; y <= centerY + radius; y++) {
+          for (let x = centerX - radius; x <= centerX + radius; x++) {
+              // Check if the current pixel is inside the circle's radius
+              const dx = x - centerX;
+              const dy = y - centerY;
+              if (dx * dx + dy * dy > radiusSq) {
+                  continue;
+              }
 
-            const lx = Math.round(x);
-            const ly = Math.round(y);
+              const lx = Math.round(x);
+              const ly = Math.round(y);
 
-            // Pixel is inside image?
-            if (lx < 0 || ly < 0 || lx >= imageWidth || ly >= imageHeight) {
-                continue;
-            }
+              // Pixel is inside image?
+              if (lx < 0 || ly < 0 || lx >= imageWidth || ly >= imageHeight) {
+                  continue;
+              }
 
-            // Selection limit check
-            const already = (map ? map.size : 0) + pixelsAdded;
-            if (limit > 0 && already >= limit) {
-                showMaxReachedToastOnceForSpace(limit);
-                break;
-            }
+              // Selection limit check
+              const already = (map ? map.size : 0) + pixelsAdded;
+              if (limit > 0 && already >= limit) {
+                  showMaxReachedToastOnceForSpace(limit);
+                  break;
+              }
 
-            // Is pixel selectable?
-            if (!(isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, lx, ly)))) {
-                continue;
-            }
+              // Is pixel selectable?
+              if (!(isOpaquePixel(selItem, lx, ly) && (selectedOverrideColorId != null || !isSamePaletteIdAsBase(selItem, lx, ly)))) {
+                  continue;
+              }
 
-            // Premium Color Check
-            let checkColorId = null;
-            if (selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
-                checkColorId = selectedOverrideColorId;
-            } else {
-                try { checkColorId = getItemPixelPaletteId(selItem, lx, ly); } catch { checkColorId = null; }
-            }
-            if (checkColorId != null && isPremiumColorId(checkColorId)) {
-                const remain = getPremiumColorRemainingLimit(checkColorId);
-                if (!(remain > 0)) {
-                    showMaxReachedToastOnceForSpace(remain || 0);
-                    continue;
-                }
-            }
+              // Premium Color Check
+              let checkColorId = null;
+              if (selectedOverrideColorId != null && selectedOverrideColorId !== 0) {
+                  checkColorId = selectedOverrideColorId;
+              } else {
+                  try { checkColorId = getItemPixelPaletteId(selItem, lx, ly); } catch { checkColorId = null; }
+              }
+              if (checkColorId != null && isPremiumColorId(checkColorId)) {
+                  const remain = getPremiumColorRemainingLimit(checkColorId);
+                  if (!(remain > 0)) {
+                      showMaxReachedToastOnceForSpace(remain || 0);
+                      continue;
+                  }
+              }
 
-            // Finally add pixel to selection
-            const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
-            if (didAdd) {
-                pixelsAdded++;
-            }
-        }
-        
-        // Break out of the outer loop if selection limit reached
-        const already = (map ? map.size : 0) + pixelsAdded;
-        if (limit > 0 && already >= limit) {
-            break;
-        }
+              // Finally add pixel to selection
+              const didAdd = addPixelSelection(selItem, lx, ly, selectedOverrideColorId != null ? selectedOverrideColorId : null);
+              if (didAdd) {
+                  pixelsAdded++;
+              }
+          }
+          
+          // Break out of the outer loop if selection limit reached
+          const already = (map ? map.size : 0) + pixelsAdded;
+          if (limit > 0 && already >= limit) {
+              break;
+          }
+      }
+
+      // --- Update UI only once after the loop is done ---
+      if (pixelsAdded > 0) {
+          try {
+              updateReadySelectionLabel();
+              updateStartEnabled();
+              updatePixelMarkers();
+              render();
+          } catch {}
+          try {
+              refreshPaletteTooltips();
+          } catch {}
+          return true;
+      }
+
+      return false;
     }
-
-    // --- Update UI only once after the loop is done ---
-    if (pixelsAdded > 0) {
-        try {
-            updateReadySelectionLabel();
-            updateStartEnabled();
-            updatePixelMarkers();
-            render();
-        } catch {}
-        try {
-            refreshPaletteTooltips();
-        } catch {}
-        return true;
-    }
-
-    return false;
-}
 
     function maybeAddSelectionAtHover(){
       if (!isReadyOpen()) return false;
@@ -7422,6 +7422,57 @@ function selectLocalPixelsInRadius(selItem, centerX, centerY, radius) {
       }
     }
 
+    function removeLocalPixelsInRadius(selItem, centerX, centerY, radius) {
+      if (!selItem || !selItem.image || !selItem.image.complete) return false;
+
+      const imageWidth = selItem.image.naturalWidth;
+      const imageHeight = selItem.image.naturalHeight;
+      const map = getSelectedMap(selItem);
+      const limit = Math.max(0, Number(getReadySelectionLimit()) || 0);
+
+      let pixelsAdded = 0;
+      const radiusSq = radius * radius; // Use squared radius for more efficient distance check
+
+      // Loop through the bounding box of the circle
+      for (let y = centerY - radius; y <= centerY + radius; y++) {
+          for (let x = centerX - radius; x <= centerX + radius; x++) {
+              // Check if the current pixel is inside the circle's radius
+              const dx = x - centerX;
+              const dy = y - centerY;
+              if (dx * dx + dy * dy > radiusSq) {
+                  continue;
+              }
+
+              const lx = Math.round(x);
+              const ly = Math.round(y);
+
+              // Pixel is inside image?
+              if (lx < 0 || ly < 0 || lx >= imageWidth || ly >= imageHeight) {
+                  continue;
+              }
+          
+              // Finally add pixel to selection
+              const removed = removePixelSelection(selItem, lx, ly);
+              if (removed) {
+                  pixelsAdded++;
+              }
+          }        
+      }
+
+      // --- Update UI only once after the loop is done ---
+      if (removed > 0) {
+          try {
+              updateReadySelectionLabel();
+              updateStartEnabled();
+              updatePixelMarkers();
+              render();
+          } catch {}
+          return true;
+      }
+
+      return false;
+    }
+
     function maybeRemoveSelectionAtHover(){
       if (!isReadyOpen()) return false;
       if (!readyHoverPixel || readyHoverPixel.x == null || readyHoverPixel.y == null) return false;
@@ -7443,13 +7494,11 @@ function selectLocalPixelsInRadius(selItem, centerX, centerY, radius) {
         if (!selItem || !selItem.image || !selItem.image.complete) return false;
         const lx = readyHoverPixel.x|0;
         const ly = readyHoverPixel.y|0;
-        if (lx < 0 || ly < 0 || lx >= selItem.image.naturalWidth || ly >= selItem.image.naturalHeight) return false;
-        const removed = removePixelSelection(selItem, lx, ly);
-        if (removed) {
-          try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
-          return true;
-        }
-        return false;
+        const radius = event.shiftKey ? 5 : 0; // 5px radius selection if shift is held
+
+        const result = removeLocalPixelsInRadius(selItem, lx, ly, radius);
+
+        return result;
       }
     }
     function isTypingTarget(target){
