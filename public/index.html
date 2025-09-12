@@ -792,6 +792,16 @@
     #favorites-list .favorite-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     #btn-favorite-star { font-size: 16px; padding: 6px 8px; }
     #btn-favorite-star.saved { color: gold; }
+
+    #brush-div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    input#brush-size {
+        margin-left: 10px;
+    }    
   </style>
 </head>
 <body>
@@ -824,7 +834,11 @@
         <div id="ready-popup" hidden>
           <div class="ready-header">
             <button id="btn-ready-account" class="app-btn" type="button" data-i18n="ready.selectAccount">Hesap seç</button>
-            <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>
+            <div id="ready-pixel" role="status" aria-live="polite" data-i18n-dynamic="pixel.powerLabel" data-count="0" data-max="0">Piksel gücü: 0 / 0</div>       
+          </div>
+          <div id="brush-div">
+            <div data-i18n="pixel.brushSize">Brush Size:</div>
+            <input id="brush-size" type="number" min="0">     
           </div>
           <div class="controls-row" id="auto-mode-controls">
             <div class="select-mode-wrap">
@@ -1313,6 +1327,9 @@
     const saveFavClose = document.getElementById('save-fav-close');
     const favNameInput = document.getElementById('fav-name-input');
     const favSaveBtn = document.getElementById('fav-save-btn');
+
+    const brushSize = document.getElementById('brush-size');
+    brushSize.value = '0'
 
     let favoritesCache = [];
     async function refreshFavorites(){
@@ -7414,7 +7431,8 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
         if (!selItem || !selItem.image || !selItem.image.complete) return false;
         const lx = readyHoverPixel.x|0;
         const ly = readyHoverPixel.y|0;
-        const radius = event.shiftKey ? 5 : 0; // 5px radius selection if shift is held
+        const radius = event.shiftKey ? brushSize.value : 0; // Increase radius if shift is held down
+        if (brushSize.value == "") radius = 0;
 
         const result = selectLocalPixelsInRadius(selItem, lx, ly, radius);
 
@@ -7494,7 +7512,8 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
         if (!selItem || !selItem.image || !selItem.image.complete) return false;
         const lx = readyHoverPixel.x|0;
         const ly = readyHoverPixel.y|0;
-        const radius = event.shiftKey ? 5 : 0; // 5px radius selection if shift is held
+        const radius = event.shiftKey ? brushSize.value : 0; // Increase radius if shift is held down
+        if (brushSize.value == "") radius = 0;
 
         const result = removeLocalPixelsInRadius(selItem, lx, ly, radius);
 
