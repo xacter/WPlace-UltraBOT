@@ -1,5 +1,6 @@
   <p align="center">
     Translations ➜&nbsp;
+      <a href="docs/AR.md"><img src="https://flagcdn.com/256x192/sa.png" width="48" alt="Suadi Flag"></a>
       <a href="docs/TR.md"><img src="https://flagcdn.com/256x192/tr.png" width="48" alt="Turkey Flag"></a>
       <a href="docs/DE.md"><img src="https://flagcdn.com/256x192/de.png" width="48" alt="Germany Flag"></a>
       <a href="docs/ES.md"><img src="https://flagcdn.com/256x192/es.png" width="48" alt="Spain Flag"></a>
