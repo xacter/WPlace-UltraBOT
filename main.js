@@ -329,7 +329,11 @@ async function purchaseProduct(cf_clearance, token, productId, amount) {
 
 function startServer(port, host) {
   const server = http.createServer((req, res) => {
-    const parsed = url.parse(req.url, true);
+    const ultrabotUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);  // If the host is not present in the request header, localhost is used by default.
+    const parsed = {
+      pathname: ultrabotUrl.pathname,
+      query: Object.fromEntries(ultrabotUrl.searchParams)
+    };
     ensureDb();
     if (parsed.pathname === '/' || parsed.pathname === '/index.html') {
       const htmlPath = path.resolve(process.cwd(), 'public', 'index.html');

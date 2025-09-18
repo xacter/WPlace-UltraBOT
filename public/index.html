@@ -654,6 +654,12 @@
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
       max-width: min(95vw, 720px);
     }
+
+    /* Premium mode */
+    #palette-mode.premium-mode { bottom: 100px; left: 50%; transform: translateX(-50%); }
+    /* Free mode */
+    #palette-mode.free-mode { bottom: 76px; left: 50%; transform: translateX(-50%); }
+
     /* Premium/Free switcher next to palette (toggle style) */
     .palette-mode-wrap { position: fixed; z-index: 1002; display: inline-flex; align-items: center; gap: 10px; pointer-events: auto; padding: 6px 10px; border-radius: 12px; background: rgba(17, 20, 24, 0.85); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
     @media (max-width: 760px){ .palette-mode-wrap { bottom: 128px !important; } }
@@ -1041,7 +1047,7 @@
  
   <div id="app-toast-container" aria-live="polite" aria-atomic="true"></div>
   <div id="color-palette" aria-label="Renk paleti" role="group" data-i18n-aria-label="labels.colorPalette"></div>
-  <div id="palette-mode" class="palette-mode-wrap" aria-label="Palette mode" style="bottom:76px; left:50%; transform:translateX(-50%); visibility:hidden;">
+  <div id="palette-mode" class="palette-mode-wrap" aria-label="Palette mode">
     <span id="palette-mode-label-left" class="palette-mode-label active" data-i18n="paletteMode.premium">Use premium color</span>
     <button id="palette-mode-toggle" class="palette-mode-track" type="button" role="switch" aria-checked="true" aria-label="Palette mode"><span class="palette-mode-knob"></span></button>
     <span id="palette-mode-label-right" class="palette-mode-label" data-i18n="paletteMode.free">Use free color</span>
@@ -5374,14 +5380,14 @@ function loadImage(area, no, preserveView = false) {
         if (shopMaxPriceEl) shopMaxPriceEl.textContent = '💧 ' + (SHOP_PRICE_MAX * qty) + ' Droplets';
         try {
           const nameEl = document.getElementById('shop-max-name');
-          if (nameEl) nameEl.textContent = '+'+5*qty + ' Max. Charges';
+          if (nameEl) nameEl.textContent = t('shop.maxTitle').replace('+5', '+' + (5*qty));
         } catch {}
       } else {
         const qty = parseQty(shopRecQtyEl);
         if (shopRecPriceEl) shopRecPriceEl.textContent = '💧 ' + (SHOP_PRICE_REC * qty) + ' Droplets';
         try {
           const nameEl = document.getElementById('shop-rec-name');
-          if (nameEl) nameEl.textContent = '+'+30*qty+ ' Paint Charges';
+          if (nameEl) nameEl.textContent = t('shop.recTitle').replace('+30', '+' + (30*qty));
         } catch {}
       }
       try { updateShopButtonsDisabled(); } catch {}
@@ -7477,6 +7483,12 @@ if (autoMode && assignedCount > 0 && !hadRequestError) {
           paletteModeToggle.setAttribute('aria-checked', isPremium ? 'true' : 'false');
           paletteModeLabelLeft.classList.toggle('active', isPremium);
           paletteModeLabelRight.classList.toggle('active', !isPremium);
+          
+          // Premium/Free switcher next to palette (toggle style)
+          if (paletteModeEl) {
+            paletteModeEl.classList.toggle('premium-mode', isPremium);
+            paletteModeEl.classList.toggle('free-mode', !isPremium);
+          }
         } catch {}
       };
       const setMode = (mode) => { paletteMode = (mode === 'free') ? 'free' : 'premium'; try { localStorage.setItem('palette.mode', paletteMode); } catch {} recomputeActivePalette(); updateToggleUi(); };
