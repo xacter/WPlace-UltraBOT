@@ -6611,22 +6611,11 @@ function loadImage(area, no, preserveView = false) {
     if (autoSelectBtn) {
       autoSelectBtn.addEventListener('click', () => {
         if (autoSelectDeleteMode) {
-          // Delete all selected pixels
-          if (readyGlobalMode) {
-            try {
-              readyGlobalSelected.forEach(rec => {
-                try { if (rec && rec.el && rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); } catch {}
-                try { if (rec && rec.fillEl && rec.fillEl.parentNode) rec.fillEl.parentNode.removeChild(rec.fillEl); } catch {}
-              });
-              readyGlobalSelected.clear();
-            } catch {}
-          } else {
-            const selItem = (selectedIndex >= 0 && selectedIndex < signItems.length) ? signItems[selectedIndex] : null;
-            if (selItem) {
-              try { clearSelectionsForItem(selItem); } catch {}
-            }
-          }
-          try { updateReadySelectionLabel(); updateStartEnabled(); updatePixelMarkers(); render(); } catch {}
+          clearAllReadySelections();
+          updateReadySelectionLabel();
+          updateStartEnabled();
+          updatePixelMarkers();
+          render();
           try { refreshPaletteTooltips(); } catch {}
           return;
         }
@@ -6636,8 +6625,34 @@ function loadImage(area, no, preserveView = false) {
         try { updatePaletteSelectionUi(); } catch {}
 
         if (!Array.isArray(readySelectedAccountIds) || readySelectedAccountIds.length === 0) {
-          showToast(t('messages.selectAccountFirst'), 'error', 2000);
-          return;
+          if (autoMode) {
+            let bestAccount = null;
+            let maxPixels = -1;
+
+            accountsData.forEach(acc => {
+              const isActive = acc && acc.active !== false && !!acc.token;
+              if (isActive) {
+                const count = Number(acc.pixelCount || 0);
+                if (count > maxPixels) {
+                  maxPixels = count;
+                  bestAccount = acc;
+                }
+              }
+            });
+
+            if (bestAccount) {
+              readySelectedAccountIds = [bestAccount.id];
+              renderReadyAccountList();
+              updateReadyPixelForSelectedAccounts();
+              showToast(`Auto selected account: ${bestAccount.name}`, 'success', 1500);
+            } else {
+              showToast(t('messages.noActiveAccounts'), 'error', 2000);
+              return;
+            }
+          } else {
+            showToast(t('messages.selectAccountFirst'), 'error', 2000);
+            return;
+          }
         }
         
         if (!(selectedIndex >= 0 && selectedIndex < signItems.length)) {
@@ -6659,7 +6674,6 @@ function loadImage(area, no, preserveView = false) {
         let addedCount = 0;
         
         if (selectMode === 'frame') {
-          const prev = autoSelectDeleteMode; // unused placeholder
           addedCount = autoSelectFrameFirst(selItem, need);
         } else if (selectMode === 'color') {
           addedCount = autoSelectColorFirst(selItem, need);
